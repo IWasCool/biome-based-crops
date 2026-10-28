@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ourcreation.biomebasedcrops.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "PlantGrowthMixin",
+    "CreateTreeFertilizerMixin",
+    "SliceAndDiceFertilizerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

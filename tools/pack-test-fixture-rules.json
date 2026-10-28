@@ -1,0 +1,172 @@
+{
+    "schema_version":  1,
+    "pack":  "Create New World 4.1.0 installed client/server inventories used to validate the 4.1.1 candidate",
+    "source_audits":  {
+                          "client":  {
+                                         "report":  "createnewworldcore-1.21.1/build/performance-client-fixture-manifest.json",
+                                         "sha256":  "978A0E81B3DB69A5783C14F34D4399B3E4B498994E158477FD0DE6959D7F0A03"
+                                     },
+                          "central_kitchen":  {
+                                                  "report":  "createnewworldcore-1.21.1/build/performance-central-kitchen-fixture-audit.json",
+                                                  "sha256":  "33839980BF080A9FEB130143E44455F687738C9B5FFEA647F6F69498BDE92994"
+                                              }
+                      },
+    "expected_client_jar_count":  185,
+    "expected_server_jar_count":  159,
+    "expected_retained_jar_count":  158,
+    "retained_core_jar":  "create_new_world_core-0.0.3.jar",
+    "required_retained_jars":  [
+                                   {
+                                       "jar":  "player_blocks-0.0.2.jar",
+                                       "source_sha256":  "35BBEFCCA40E71EB21CDA0F2560E501932833F6745F41CC8601418B57EA9EFBD"
+                                   }
+                               ],
+    "excluded_client_presentation_jars":  [
+                                              {
+                                                  "jar":  "AmbientSounds_NEOFORGE_v6.3.10_mc1.21.1.jar",
+                                                  "source_sha256":  "E9A402D8D6787C53B6E607F875718AED2037EFB2B6B9CE9E47AD22695E3D9F23"
+                                              },
+                                              {
+                                                  "jar":  "chloride-NEOFORGE-mc1.21.1-v1.8.1.jar",
+                                                  "source_sha256":  "D0B0A80A241078F917AFB96E53821D7C70C38FAEBACA9ADEE0C86A9A8CB482C1"
+                                              },
+                                              {
+                                                  "jar":  "collapsible_groups-neoforge-1.21.1-1.4.4.jar",
+                                                  "source_sha256":  "B254DE9C5257D261D7D4225C019816DFBB57F8A0C0746212CF61EE962B407FCA"
+                                              },
+                                              {
+                                                  "jar":  "colorwheel-neoforge-1.3.0+mc1.21.1.jar",
+                                                  "source_sha256":  "3C7C1F91B1ADD47053F40A58375DE492B87CE83309BE378527F100CB842C07C0"
+                                              },
+                                              {
+                                                  "jar":  "Controlling-neoforge-1.21.1-19.0.5.jar",
+                                                  "source_sha256":  "CC525FB6B030D9E4D33176983F278919E17B33935E2CA568929BDFA98F2B44A0"
+                                              },
+                                              {
+                                                  "jar":  "createschematichelper-neoforge-mc1.21.1-2.2.0.jar",
+                                                  "source_sha256":  "4221AEB0B4F2C95C51A2A4CC8730B4509A06BD22CC316AA15D36A7FF40F338F4"
+                                              },
+                                              {
+                                                  "jar":  "defaultoptions-neoforge-1.21.1-21.1.8.jar",
+                                                  "source_sha256":  "D12790DC1F0857778D282C00AD5BE56882AC6FCE44769C1F012BE09B5604874A"
+                                              },
+                                              {
+                                                  "jar":  "drippyloadingscreen_neoforge_3.1.5_MC_1.21.1.jar",
+                                                  "source_sha256":  "F1FCB6CF3CBC7A6055FED0912BF284A7C455A0830DE42460943FC5E130072759"
+                                              },
+                                              {
+                                                  "jar":  "dynamic-fps-3.11.4+minecraft-1.21.0-neoforge.jar",
+                                                  "source_sha256":  "78CB67C9FAEFF5D1CB4DA48D41E48ECC47BADDAAEC0F792E6EDC8207AEE0AB8E"
+                                              },
+                                              {
+                                                  "jar":  "enchdesc-neoforge-1.21.1-21.1.11.jar",
+                                                  "source_sha256":  "868D3EAB3305D96DD3ECF510D18A7AA7444E2AEA168695CF4AFF23A96BEC975F"
+                                              },
+                                              {
+                                                  "jar":  "entity_model_features-3.3.12-1.21-neoforge.jar",
+                                                  "source_sha256":  "3BA0BF7B487660920D12CC0FF6CB5DE1763F024A080FE0CD7D64E1C8E0F7F190"
+                                              },
+                                              {
+                                                  "jar":  "entity_texture_features-7.2.6-1.21-neoforge.jar",
+                                                  "source_sha256":  "B47173468FEBC21BB565AF19A82BCD2F851E34ECB333660CDC48A8C37C27C1CD"
+                                              },
+                                              {
+                                                  "jar":  "entityculling-neoforge-1.11.3-mc1.21.1.jar",
+                                                  "source_sha256":  "FA73AC70A3766568203B730A1573B4B54D88FB48DFF4A33D8C4A80BE9B8D17D5"
+                                              },
+                                              {
+                                                  "jar":  "EuphoriaPatcher-1.10.5-r5.9.3-neoforge.jar",
+                                                  "source_sha256":  "FE64A1FAD6B6F39A95F22EA6BA9506B712E36B96C46B80F1CF38FE144900A4B2"
+                                              },
+                                              {
+                                                  "jar":  "fancymenu_neoforge_3.9.14_MC_1.21.1.jar",
+                                                  "source_sha256":  "92F74EF89381EA1F74E1145FEAB6DB4CE4638804B1FB43622302D0A647FC0A66"
+                                              },
+                                              {
+                                                  "jar":  "fancytoasts-1.5.1-neoforge-1.21.1.jar",
+                                                  "source_sha256":  "25C3FECA75DD36C296AECB624DAE85189D156CF9FFC34862C80C6892B3824DFF"
+                                              },
+                                              {
+                                                  "jar":  "ImmediatelyFast-NeoForge-1.6.15+1.21.1.jar",
+                                                  "source_sha256":  "7D7B1D7B9F71D5303E42B2FA45F222A5AB06E0EF5982ABB6DA5DD9CC449B3702"
+                                              },
+                                              {
+                                                  "jar":  "iris-neoforge-1.8.14-beta.1+mc1.21.1.jar",
+                                                  "source_sha256":  "60D5F8BF52F25E9986440F4A4270A6BD986D9CFF994510E1108AC1547063B314"
+                                              },
+                                              {
+                                                  "jar":  "lambdynamiclights-4.8.11+1.21.1.jar",
+                                                  "source_sha256":  "913B0358B1031828F1E060EA0EE361232DC2A1C82464F488A0A920739CE7C763"
+                                              },
+                                              {
+                                                  "jar":  "moreoverlays-1.24.2-mc1.21.1-neoforge.jar",
+                                                  "source_sha256":  "1AB0D1A49E31BBE5CF0CDFE5BA29FD923ECA5AC60CDB51164780AA3DB317C4B1"
+                                              },
+                                              {
+                                                  "jar":  "MouseTweaks-neoforge-mc1.21-2.26.1.jar",
+                                                  "source_sha256":  "68E6F4201C5DE97B77929A7215C9552495696CA6A3BF3AE4EACC34E135F6CC8B"
+                                              },
+                                              {
+                                                  "jar":  "notenoughanimations-neoforge-1.12.6-mc1.21.1.jar",
+                                                  "source_sha256":  "E70609C5638D9F02EDFB2C8EC448A7D567345323D7386937C174526AAC56CB8F"
+                                              },
+                                              {
+                                                  "jar":  "ok_zoomer-neo-10.0.0-beta.13.jar",
+                                                  "source_sha256":  "61DA322358127329D40B36A028FAA7D91C370A3708E08BECF1F1B8B242C5EB61"
+                                              },
+                                              {
+                                                  "jar":  "reforgedplaymod-1.21.1-0.3.jar",
+                                                  "source_sha256":  "608481672D6AFBD0926427E58DCBFB1C66421D9364AA00E67696BCDC9C5F5CC0"
+                                              },
+                                              {
+                                                  "jar":  "skinlayers3d-neoforge-1.11.3-mc1.21.1.jar",
+                                                  "source_sha256":  "AF7DCD6C6A40793ADC0F7E57DD8FCC04C9E9BDF9C8FFA4EFEB36E22D8B1F79DB"
+                                              },
+                                              {
+                                                  "jar":  "sodium-neoforge-0.8.13+mc1.21.1.jar",
+                                                  "source_sha256":  "575D187B15328D7BDDD8A9B1BEE64333C22C14735F5780EC49EAC0CD5503C08D"
+                                              }
+                                          ],
+    "approved_excluded_data_resource":  {
+                                            "path":  "data/ok_zoomer/tags/item/zoom_dependencies.json",
+                                            "replace":  false,
+                                            "values":  [
+                                                           "minecraft:spyglass"
+                                                       ],
+                                            "scope":  "Spyglass zoom UI dependency only; no crop or biome data"
+                                        },
+    "neruina_farmland_test_filters":  [
+                                         {
+                                             "jar": "neruina-3.3.4+1.21.1-neoforge.jar",
+                                             "source_sha256": "BE7AE71D25059DB493623D8E7E3392286FD32FF58721E8AE1C552D759B95D228",
+                                             "mixin_config": "neruina.mixins.json",
+                                             "excluded_mixin": "test.FarmBlockMixin",
+                                             "annotated_class": "com/bawnorton/neruina/mixin/test/FarmBlockMixin.class",
+                                             "required_annotation_descriptor": "Lcom/bawnorton/neruina/util/annotation/DevOnly;"
+                                         },
+                                         {
+                                             "jar": "neruina-3.3.5+1.21.1-neoforge.jar",
+                                             "source_sha256": "61B99EF4E22590930D27C01A1BFE4C5D8DA424515959C48A27905E23044C1F2D",
+                                             "mixin_config": "neruina.mixins.json",
+                                             "excluded_mixin": "test.FarmBlockMixin",
+                                             "annotated_class": "com/bawnorton/neruina/mixin/test/FarmBlockMixin.class",
+                                             "required_annotation_descriptor": "Lcom/bawnorton/neruina/util/annotation/DevOnly;"
+                                         }
+                                     ],
+    "central_kitchen":  {
+                            "jar":  "create-central-kitchen-2.6.2b.jar",
+                            "source_sha256":  "5B9AD4DF5B53A6C2450F52DFACD58AD51D77CA5CA562547AEEC7601C9F9EC192",
+                            "removed_test_only_entries":  [
+                                                              "plus/dragons/createcentralkitchen/common/gametest/",
+                                                              "plus/dragons/createcentralkitchen/common/gametest/CCKGameTests.class",
+                                                              "plus/dragons/createcentralkitchen/integration/brewinandchewin/recipe/KegPouringRecipeConvertersGameTests$CountingRecipeManager.class",
+                                                              "plus/dragons/createcentralkitchen/integration/brewinandchewin/recipe/KegPouringRecipeConvertersGameTests.class",
+                                                              "plus/dragons/createcentralkitchen/integration/culturaldelights/CulturalDelightsGameTests.class",
+                                                              "plus/dragons/createcentralkitchen/integration/extradelight/ExtraDelightRecipeCacheGameTests.class",
+                                                              "plus/dragons/createcentralkitchen/integration/farmersdelight/FarmersDelightRecipeGameTests.class",
+                                                              "plus/dragons/createcentralkitchen/integration/festivedelight/FestiveDelightGameTests.class",
+                                                              "plus/dragons/createcentralkitchen/integration/hearthandharvest/HearthAndHarvestGameTests.class",
+                                                              "plus/dragons/createcentralkitchen/integration/rusticdelight/RusticDelightGameTests.class"
+                                                          ]
+                        }
+}
