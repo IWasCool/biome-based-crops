@@ -40,34 +40,21 @@ Greenhouses identify their biome automatically from required native materials, a
 The room's biome is a reversible overlay: it does not rewrite saved chunk biomes or generate new terrain. Opening the enclosure or disabling greenhouses restores the native biome. Natural spawning still follows normal light, space, structure, dimension, and mob-cap rules.
 
 1. Craft a **Greenhouse Probe** with glass, copper ingots, redstone, and a stick. Craft a book with wheat for the **Farmer's Field Guide**.
-2. Select your intended biome in the guide. Meet its native-floor coverage and **every listed material count**. Counts scale with the scanned room's volume and floor area.
-3. Build a closed room of any shape with a solid floor, walls, and roof. By default, at least 50% of its exposed ceiling area and 10% of its wall area must be glass, with at least four glass wall blocks. Glass blocks and panes count in every orientation, including coloured and tagged mod glass. Close doors and trapdoors.
-4. Build the required native ground. Place the listed habitat materials inside the room above its floor, with tree canopies above the trunks. The guide shows floor and material progress separately.
+2. Select your intended biome in the guide. Meet its native-floor coverage and **every listed habitat percentage**.
+3. Build a closed room of any shape with a native floor and glass walls and roof. Glass blocks and panes count in every orientation, including coloured and tagged mod glass. Close the entrance.
+4. Place habitat materials inside the enclosure, including sandstone and other rocks. Tree logs and plants belong above ground, with canopies above the trunks.
 5. Match the required temperature and air conditions. A naturally suitable room needs no machine. Otherwise, place a powered **Thermoregulator** inside the connected room, choose a Celsius target, and wait for temperature and oxygen to settle.
 6. Use the probe inside the room to check the detected biome, enclosure, temperature, and individual material progress. In hostile atmospheres, room oxygen must reach 95% before it is breathable.
 
-### Native floors and material scaling
+### Native floors and habitat percentages
 
-Each default biome requires native ground across its measured floor area. Listed ground blocks are alternatives and may be mixed. Forest needs **90%** grass blocks, dirt, rooted dirt, or coarse dirt; Desert needs **100% sand**. One lowest supporting floor position counts per room column.
+The default enclosure requires glass walls and roof. Up to four closed door/trapdoor blocks and four climate-machine blocks may form functional openings; additional opaque blocks fail the glass requirement. Existing factory settings of 50% roof glass and 10% wall glass upgrade once to the full-glass defaults. Other customized ratios are preserved.
 
-For an **8 x 8 Desert floor**, all **64 positions** must register as sand. Put crop farmland directly on a sand underlay; the scanner checks exactly one block beneath farmland or a climate machine. Other floor blocks use their own material. Sandstone can form the wall frame. Tree logs and plants count above ground inside the room, with leaf canopies at least two blocks above the floor.
+Floor coverage is a percentage of ground area. Listed ground blocks are alternatives and may be mixed. Forest needs **90%** grass blocks, dirt, rooted dirt, or coarse dirt; Desert needs **100% sand**.
 
-Examples at **512 interior blocks** and **64 floor positions**:
+Each habitat material has its own percentage of interior volume, including the space occupied by interior scenery. Every percentage must be met inside the room; the same proportions scale down for small greenhouses and up for large ones. The server rounds fractional block requirements up. Logs and plants count above ground, and leaf canopies count at least two blocks above the floor.
 
-| Biome | Native ground | Required habitat materials |
-| --- | --- | --- |
-| Desert | All 64 positions sand | 16 sandstone, 4 cactus, 8 dead bushes |
-| Forest | At least 58 positions native soil | 16 oak logs, 64 oak leaves, 8 birch logs |
-
-Larger rooms increase each feature count using the greatest of its base count, volume requirement, and floor-density requirement:
-
-```text
-required = max(base count, ceil(base count * room volume / reference volume), floor-density count)
-```
-
-Default density adds one log per eight floor positions, one canopy block per two, and one plant or other feature per sixteen. Base minima still apply. Floor coverage remains a percentage of actual ground area, independent of room height. `materialReferenceVolume` controls the volume term and defaults to **512**.
-
-The English guide shows native-floor coverage, every required material, temperature, and short building instructions on one right-hand page. After a scan, quantities use that room's volume and floor area. Large count overlays are abbreviated, with exact counts and found progress in ingredient tooltips. Left-click for recipes or right-click for uses in an installed JEI, EMI, or REI viewer; without one, ordinary item tooltips remain available.
+The English guide combines the selected biome's floor, habitat percentages, and temperature/Thermoregulator instructions. Hover item icons for standard tooltips; left-click for recipes or right-click for uses with JEI, EMI, or REI installed.
 
 Vanilla biomes have curated habitats; installed mod biomes derive materials from native vegetation and terrain. Custom recipes can replace them. If several recipes fit, the most specific completed recipe takes priority. Remove unrelated materials when changing the intended greenhouse. Existing greenhouse cores remain optional inspection stations.
 
@@ -111,7 +98,7 @@ On Northstar planets, greenhouse conditioning uses the native Celsius temperatur
 
 There are no fixed side-length or height limits. The default maximum is **262,144 connected interior blocks**, configurable up to **1,048,576**. All room chunks must already be loaded. Large rooms scan gradually; the probe shows a scanning status until ready. Ordinary energy updates do not repeat a large flood fill. Small air snapshots preserve produced heat and oxygen when geometry is evicted from the bounded scan cache.
 
-Glass requirements scale with the actual room boundary: the default is 50% roof glass and 10% wall glass, with at least four glass wall blocks. A handful of windows cannot qualify a huge opaque barn. Supported glass is recognized through the common glass block/pane tags and `biome_based_crops:greenhouse_glass`; colour and orientation do not change whether it counts.
+The default enclosure has **100% glass walls and roof**, with a closed entrance allowed. Habitat materials go inside this shell. Supported glass is recognized through the common glass block/pane tags and `biome_based_crops:greenhouse_glass`; colour and orientation do not change whether it counts.
 
 ### Greenhouse settings
 
@@ -120,10 +107,10 @@ Glass requirements scale with the actual room boundary: the default is 50% roof 
 | `enableGreenhouses` | `true` | Recognize suitable enclosed greenhouse biomes. |
 | `maxRoomBlocks` | `262144` | Maximum interior volume, from 64 to 1,048,576 blocks. |
 | `scanBlocksPerTick` | `1024` | Background scan work per level tick, from 256 to 16,384. |
-| `materialReferenceVolume` | `512` | Reference for volume-scaled material counts, from 64 to 1,048,576 blocks; native floor coverage and feature density are checked separately. |
-| `minimumRoofGlassRatio` | `0.5` | Minimum fraction of exposed ceiling faces made from glass. |
-| `minimumWallGlassRatio` | `0.1` | Minimum fraction of exposed wall faces made from glass; at least four glass wall blocks are required. |
-| `requiredSpecimens` | `4` | Base count for each generated mod material and bare-ID override; default habitats also enforce vegetation minima. |
+| `materialReferenceVolume` | `512` | Reference for default habitat percentages and legacy custom-count scaling, from 64 to 1,048,576 blocks. |
+| `minimumRoofGlassRatio` | `1.0` | Required glass fraction of the roof. |
+| `minimumWallGlassRatio` | `1.0` | Required glass fraction of the walls, allowing a closed entrance. |
+| `requiredSpecimens` | `4` | Base value for generated mod percentages and bare-ID custom overrides. |
 | `cacheTicks` | `20` | Maximum refresh delay in ticks, from 1 to 20. |
 | `biomeMaterialRules` | `[]` | Replace complete material recipes for individual biomes. |
 | `biomeFloorRules` | `[]` | Override native-floor coverage and accepted ground blocks for individual biomes. |
@@ -139,11 +126,17 @@ biomeFloorRules = [
 ]
 ```
 
-Every material in `biomeMaterialRules` is mandatory. Custom recipes deliberately replace the automatic habitat plan, including its floor; add a matching `biomeFloorRules` entry to require native ground. Custom base counts run from 1 to 64 for up to 32 distinct block IDs and scale with volume. Duplicate IDs are rejected.
+Every material in `biomeMaterialRules` is mandatory. Custom recipes deliberately replace the automatic habitat plan, including its floor; add a matching `biomeFloorRules` entry to require native ground. Existing operator overrides retain their legacy base amounts and placement flexibility, increasing for rooms larger than the reference:
+
+```text
+custom required = max(configured count, ceil(room volume * configured count / materialReferenceVolume))
+```
+
+Custom base amounts run from 1 to 64 for up to 32 distinct block IDs. Duplicate IDs are rejected. Default biome plans use proportional percentages without this legacy minimum.
 
 Floor rules use `biome=percentage:block,block`. The percentage runs from 0 to 100; up to 16 listed block IDs are alternatives for that coverage. The last matching entry in each setting wins. Use installed IDs, then restart the world/server after editing.
 
-Older bare-ID rules still load, but now require `requiredSpecimens` blocks of **each** type rather than a combined total. The legacy setting does not change explicit `*count` entries or the curated vanilla recipes.
+Older bare-ID rules still load and use `requiredSpecimens` as the base amount for **each** type. The legacy setting does not change explicit `*count` entries or curated vanilla percentages.
 
 ## Choose climates
 

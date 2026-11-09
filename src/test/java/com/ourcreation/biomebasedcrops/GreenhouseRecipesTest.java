@@ -63,8 +63,7 @@ class GreenhouseRecipesTest {
         for (var biome : server.registryAccess().registryOrThrow(Registries.BIOME).holders().toList()) {
             if (!biome.key().location().getNamespace().equals("minecraft")) continue;
             var recipe = GreenhouseRecipes.forServerBiome(biome);
-            var signature = new HabitatSignature(recipe.climate(), Set.copyOf(recipe.requirements()),
-                    Set.copyOf(recipe.floor().blocks()), recipe.floor().coveragePercent());
+            var signature = habitat(recipe);
             palettes.computeIfAbsent(signature, ignored -> new HashSet<>()).add(biome.key().location());
             assertTrue(recipe.requirements().stream().allMatch(material -> material.count() >= 1 && material.count() <= 64));
             count++;
@@ -85,9 +84,10 @@ class GreenhouseRecipesTest {
         assertEquals(58, forest.floor().required(64));
         assertEquals(Set.of(id("minecraft:grass_block"), id("minecraft:dirt"), id("minecraft:rooted_dirt"),
                 id("minecraft:coarse_dirt")), Set.copyOf(forest.floor().blocks()));
-        assertEquals(List.of(new GreenhouseRecipes.MaterialRequirement(id("minecraft:oak_log"), 16, 8, 1),
-                new GreenhouseRecipes.MaterialRequirement(id("minecraft:oak_leaves"), 64, 2, 2),
-                new GreenhouseRecipes.MaterialRequirement(id("minecraft:birch_log"), 8, 8, 1)), forest.requirements());
+        assertEquals(List.of(id("minecraft:oak_log"), id("minecraft:oak_leaves"), id("minecraft:birch_log")), forest.specimens());
+        assertEquals(List.of(16, 64, 8), forest.requirements().stream().map(GreenhouseRecipes.MaterialRequirement::count).toList());
+        assertEquals(List.of(1, 2, 1), forest.requirements().stream().map(GreenhouseRecipes.MaterialRequirement::minHeight).toList());
+        assertTrue(forest.requirements().stream().allMatch(GreenhouseRecipes::isPercentageBased));
 
         var desert = recipe(server, "minecraft:desert");
         assertEquals(new GreenhouseRecipes.FloorRequirement(List.of(id("minecraft:sand")), 100), desert.floor());
@@ -95,6 +95,7 @@ class GreenhouseRecipesTest {
         assertEquals(List.of(id("minecraft:sandstone"), id("minecraft:cactus"), id("minecraft:dead_bush")), desert.specimens());
         assertEquals(List.of(16, 3, 8), desert.requirements().stream().map(GreenhouseRecipes.MaterialRequirement::count).toList());
         assertEquals(List.of(0, 1, 1), desert.requirements().stream().map(GreenhouseRecipes.MaterialRequirement::minHeight).toList());
+        assertTrue(desert.requirements().stream().allMatch(GreenhouseRecipes::isPercentageBased));
         assertFalse(desert.floor().blocks().contains(id("minecraft:farmland")), "Farmland needs an actual sand underlay");
     }
 
@@ -116,7 +117,7 @@ class GreenhouseRecipesTest {
             assertEquals(List.of(8, 4, 2), recipe.requirements().stream().map(GreenhouseRecipes.MaterialRequirement::count).toList());
             assertEquals(List.of(id("minecraft:sand"), id("minecraft:sandstone"), id("minecraft:cactus")), recipe.specimens());
             assertEquals(GreenhouseRecipes.FloorRequirement.none(), recipe.floor(), "Custom materials should replace the automatic floor plan");
-            assertTrue(recipe.requirements().stream().allMatch(material -> material.floorDivisor() == 0 && material.minHeight() == 0),
+            assertTrue(recipe.requirements().stream().allMatch(material -> !GreenhouseRecipes.isPercentageBased(material) && material.minHeight() == 0),
                     "An explicit override inherited default vegetation placement/density constraints");
 
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of("minecraft:desert=minecraft:sand,minecraft:sandstone,minecraft:cactus"));
@@ -239,11 +240,19 @@ class GreenhouseRecipesTest {
     }
 
     private static HabitatSignature habitat(MinecraftServer server, String biome) {
-        var recipe = recipe(server, biome);
-        return new HabitatSignature(recipe.climate(), Set.copyOf(recipe.requirements()),
+        return habitat(recipe(server, biome));
+    }
+
+    private static HabitatSignature habitat(GreenhouseRecipes.Recipe recipe) {
+        Set<FeatureSignature> features = recipe.requirements().stream()
+                .map(material -> new FeatureSignature(material.block(), material.count(),
+                        GreenhouseRecipes.isPercentageBased(material), material.minHeight()))
+                .collect(java.util.stream.Collectors.toSet());
+        return new HabitatSignature(recipe.climate(), features,
                 Set.copyOf(recipe.floor().blocks()), recipe.floor().coveragePercent());
     }
 
-    private record HabitatSignature(CropClimate climate, Set<GreenhouseRecipes.MaterialRequirement> features,
+    private record FeatureSignature(ResourceLocation block, int rate, boolean proportional, int minHeight) {}
+    private record HabitatSignature(CropClimate climate, Set<FeatureSignature> features,
                                     Set<ResourceLocation> nativeGround, int coveragePercent) {}
 }

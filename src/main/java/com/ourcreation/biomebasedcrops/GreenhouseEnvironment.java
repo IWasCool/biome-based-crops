@@ -330,7 +330,7 @@ public final class GreenhouseEnvironment {
         List<Match> complete = new java.util.ArrayList<>(materials.complete);
         List<Match> warmEnough = new java.util.ArrayList<>();
         Match closest = materials.closest;
-        int roomVolume = geometry.interior.size();
+        int roomVolume = geometry.habitatVolume();
         for (Match match : complete) {
             if (actual == match.definition.recipe.climate()) {
                 warmEnough.add(match);
@@ -399,9 +399,10 @@ public final class GreenhouseEnvironment {
         List<RequirementProgress> progress = new java.util.ArrayList<>();
         for (var required : definition.recipe.requirements()) {
             Map<ResourceLocation, Integer> counts = required.minHeight() == 2 ? geometry.canopy
-                    : required.minHeight() == 1 ? geometry.features : geometry.counts;
+                    : required.minHeight() == 1 ? geometry.features
+                    : GreenhouseRecipes.isPercentageBased(required) ? geometry.inside : geometry.counts;
             int found = counts.getOrDefault(required.block(), 0);
-            int scaled = GreenhouseRecipes.scaledCount(required, geometry.interior.size(), geometry.floorSamples.size(),
+            int scaled = GreenhouseRecipes.scaledCount(required, geometry.habitatVolume(), geometry.floorSamples.size(),
                     GreenhouseSettings.materialReferenceVolume());
             totalRequired += scaled;
             matched += Math.min(found, scaled);
@@ -410,6 +411,11 @@ public final class GreenhouseEnvironment {
         }
         var floor = definition.recipe.floor();
         int floorFound = floor.blocks().stream().mapToInt(block -> geometry.floorCounts.getOrDefault(block, 0)).sum();
+        for (var material : definition.recipe.requirements()) {
+            if (floor.blocks().contains(material.block())) continue;
+            Map<ResourceLocation, Integer> bases = geometry.sceneryBases.get(material.block());
+            if (bases != null) floorFound += floor.blocks().stream().mapToInt(block -> bases.getOrDefault(block, 0)).sum();
+        }
         int floorRequired = floor.required(geometry.floorSamples.size());
         FloorProgress floorProgress = new FloorProgress(floor.blocks(), floorFound, floorRequired, geometry.floorSamples.size());
         return new Match(definition, matched, complete && floorFound >= floorRequired, List.copyOf(progress), totalRequired, floorProgress);
@@ -426,7 +432,14 @@ public final class GreenhouseEnvironment {
 
     private static boolean sameSignature(GreenhouseRecipes.Recipe first, GreenhouseRecipes.Recipe second) {
         if (first.climate() != second.climate() || first.count() != second.count() || !first.floor().equals(second.floor())) return false;
-        return new HashSet<>(first.requirements()).equals(new HashSet<>(second.requirements()));
+        return normalizedMaterials(first).equals(normalizedMaterials(second));
+    }
+
+    private static Set<GreenhouseRecipes.MaterialRequirement> normalizedMaterials(GreenhouseRecipes.Recipe recipe) {
+        Set<GreenhouseRecipes.MaterialRequirement> normalized = new HashSet<>();
+        for (var material : recipe.requirements()) normalized.add(new GreenhouseRecipes.MaterialRequirement(material.block(), material.count(),
+                GreenhouseRecipes.isPercentageBased(material) ? 1 : 0, material.minHeight()));
+        return normalized;
     }
 
     private static Room outdoorRoom(Level level, BlockPos pos, long tick, String status) {

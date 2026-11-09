@@ -76,5 +76,6 @@
   "biome_based_crops.configuration.materialReferenceVolume": "Interior Blocks per Material Recipe",
   "biome_based_crops.greenhouse.status.filling_air": "Room air is filling",
   "biome_based_crops.greenhouse.status.missing_floor": "The floor needs the biome's native ground blocks.",
-  "biome_based_crops.configuration.biomeFloorRules": "Biome floor requirements"
+  "biome_based_crops.configuration.biomeFloorRules": "Biome floor requirements",
+  "biome_based_crops.configuration.constructionRulesVersion": "Construction rules version"
 }

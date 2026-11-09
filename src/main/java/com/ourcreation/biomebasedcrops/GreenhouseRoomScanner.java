@@ -226,10 +226,14 @@ public final class GreenhouseRoomScanner {
             }
         }
         java.util.HashSet<Geometry> floorOnly = new java.util.HashSet<>();
-        List<Geometry> above = state.sections.get(SectionPos.asLong(pos.above(2)));
-        if (above != null) for (Geometry geometry : above) {
-            if (geometry.live && geometry.floorSamples.containsKey(pos.above().asLong()) && !touched.contains(geometry)) {
-                floorOnly.add(geometry);
+        for (BlockPos watchedSection : new BlockPos[]{pos, pos.above(2)}) {
+            List<Geometry> candidates = state.sections.get(SectionPos.asLong(watchedSection));
+            if (candidates == null) continue;
+            for (Geometry geometry : candidates) {
+                long column = ChunkPos.asLong(pos.getX(), pos.getZ());
+                if (!geometry.live || touched.contains(geometry) || !geometry.columnBottoms.containsKey(column)) continue;
+                int supportY = geometry.columnBottoms.get(column) - 1;
+                if (pos.getY() == supportY || pos.getY() == supportY - 1 || pos.getY() == geometry.key.minY - 1) floorOnly.add(geometry);
             }
         }
         for (Geometry geometry : touched) {
@@ -240,31 +244,39 @@ public final class GreenhouseRoomScanner {
                 boolean support = geometry.floorSamples.containsKey(pos.asLong());
                 int oldHeight = before.isAir() || support && !rootedWood(before) ? 0 : normalHeight;
                 int newHeight = after.isAir() || support && !rootedWood(after) ? 0 : normalHeight;
+                adjustScopedCounts(geometry.inside, oldId, newId, normalHeight >= 1 && !before.isAir(), normalHeight >= 1 && !after.isAir());
                 adjustScopedCounts(geometry.features, oldId, newId, oldHeight >= 1, newHeight >= 1);
                 adjustScopedCounts(geometry.canopy, oldId, newId, oldHeight >= 2, newHeight >= 2);
-                refreshFloor(level, geometry, pos);
-                refreshFloor(level, geometry, pos.above());
+                refreshFloorColumn(level, geometry, pos);
                 geometry.materialRevision++;
                 geometry.machines.remove(pos.asLong());
                 if (machine(after)) geometry.machines.add(pos.asLong());
                 boolean oldGlass = GreenhouseEnvironment.isGlass(before), newGlass = GreenhouseEnvironment.isGlass(after);
+                int roles = geometry.boundaryRoles.get(pos.asLong()), faces = Integer.bitCount(roles & HORIZONTAL);
+                int requiredDelta = (glazingRequired(after) ? 1 : 0) - (glazingRequired(before) ? 1 : 0);
+                if ((roles & ROOF) != 0) geometry.roof += requiredDelta;
+                geometry.wall += requiredDelta * faces;
+                if (roles != 0) {
+                    geometry.entrances += (entrance(after) ? 1 : 0) - (entrance(before) ? 1 : 0);
+                    geometry.devices += (machine(after) ? 1 : 0) - (machine(before) ? 1 : 0);
+                }
                 if (oldGlass != newGlass) {
-                    int delta = newGlass ? 1 : -1, roles = geometry.boundaryRoles.get(pos.asLong());
+                    int delta = newGlass ? 1 : -1;
                     geometry.glass += delta;
                     if ((roles & ROOF) != 0) geometry.roofGlass += delta;
-                    int faces = Integer.bitCount(roles & HORIZONTAL);
                     geometry.wallGlass += delta * faces;
                     if (faces > 0) geometry.wallGlassBlocks += delta;
                 }
             }
         }
         for (Geometry geometry : floorOnly) {
-            if (refreshFloor(level, geometry, pos.above())) geometry.materialRevision++;
+            if (refreshFloorColumn(level, geometry, pos)) geometry.materialRevision++;
         }
         for (Scan scan : state.pending) {
             if (scan.done) continue;
             if (scan.finishing != null
-                    && (scan.observed.contains(pos.asLong()) || scan.floorSamples.containsKey(pos.above().asLong()))) {
+                    && (scan.observed.contains(pos.asLong()) || scan.floorSamples.containsKey(pos.above().asLong())
+                            || pos.getY() == scan.minY - 1 && scan.columns.containsKey(ChunkPos.asLong(pos.getX(), pos.getZ())))) {
                 scan.fail("scanning");
                 continue;
             }
@@ -291,6 +303,7 @@ public final class GreenhouseRoomScanner {
         room.boundaryRoles = new Long2ByteOpenHashMap();
         room.floorSamples = new Long2ObjectOpenHashMap<>();
         room.columnTops = new Long2IntOpenHashMap();
+        room.columnBottoms = new Long2IntOpenHashMap();
     }
 
     static void evictForMemoryPressure(Level level, Geometry room) {
@@ -324,6 +337,13 @@ public final class GreenhouseRoomScanner {
                 || path.endsWith("_stem") || path.endsWith("_hyphae");
     }
 
+    private static boolean entrance(BlockState state) {
+        return state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock
+                || state.getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock;
+    }
+
+    private static boolean glazingRequired(BlockState state) { return !entrance(state) && !machine(state); }
+
     private static ResourceLocation floorMaterial(Level level, BlockPos support) {
         BlockState state = level.getBlockState(support);
         if (state.getBlock() instanceof FarmBlock || machine(state)) {
@@ -334,15 +354,44 @@ public final class GreenhouseRoomScanner {
         return BuiltInRegistries.BLOCK.getKey(state.getBlock());
     }
 
-    private static boolean refreshFloor(Level level, Geometry room, BlockPos support) {
-        ResourceLocation old = room.floorSamples.get(support.asLong());
+    private static FloorSample sampleFloor(Level level, BlockPos support, int baseY) {
+        BlockState state = level.getBlockState(support);
+        boolean scenery = support.getY() > baseY && !(state.getBlock() instanceof FarmBlock) && !machine(state);
+        BlockPos base = new BlockPos(support.getX(), baseY, support.getZ());
+        ResourceLocation baseMaterial = scenery && GreenhouseEnvironment.loaded(level, base)
+                ? BuiltInRegistries.BLOCK.getKey(level.getBlockState(base).getBlock()) : ResourceLocation.withDefaultNamespace("air");
+        return new FloorSample(floorMaterial(level, support), BuiltInRegistries.BLOCK.getKey(state.getBlock()), baseMaterial, scenery);
+    }
+
+    private static void floorContribution(Map<ResourceLocation, Integer> floors,
+            Map<ResourceLocation, Map<ResourceLocation, Integer>> bases, FloorSample sample, int delta) {
+        changeCount(floors, sample.surface, delta);
+        if (!sample.scenery) return;
+        Map<ResourceLocation, Integer> nativeBases = bases.computeIfAbsent(sample.support, block -> new HashMap<>());
+        changeCount(nativeBases, sample.base, delta);
+        if (nativeBases.isEmpty()) bases.remove(sample.support);
+    }
+
+    private static void changeCount(Map<ResourceLocation, Integer> counts, ResourceLocation block, int delta) {
+        int next = counts.getOrDefault(block, 0) + delta;
+        if (next <= 0) counts.remove(block); else counts.put(block, next);
+    }
+
+    private static boolean refreshFloorColumn(Level level, Geometry room, BlockPos changed) {
+        long column = ChunkPos.asLong(changed.getX(), changed.getZ());
+        if (!room.columnBottoms.containsKey(column)) return false;
+        BlockPos support = new BlockPos(changed.getX(), room.columnBottoms.get(column) - 1, changed.getZ());
+        FloorSample old = room.floorSamples.get(support.asLong());
         if (old == null) return false;
-        ResourceLocation current = floorMaterial(level, support);
+        FloorSample current = sampleFloor(level, support, room.key.minY - 1);
         if (old.equals(current)) return false;
-        adjustCounts(room.floorCounts, old, current);
+        floorContribution(room.floorCounts, room.sceneryBases, old, -1);
+        floorContribution(room.floorCounts, room.sceneryBases, current, 1);
         room.floorSamples.put(support.asLong(), current);
         return true;
     }
+
+    private record FloorSample(ResourceLocation surface, ResourceLocation support, ResourceLocation base, boolean scenery) { }
 
     private static int featureHeight(int floorY, Long2IntOpenHashMap columnTops, BlockPos at) {
         long column = ChunkPos.asLong(at.getX(), at.getZ());
@@ -365,10 +414,13 @@ public final class GreenhouseRoomScanner {
         final Map<ResourceLocation, Integer> counts;
         final LongSet machines;
         Long2ByteOpenHashMap boundaryRoles;
-        Long2ObjectOpenHashMap<ResourceLocation> floorSamples = new Long2ObjectOpenHashMap<>();
-        Long2IntOpenHashMap columnTops = new Long2IntOpenHashMap();
-        Map<ResourceLocation, Integer> floorCounts = new HashMap<>(), features = new HashMap<>(), canopy = new HashMap<>();
+        Long2ObjectOpenHashMap<FloorSample> floorSamples = new Long2ObjectOpenHashMap<>();
+        Long2IntOpenHashMap columnTops = new Long2IntOpenHashMap(), columnBottoms = new Long2IntOpenHashMap();
+        Map<ResourceLocation, Integer> floorCounts = new HashMap<>(), features = new HashMap<>(), canopy = new HashMap<>(), inside = new HashMap<>();
+        Map<ResourceLocation, Map<ResourceLocation, Integer>> sceneryBases = new HashMap<>();
         int glass, roof, roofGlass, wall, wallGlass, wallGlassBlocks;
+        int entrances, devices;
+        int insideSolid;
         long materialRevision;
         long lastUse = System.nanoTime();
 
@@ -383,8 +435,10 @@ public final class GreenhouseRoomScanner {
         }
         boolean glassValid() {
             return roof > 0 && roofGlass >= Math.ceil(roof * GreenhouseSettings.roofGlassRatio())
-                    && wallGlassBlocks >= 4 && wall > 0 && wallGlass >= Math.ceil(wall * GreenhouseSettings.wallGlassRatio());
+                    && wallGlassBlocks >= 4 && wall > 0 && wallGlass >= Math.ceil(wall * GreenhouseSettings.wallGlassRatio())
+                    && entrances <= 4 && devices <= 4;
         }
+        int habitatVolume() { return (int) Math.min(1048576L, (long) interior.size() + insideSolid); }
     }
 
     /** The fingerprint identifies exact air cells without retaining their potentially huge set. */
@@ -426,12 +480,15 @@ public final class GreenhouseRoomScanner {
         final LongOpenHashSet chunks = new LongOpenHashSet();
         final Long2IntOpenHashMap columns = new Long2IntOpenHashMap();
         final Long2IntOpenHashMap columnTops = new Long2IntOpenHashMap();
-        final Long2ObjectOpenHashMap<ResourceLocation> floorSamples = new Long2ObjectOpenHashMap<>();
-        final Map<ResourceLocation, Integer> floorCounts = new HashMap<>(), features = new HashMap<>(), canopy = new HashMap<>();
+        final Long2ObjectOpenHashMap<FloorSample> floorSamples = new Long2ObjectOpenHashMap<>();
+        final Map<ResourceLocation, Integer> floorCounts = new HashMap<>(), features = new HashMap<>(), canopy = new HashMap<>(), inside = new HashMap<>();
+        final Map<ResourceLocation, Map<ResourceLocation, Integer>> sceneryBases = new HashMap<>();
         final Map<ResourceLocation, Integer> bottomFeatures = new HashMap<>();
         int minX, maxX, minY, maxY, minZ, maxZ;
         long hashSum, hashXor;
         int glass, roof, roofGlass, wall, wallGlass, wallGlassBlocks;
+        int entrances, devices;
+        int insideSolid;
         BlockPos floorPoint;
         boolean done;
         boolean priority;
@@ -488,17 +545,28 @@ public final class GreenhouseRoomScanner {
                         int bit = 1 << direction.ordinal();
                         if ((mask & bit) != 0 && !visited.contains(at.relative(direction).asLong())) exposed |= bit;
                     }
-                    entry.setValue((byte)exposed);
                     BlockState observedState = level.getBlockState(at);
                     boolean glazed = GreenhouseEnvironment.isGlass(observedState);
                     long column = ChunkPos.asLong(at.getX(), at.getZ());
-                    int height = at.getY() == columns.get(column) - 1 && !rootedWood(observedState) ? 0 : featureHeight(minY, columnTops, at);
+                    int exterior = !columns.containsKey(column) ? exposed & HORIZONTAL : 0;
+                    if (columnTops.containsKey(column) && at.getY() > columnTops.get(column)) exterior |= exposed & ROOF;
+                    entry.setValue((byte) exterior);
+                    int normalHeight = featureHeight(minY, columnTops, at);
+                    int height = at.getY() == columns.get(column) - 1 && !rootedWood(observedState) ? 0 : normalHeight;
                     ResourceLocation material = BuiltInRegistries.BLOCK.getKey(observedState.getBlock());
+                    if (normalHeight >= 1) {
+                        inside.merge(material, 1, Integer::sum);
+                        insideSolid++;
+                    }
                     if (height >= 1) features.merge(material, 1, Integer::sum);
                     if (height >= 2) canopy.merge(material, 1, Integer::sum);
-                    if ((exposed & ROOF) != 0) { roof++; if (glazed) roofGlass++; }
-                    int faces = Integer.bitCount(exposed & HORIZONTAL);
-                    wall += faces;
+                    if (exterior != 0) {
+                        if (entrance(observedState)) entrances++;
+                        if (machine(observedState)) devices++;
+                    }
+                    if ((exterior & ROOF) != 0 && glazingRequired(observedState)) { roof++; if (glazed) roofGlass++; }
+                    int faces = Integer.bitCount(exterior & HORIZONTAL);
+                    if (glazingRequired(observedState)) wall += faces;
                     if (glazed && faces > 0) { wallGlass += faces; wallGlassBlocks++; }
                 }
                 if (!done && !finishing.hasNext()) {
@@ -507,9 +575,11 @@ public final class GreenhouseRoomScanner {
                         var column = flooring.next(); used++;
                         BlockPos support = new BlockPos(ChunkPos.getX(column.getLongKey()), column.getIntValue() - 1, ChunkPos.getZ(column.getLongKey()));
                         if (!GreenhouseEnvironment.loaded(level, support)) { fail("unloaded"); break; }
-                        ResourceLocation material = floorMaterial(level, support);
-                        floorSamples.put(support.asLong(), material);
-                        floorCounts.merge(material, 1, Integer::sum);
+                        FloorSample sample = sampleFloor(level, support, minY - 1);
+                        floorSamples.put(support.asLong(), sample);
+                        floorContribution(floorCounts, sceneryBases, sample, 1);
+                        sections.add(SectionPos.asLong(new BlockPos(support.getX(), minY - 1, support.getZ())));
+                        sections.add(SectionPos.asLong(support.below()));
                     }
                     if (!done && !flooring.hasNext()) {
                         if (subtractingBottom == null) subtractingBottom = bottomFeatures.entrySet().iterator();
@@ -541,6 +611,7 @@ public final class GreenhouseRoomScanner {
                     ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
                     features.merge(id, 1, Integer::sum);
                     canopy.merge(id, 1, Integer::sum);
+                    inside.merge(id, 1, Integer::sum);
                     if (pos.getY() <= minY) bottomFeatures.merge(id, 1, Integer::sum);
                 }
             }
@@ -563,10 +634,12 @@ public final class GreenhouseRoomScanner {
             RoomKey key = new RoomKey(minX, minY, minZ, maxX, maxY, maxZ, visited.size(), hashSum, hashXor);
             result = new Geometry("closed", anchor, visited, sections, counts, machines, shell, key);
             result.floorSamples = floorSamples; result.floorCounts = floorCounts;
-            result.columnTops = columnTops;
-            result.features = features; result.canopy = canopy;
+            result.columnTops = columnTops; result.columnBottoms = columns;
+            result.features = features; result.canopy = canopy; result.inside = inside; result.sceneryBases = sceneryBases;
             result.glass = glass; result.roof = roof; result.roofGlass = roofGlass;
             result.wall = wall; result.wallGlass = wallGlass; result.wallGlassBlocks = wallGlassBlocks;
+            result.entrances = entrances; result.devices = devices;
+            result.insideSolid = insideSolid;
             result.ready = false;
             indexing = sections.iterator();
         }

@@ -8,8 +8,9 @@
 - Added automatic greenhouse biome recognition from enclosure, glass, mandatory native materials, actual temperature, and breathable air; no core or sampling is required.
 - Applied a reversible biome overlay inside valid rooms, including natural spawn lists, without rewriting saved chunk biome data.
 - Added a Greenhouse Probe for checking detected biomes and each material requirement.
-- Added an English Farmer's Field Guide with a searchable biome index and one-page material, temperature, and building summaries, using resource-pack-compatible Minecraft artwork.
-- Added mandatory native floors and substantial biome vegetation, with separate floor progress, room-volume and footprint scaling, and native underlays beneath crop beds.
+- Added an English Farmer's Field Guide with a searchable biome index, habitat percentages, and combined temperature/Thermoregulator instructions, using resource-pack-compatible Minecraft artwork.
+- Added percentage-based native floors and interior habitat materials that scale with greenhouse size.
+- Required glass walls and roofs by default, with closed entrances allowed; biome materials belong inside the enclosure.
 - Added configurable material and floor recipes, with compact guide icons and exact progress tooltips.
 - Added standard ingredient tooltips and optional JEI, EMI, and REI recipe/use links directly in the guide.
 - Added survival crafting recipes, adjustable material recipes, and proportional roof/window requirements for large greenhouses.

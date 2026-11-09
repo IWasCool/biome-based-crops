@@ -26,7 +26,7 @@ public final class GreenhouseHabitatGameTests {
             GreenhouseSettings.BIOME_FLOOR_RULES.set(List.of("minecraft:forest=100:minecraft:sand"));
             ServerLevel level = helper.getLevel();
             BlockPos center = room(helper, Blocks.SAND);
-            level.setBlock(center.offset(-5, 0, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(center.offset(-3, 0, -3), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
             var initial = GreenhouseEnvironment.inspect(level, center);
             helper.assertTrue(initial.valid(), "Complete native floor failed: " + initial);
             helper.assertValueEqual(initial.floorArea(), 81, "actual floor footprint");
@@ -106,9 +106,10 @@ public final class GreenhouseHabitatGameTests {
             helper.assertValueEqual(complete.floorArea(), 81, "forest footprint");
             helper.assertValueEqual(complete.floor().required(), 73, "90 percent native floor rounded upward");
             helper.assertTrue(complete.floor().found() >= 73, "Standing trees left too little native soil");
-            helper.assertValueEqual(progress(complete, "oak_log").required(), 16, "substantial primary tree quota");
-            helper.assertValueEqual(progress(complete, "oak_leaves").required(), 64, "substantial canopy quota");
-            helper.assertValueEqual(progress(complete, "birch_log").required(), 11, "secondary trees scale with actual footprint");
+            helper.assertValueEqual(complete.roomVolume(), 405, "Planting trees and canopy must not shrink the habitat percentage denominator");
+            helper.assertValueEqual(progress(complete, "oak_log").required(), 13, "primary tree volume percentage");
+            helper.assertValueEqual(progress(complete, "oak_leaves").required(), 51, "canopy volume percentage");
+            helper.assertValueEqual(progress(complete, "birch_log").required(), 7, "secondary tree volume percentage");
             var planted = GreenhouseRoomScanner.completedAroundController(level, center);
             helper.assertValueEqual(planted.features.getOrDefault(id("oak_log"), 0), 16, "Every exposed block in four normal four-high oak trunks must count");
             helper.assertValueEqual(planted.features.getOrDefault(id("birch_log"), 0), 12, "Normal birch trunk top caps must count");
@@ -121,9 +122,9 @@ public final class GreenhouseHabitatGameTests {
         run(helper, () -> {
             ServerLevel level = helper.getLevel();
             BlockPos center = room(helper, Blocks.SAND);
-            for (int y = 0; y < 4; y++) for (int z = -4; z <= -1; z++) {
-                level.setBlock(center.offset(-5, y, z), Blocks.SANDSTONE.defaultBlockState(), Block.UPDATE_ALL);
-            }
+            for (int x = -4; x <= 3; x++) for (int z = 1; z <= 2; z++)
+                level.setBlock(center.offset(x, 0, z), Blocks.SANDSTONE.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(center.offset(-4, 1, 1), Blocks.SANDSTONE.defaultBlockState(), Block.UPDATE_ALL);
             int[][] cactus = {{-3, -3}, {-1, -3}, {1, -3}, {3, -3}, {-3, -1}, {-1, -1}};
             for (int[] at : cactus) level.setBlock(center.offset(at[0], 0, at[1]), Blocks.CACTUS.defaultBlockState(), Block.UPDATE_ALL);
             for (int x = -4; x <= 3; x++) level.setBlock(center.offset(x, 0, 3), Blocks.DEAD_BUSH.defaultBlockState(), Block.UPDATE_ALL);
@@ -135,11 +136,58 @@ public final class GreenhouseHabitatGameTests {
             helper.assertTrue(complete.valid() && id("desert").equals(complete.targetBiome()), "Curated desert habitat failed: " + complete);
             helper.assertValueEqual(complete.floor().found(), 81, "Sand beneath the floor-standing controller was lost");
             helper.assertValueEqual(complete.floor().required(), 81, "desert whole-floor sand requirement");
-            helper.assertValueEqual(progress(complete, "cactus").required(), 6, "cactus density for81floor cells");
-            helper.assertValueEqual(progress(complete, "sandstone").found(), 16, "Native sandstone frame was not accepted");
+            helper.assertValueEqual(progress(complete, "cactus").required(), 3, "cactus volume percentage");
+            helper.assertValueEqual(progress(complete, "sandstone").required(), 13, "sandstone volume percentage");
+            helper.assertValueEqual(progress(complete, "sandstone").found(), 17, "Native interior sandstone boulders were not accepted");
+            helper.assertValueEqual(complete.roomVolume(), 405, "Boulders and the controller must not shrink habitat size");
+            helper.assertValueEqual(GreenhouseEnvironment.controllerAirState(level, controller, false).roomVolume(), 387,
+                    "Thermal physics must still use the actual connected air volume");
+            BlockPos nativeBase = center.offset(-4, -1, 1);
+            var cells = GreenhouseRoomScanner.completedAroundController(level, center).interior;
+            level.setBlock(nativeBase, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertValueEqual(GreenhouseEnvironment.inspect(level, center).floor().found(), 80,
+                    "Native foundation beneath a two-high boulder did not refresh immediately");
+            helper.assertTrue(GreenhouseRoomScanner.completedAroundController(level, center).interior == cells,
+                    "Changing native ground beneath scenery restarted topology");
+            level.setBlock(nativeBase, Blocks.SAND.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "Restoring scenery's native base did not recover desert");
+            BlockPos wall = center.offset(-5, 2, 0);
+            level.setBlock(wall, Blocks.SANDSTONE.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).status().endsWith("no_glass"), "Opaque native wall bypassed full-glass enclosure");
+            helper.assertValueEqual(GreenhouseRoomScanner.completedAroundController(level, center).inside.getOrDefault(id("sandstone"), 0), 17,
+                    "An exterior sandstone wall counted as interior scenery");
+            level.setBlock(wall, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(center.above(5), Blocks.SANDSTONE.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).status().endsWith("no_glass"), "Opaque native roof bypassed full-glass enclosure");
+            level.setBlock(center.above(5), Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
             BlockPos wrong = center.offset(2, -1, 2);
             level.setBlock(wrong, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
             helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "A corner sand display replaced the mandatory whole sand floor");
+        });
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "native_greenhouse_habitats")
+    public static void fullGlassEnclosureAllowsAnEntranceButRejectsAFunctionalBlockWall(GameTestHelper helper) {
+        run(helper, () -> {
+            GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of("minecraft:forest=minecraft:diamond_block*1"));
+            ServerLevel level = helper.getLevel();
+            BlockPos center = room(helper, Blocks.GRASS_BLOCK);
+            level.setBlock(center, Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            BlockPos query = center.south();
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, query).valid(), "Full glass fixture was invalid");
+            for (int z : new int[]{-3, -1, 1, 3})
+                level.setBlock(center.offset(-5, 0, z), Blocks.IRON_TRAPDOOR.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, query).valid(), "Closed entrance cells were not exempt from glass");
+            level.setBlock(center.offset(5, 0, 0), Blocks.IRON_TRAPDOOR.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, query).status().endsWith("no_glass"),
+                    "An unlimited wall of functional entrance blocks bypassed glass requirements");
+            level.setBlock(center.offset(5, 0, 0), Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+            for (int z : new int[]{-3, -1, 1, 3})
+                level.setBlock(center.offset(-5, 0, z), GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, query).valid(), "Four functional wall controllers were rejected");
+            level.setBlock(center.offset(5, 0, 0), GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, query).status().endsWith("no_glass"),
+                    "An unlimited opaque wall of climate devices bypassed glass requirements");
         });
     }
 
@@ -231,11 +279,14 @@ public final class GreenhouseHabitatGameTests {
         private final boolean enabled = GreenhouseSettings.ENABLE_GREENHOUSES.get();
         private final List<? extends String> materials = List.copyOf(GreenhouseSettings.BIOME_MATERIAL_RULES.get());
         private final List<? extends String> floors = List.copyOf(GreenhouseSettings.BIOME_FLOOR_RULES.get());
+        private final double roof = GreenhouseSettings.MIN_ROOF_GLASS_RATIO.get(), walls = GreenhouseSettings.MIN_WALL_GLASS_RATIO.get();
 
         Settings() {
             GreenhouseSettings.ENABLE_GREENHOUSES.set(true);
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of());
             GreenhouseSettings.BIOME_FLOOR_RULES.set(List.of());
+            GreenhouseSettings.MIN_ROOF_GLASS_RATIO.set(1.0D);
+            GreenhouseSettings.MIN_WALL_GLASS_RATIO.set(1.0D);
             GreenhouseEnvironment.clearCache();
         }
 
@@ -243,6 +294,8 @@ public final class GreenhouseHabitatGameTests {
             GreenhouseSettings.ENABLE_GREENHOUSES.set(enabled);
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(materials);
             GreenhouseSettings.BIOME_FLOOR_RULES.set(floors);
+            GreenhouseSettings.MIN_ROOF_GLASS_RATIO.set(roof);
+            GreenhouseSettings.MIN_WALL_GLASS_RATIO.set(walls);
             GreenhouseEnvironment.clearCache();
         }
     }

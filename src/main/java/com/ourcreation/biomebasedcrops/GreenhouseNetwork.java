@@ -24,7 +24,7 @@ public final class GreenhouseNetwork {
     }
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        event.registrar("5").playToClient(ViewPayload.TYPE, ViewPayload.CODEC,
+        event.registrar("6").playToClient(ViewPayload.TYPE, ViewPayload.CODEC,
                 (payload, context) -> com.ourcreation.biomebasedcrops.client.GreenhouseViews.open(payload));
     }
 

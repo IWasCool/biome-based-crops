@@ -297,7 +297,7 @@ public final class AutoGreenhouseGameTests {
             helper.assertTrue(survey.valid(), "Curated forest palette was invalid: " + survey);
             helper.assertTrue(id("minecraft:forest").equals(survey.targetBiome()), "Curated forest recognized as " + survey.targetBiome());
             helper.assertValueEqual(survey.requirements().size(), 3, "curated forest material types");
-            helper.assertValueEqual(survey.specimens(), 91, "curated forest matched material count scaled to81floor cells");
+            helper.assertValueEqual(survey.specimens(), 71, "curated forest matched percentage quotas for405habitat cells");
             helper.assertValueEqual(survey.heat(), 0, "curated forest heat sources");
             helper.assertValueEqual(survey.cooling(), 0, "curated forest cooling sources");
             helper.assertTrue(CommonEvents.canGrowNaturally(level, crop, level.getBlockState(crop)), "Curated forest could not satisfy exact crop biome");

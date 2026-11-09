@@ -81,9 +81,17 @@ public final class GreenhouseRecipes {
 
     public static int scaledCount(MaterialRequirement material, int roomVolume, int floorArea, int referenceVolume) {
         if (floorArea < 0 || floorArea > 1048576) throw new IllegalArgumentException("Invalid greenhouse floor area");
-        int volumeCount = scaledCount(material.count(), roomVolume, referenceVolume);
-        return material.floorDivisor() == 0 ? volumeCount
-                : Math.max(volumeCount, (floorArea + material.floorDivisor() - 1) / material.floorDivisor());
+        validateScale(material.count(), roomVolume, referenceVolume);
+        if (!isPercentageBased(material)) return scaledCount(material.count(), roomVolume, referenceVolume);
+        int volume = roomVolume == 0 ? referenceVolume : roomVolume;
+        return (int) (((long) material.count() * volume + referenceVolume - 1) / referenceVolume);
+    }
+
+    public static boolean isPercentageBased(MaterialRequirement material) { return material.floorDivisor() > 0; }
+
+    public static double materialPercent(MaterialRequirement material, int referenceVolume) {
+        validateScale(material.count(), 0, referenceVolume);
+        return material.count() * 100D / referenceVolume;
     }
 
     private static void validateScale(int baseCount, int roomVolume, int referenceVolume) {
