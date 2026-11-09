@@ -22,6 +22,7 @@ public class BiomeBasedCropsClient {
         NeoForge.EVENT_BUS.addListener(BiomeBasedCropsClient::onTooltip);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> {
             GreenhouseRecipes.clearClientRecipes();
+            com.ourcreation.biomebasedcrops.client.EnglishGuideText.clearCache();
             com.ourcreation.biomebasedcrops.client.FieldGuideScreen.clearSurvey();
         });
     }
