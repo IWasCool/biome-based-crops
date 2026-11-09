@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "温度调节器半径",
   "biome_based_crops.configuration.supportedCropNamespaces": "支持的作物命名空间",
   "biome_based_crops.configuration.cropClimateRules": "作物气候规则",
-  "biome_based_crops.configuration.defaultCropClimates": "默认作物气候"
+  "biome_based_crops.configuration.defaultCropClimates": "默认作物气候",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

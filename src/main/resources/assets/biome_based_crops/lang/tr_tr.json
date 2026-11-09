@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Termoregülatör Yarıçapı",
   "biome_based_crops.configuration.supportedCropNamespaces": "Desteklenen Kırpma Ad Alanları",
   "biome_based_crops.configuration.cropClimateRules": "Mahsul İklim Kuralları",
-  "biome_based_crops.configuration.defaultCropClimates": "Varsayılan Mahsul İklimleri"
+  "biome_based_crops.configuration.defaultCropClimates": "Varsayılan Mahsul İklimleri",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Радыус тэрмарэгулятара",
   "biome_based_crops.configuration.supportedCropNamespaces": "Падтрымліваюцца прасторы імёнаў абрэзкі",
   "biome_based_crops.configuration.cropClimateRules": "Правілы клімату сельскагаспадарчых культур",
-  "biome_based_crops.configuration.defaultCropClimates": "Клімат сельскагаспадарчых культур па змаўчанні"
+  "biome_based_crops.configuration.defaultCropClimates": "Клімат сельскагаспадарчых культур па змаўчанні",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

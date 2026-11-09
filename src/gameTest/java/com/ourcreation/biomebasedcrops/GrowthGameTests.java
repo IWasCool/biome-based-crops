@@ -40,6 +40,60 @@ public final class GrowthGameTests {
     }
 
     @GameTest(template = "empty", skyAccess = true, batch = "crop_growth")
+    public static void biomeOverridesControlTicksAndBonemealAndReloadCleanly(GameTestHelper helper) {
+        withConfig(helper, () -> {
+            ServerLevel level = helper.getLevel();
+            BlockPos pos = plant(helper, Blocks.WHEAT.defaultBlockState(),
+                    Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, 7));
+            ItemStack meal = new ItemStack(Items.BONE_MEAL, 3);
+
+            Config.CROP_BIOME_RULES.set(List.of("wheat=minecraft:snowy_plains"));
+            CropClimateRules.clearCache();
+            helper.assertTrue(CropMatcher.canGrowAt(level, pos, level.getBlockState(pos)), "Explicit biome did not override wheat's climate");
+            randomTick(level, pos);
+            helper.assertValueEqual(level.getBlockState(pos).getValue(CropBlock.AGE), 1, "allowed wheat age");
+            helper.assertTrue(BoneMealItem.applyBonemeal(meal, level, pos, null), "Explicit biome rejected bonemeal");
+            helper.assertValueEqual(meal.getCount(), 2, "allowed bonemeal count");
+
+            level.setBlock(pos, Blocks.WHEAT.defaultBlockState(), Block.UPDATE_ALL);
+            helper.setBiome(Biomes.PLAINS);
+            assertWrongBiome(helper, pos);
+            randomTick(level, pos);
+            helper.assertValueEqual(level.getBlockState(pos).getValue(CropBlock.AGE), 0, "excluded biome grew wheat");
+            helper.assertFalse(BoneMealItem.applyBonemeal(meal, level, pos, null), "Excluded biome accepted bonemeal");
+            helper.assertValueEqual(meal.getCount(), 2, "blocked bonemeal count");
+
+            Config.CROP_BIOME_RULES.set(List.of("wheat=*"));
+            CropClimateRules.clearCache();
+            helper.setBiome(Biomes.SNOWY_PLAINS);
+            randomTick(level, pos);
+            helper.assertValueEqual(level.getBlockState(pos).getValue(CropBlock.AGE), 1, "wildcard wheat age");
+            Config.CROP_BIOME_RULES.set(List.of());
+            CropClimateRules.clearCache();
+            assertWrongBiome(helper, pos);
+        });
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "crop_growth")
+    public static void biomeTagOverridesAlsoApplyToSaplingsAndCategoryToggles(GameTestHelper helper) {
+        withConfig(helper, () -> {
+            ServerLevel level = helper.getLevel();
+            BlockPos pos = plant(helper, Blocks.OAK_SAPLING.defaultBlockState(), Blocks.DIRT.defaultBlockState());
+            Config.CROP_BIOME_RULES.set(List.of("oak_sapling=#minecraft:is_jungle"));
+            CropClimateRules.clearCache();
+            helper.setBiome(Biomes.JUNGLE);
+            randomTick(level, pos);
+            helper.assertValueEqual(level.getBlockState(pos).getValue(SaplingBlock.STAGE), 1, "allowed sapling stage");
+
+            helper.setBiome(Biomes.PLAINS);
+            assertWrongBiome(helper, pos);
+            Config.ENABLE_SAPLING_BIOME_DEPENDENCIES.set(false);
+            helper.assertTrue(CommonEvents.canGrowNaturally(level, pos, level.getBlockState(pos)), "Disabled category kept biome override");
+            helper.assertTrue(CommonEvents.canGrowWithFertilizer(level, pos, level.getBlockState(pos)), "Disabled category blocked fertilizer");
+        });
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "crop_growth")
     public static void wheatRandomTickUsesBiomeAndNaturalToggle(GameTestHelper helper) {
         withConfig(helper, () -> {
             ServerLevel level = helper.getLevel();
@@ -296,6 +350,10 @@ public final class GrowthGameTests {
 
             level.setBlock(second, regulatorState(regulator, true, true, false), Block.UPDATE_ALL);
             helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Inactive regulator hid a later active cooling regulator");
+            CropProfile biomeRestricted = new CropProfile(Set.of(CropClimate.COLD),
+                    List.of(BiomeSelector.parse("minecraft:jungle").orElseThrow()));
+            helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, biomeRestricted),
+                    "Cooling regulator bypassed an explicit biome requirement");
             level.setBlock(second, regulatorState(regulator, false, true, false), Block.UPDATE_ALL);
             helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Disabled regulator remained active");
             level.setBlock(second, regulatorState(regulator, true, true, true), Block.UPDATE_ALL);
@@ -400,6 +458,7 @@ public final class GrowthGameTests {
         boolean compatibility = Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get();
         int radius = Config.THERMOREGULATOR_RADIUS.get();
         List<? extends String> rules = List.copyOf(Config.CROP_CLIMATE_RULES.get());
+        List<? extends String> biomeRules = List.copyOf(Config.CROP_BIOME_RULES.get());
         try {
             Config.BLOCK_NATURAL_GROWTH.set(true);
             Config.BLOCK_BONEMEAL_GROWTH.set(true);
@@ -407,6 +466,7 @@ public final class GrowthGameTests {
             Config.ENABLE_SAPLING_BIOME_DEPENDENCIES.set(true);
             Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.set(false);
             Config.THERMOREGULATOR_RADIUS.set(4);
+            Config.CROP_BIOME_RULES.set(List.of());
             CropMatcher.clearCaches();
             CropClimateRules.clearCache();
             helper.setDayTime(1000);
@@ -420,6 +480,7 @@ public final class GrowthGameTests {
             Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.set(compatibility);
             Config.THERMOREGULATOR_RADIUS.set(radius);
             Config.CROP_CLIMATE_RULES.set(rules);
+            Config.CROP_BIOME_RULES.set(biomeRules);
             CropMatcher.clearCaches();
             CropClimateRules.clearCache();
         }

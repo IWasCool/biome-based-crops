@@ -23,7 +23,7 @@ public final class ThermoregulatorDetector {
     }
 
     public static boolean canSupportProfile(Level level, BlockPos cropPos, CropProfile profile) {
-        return hasMatchingThermoregulator(level, cropPos, profile.climates());
+        return !profile.hasBiomeRule() && hasMatchingThermoregulator(level, cropPos, profile.climates());
     }
 
     public static boolean hasThermoregulatorNearby(Level level, BlockPos cropPos) {

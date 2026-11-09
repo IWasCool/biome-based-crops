@@ -167,7 +167,32 @@ public class Config {
             .comment("Allowed climates for detected crops that do not match any cropClimateRules token.")
             .define("defaultCropClimates", "neutral,warm", Config::validateClimates);
 
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> CROP_BIOME_RULES = BUILDER
+            .comment("Optional biome overrides for crops and saplings. Format: crop=biome,biome,#biome_tag",
+                    "Example: wheat=minecraft:plains,minecraft:forest or rice=#minecraft:is_jungle",
+                    "Use * to allow a crop in every biome: wheat=*",
+                    "These replace climate requirements for matching plants; thermoregulators cannot bypass them.",
+                    "Crop tokens match block/item ids like cropClimateRules: longest token wins, first entry breaks ties.",
+                    "An empty list keeps the climate rules. Biome and tag ids must include their namespace.")
+            .defineListAllowEmpty("cropBiomeRules", List.of(), () -> "", Config::validateBiomeRule);
+
     static final ModConfigSpec SPEC = BUILDER.build();
+
+    static boolean validateBiomeRule(Object obj) {
+        if (!(obj instanceof String value)) {
+            return false;
+        }
+        String[] parts = value.split("=", -1);
+        if (parts.length != 2 || parts[0].isBlank()) {
+            return false;
+        }
+        for (String selector : parts[1].split(",", -1)) {
+            if (BiomeSelector.parse(selector).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     static boolean validateRule(Object obj) {
         if (!(obj instanceof String value) || value.isBlank()) {

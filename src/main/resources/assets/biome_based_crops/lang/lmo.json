@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Ragg del termoregolatur",
   "biome_based_crops.configuration.supportedCropNamespaces": "Spazi de nomm de ritagg suportà",
   "biome_based_crops.configuration.cropClimateRules": "Regole per el clima dei colture",
-  "biome_based_crops.configuration.defaultCropClimates": "Clima predefinì di cültür"
+  "biome_based_crops.configuration.defaultCropClimates": "Clima predefinì di cültür",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

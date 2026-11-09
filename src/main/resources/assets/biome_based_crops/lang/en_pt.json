@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Heat Keeper's Reach",
   "biome_based_crops.configuration.supportedCropNamespaces": "Supported Crop Name Waters",
   "biome_based_crops.configuration.cropClimateRules": "Crop Weather Orders",
-  "biome_based_crops.configuration.defaultCropClimates": "Starting Crop Weathers"
+  "biome_based_crops.configuration.defaultCropClimates": "Starting Crop Weathers",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

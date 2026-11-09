@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "شعاع تنظیم کننده حرارت",
   "biome_based_crops.configuration.supportedCropNamespaces": "فضای نام Crop پشتیبانی شده",
   "biome_based_crops.configuration.cropClimateRules": "قوانین آب و هوای محصول",
-  "biome_based_crops.configuration.defaultCropClimates": "آب و هوای پیش‌فرض محصول"
+  "biome_based_crops.configuration.defaultCropClimates": "آب و هوای پیش‌فرض محصول",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

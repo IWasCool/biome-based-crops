@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "รัศมีการควบคุมอุณหภูมิ",
   "biome_based_crops.configuration.supportedCropNamespaces": "เนมสเปซครอบตัดที่รองรับ",
   "biome_based_crops.configuration.cropClimateRules": "กฎสภาพอากาศของพืชผล",
-  "biome_based_crops.configuration.defaultCropClimates": "ภูมิอากาศพืชเริ่มต้น"
+  "biome_based_crops.configuration.defaultCropClimates": "ภูมิอากาศพืชเริ่มต้น",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

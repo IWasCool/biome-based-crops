@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "온도 조절기 반경",
   "biome_based_crops.configuration.supportedCropNamespaces": "지원되는 자르기 네임스페이스",
   "biome_based_crops.configuration.cropClimateRules": "작물 기후 규칙",
-  "biome_based_crops.configuration.defaultCropClimates": "기본 작물 기후"
+  "biome_based_crops.configuration.defaultCropClimates": "기본 작물 기후",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Raggio Termoregolatore",
   "biome_based_crops.configuration.supportedCropNamespaces": "Spazi dei nomi delle colture supportati",
   "biome_based_crops.configuration.cropClimateRules": "Regole sul clima delle colture",
-  "biome_based_crops.configuration.defaultCropClimates": "Climi di coltura predefiniti"
+  "biome_based_crops.configuration.defaultCropClimates": "Climi di coltura predefiniti",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

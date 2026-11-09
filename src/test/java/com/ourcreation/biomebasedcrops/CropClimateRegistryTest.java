@@ -1,6 +1,7 @@
 package com.ourcreation.biomebasedcrops;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -26,6 +27,30 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class CropClimateRegistryTest {
     private static final Set<String> CLIMATE_TAG_PATHS = Set.of("icy_biomes", "cold_biomes", "neutral_biomes",
             "warm_biomes", "hot_biomes");
+
+    @Test
+    void biomeOverridesMatchRealIdsTagsAndWildcardInsteadOfClimate(MinecraftServer server) {
+        Registry<Biome> biomes = server.registryAccess().registryOrThrow(Registries.BIOME);
+        var rules = new CropClimateRules.CompiledRules(List.of("wheat=hot", "rice=icy"), "cold", List.of(
+                "wheat=minecraft:plains,minecraft:forest", "rice=#minecraft:is_jungle", "carrot=*",
+                "potato=missing:biome", "beetroot=#missing:tag"));
+        CropProfile wheat = rules.profileFor(id("minecraft:wheat"), id("minecraft:wheat_seeds"));
+        assertTrue(wheat.allows(biomes.getHolder(id("minecraft:plains")).orElseThrow(), BlockPos.ZERO));
+        assertTrue(wheat.allows(biomes.getHolder(id("minecraft:forest")).orElseThrow(), BlockPos.ZERO));
+        assertFalse(wheat.allows(biomes.getHolder(id("minecraft:desert")).orElseThrow(), BlockPos.ZERO));
+        CropProfile rice = rules.profileFor(id("farmersdelight:rice"), id("minecraft:air"));
+        assertTrue(rice.allows(biomes.getHolder(id("minecraft:jungle")).orElseThrow(), BlockPos.ZERO));
+        assertFalse(rice.allows(biomes.getHolder(id("minecraft:plains")).orElseThrow(), BlockPos.ZERO));
+        for (Holder.Reference<Biome> biome : biomes.holders().toList()) {
+            assertTrue(rules.profileFor(id("minecraft:carrot"), id("minecraft:air")).allows(biome, BlockPos.ZERO));
+            assertFalse(rules.profileFor(id("minecraft:potato"), id("minecraft:air")).allows(biome, BlockPos.ZERO));
+            assertFalse(rules.profileFor(id("minecraft:beetroot"), id("minecraft:air")).allows(biome, BlockPos.ZERO));
+        }
+    }
+
+    private static ResourceLocation id(String value) {
+        return ResourceLocation.parse(value);
+    }
 
     @Test
     void actualLoadedBiomeDatapacksHaveExclusiveAndConsistentClimates(MinecraftServer server) {

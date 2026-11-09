@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "थर्मोरेगुलेटर त्रिज्या",
   "biome_based_crops.configuration.supportedCropNamespaces": "समर्थित फसल नामस्थान",
   "biome_based_crops.configuration.cropClimateRules": "फसल जलवायु नियम",
-  "biome_based_crops.configuration.defaultCropClimates": "डिफ़ॉल्ट फसल जलवायु"
+  "biome_based_crops.configuration.defaultCropClimates": "डिफ़ॉल्ट फसल जलवायु",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "♨ ↔",
   "biome_based_crops.configuration.supportedCropNamespaces": "ID: Juanchegani",
   "biome_based_crops.configuration.cropClimateRules": "Juathetuan juatsuntaun: Juanchegani / Biooma",
-  "biome_based_crops.configuration.defaultCropClimates": "Ndásé: Biooma"
+  "biome_based_crops.configuration.defaultCropClimates": "Ndásé: Biooma",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

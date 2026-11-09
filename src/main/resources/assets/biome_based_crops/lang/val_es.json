@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Radi del termoregulador",
   "biome_based_crops.configuration.supportedCropNamespaces": "Retalla els espais de noms admesos",
   "biome_based_crops.configuration.cropClimateRules": "Regles climàtiques de cultius",
-  "biome_based_crops.configuration.defaultCropClimates": "Climes de cultius per defecte"
+  "biome_based_crops.configuration.defaultCropClimates": "Climes de cultius per defecte",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

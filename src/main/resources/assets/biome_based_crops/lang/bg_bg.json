@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Радиус на терморегулатора",
   "biome_based_crops.configuration.supportedCropNamespaces": "Поддържани пространства за имена на изрязване",
   "biome_based_crops.configuration.cropClimateRules": "Правила за климата на културите",
-  "biome_based_crops.configuration.defaultCropClimates": "Климат на културата по подразбиране"
+  "biome_based_crops.configuration.defaultCropClimates": "Климат на културата по подразбиране",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

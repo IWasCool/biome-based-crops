@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Temperaturregulatorns radie",
   "biome_based_crops.configuration.supportedCropNamespaces": "Stuoðd namnrymd för stjörd",
   "biome_based_crops.configuration.cropClimateRules": "Klimaregler för stjörd",
-  "biome_based_crops.configuration.defaultCropClimates": "Standardklima för stjörd"
+  "biome_based_crops.configuration.defaultCropClimates": "Standardklima för stjörd",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Heerkulbeeye Radius",
   "biome_based_crops.configuration.supportedCropNamespaces": "Meelaha Magacyada Dalagga ee la taageeray",
   "biome_based_crops.configuration.cropClimateRules": "Xeerarka Cimilada Dalagga",
-  "biome_based_crops.configuration.defaultCropClimates": "Cimilada Dalagyada Asal ahaan"
+  "biome_based_crops.configuration.defaultCropClimates": "Cimilada Dalagyada Asal ahaan",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "თერმორეგულატორის რადიუსი",
   "biome_based_crops.configuration.supportedCropNamespaces": "მხარდაჭერილი Crop Namespaces",
   "biome_based_crops.configuration.cropClimateRules": "მოსავლის კლიმატის წესები",
-  "biome_based_crops.configuration.defaultCropClimates": "ნაგულისხმევი მოსავლის კლიმატი"
+  "biome_based_crops.configuration.defaultCropClimates": "ნაგულისხმევი მოსავლის კლიმატი",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

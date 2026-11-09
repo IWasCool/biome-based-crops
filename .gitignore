@@ -39,3 +39,14 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+### Local files ###
+*.log
+*.hprof
+*.jfr
+hs_err_pid*
+.env
+.env.*
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+__pycache__/

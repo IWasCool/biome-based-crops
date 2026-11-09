@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Thermoregulator Radius",
   "biome_based_crops.configuration.supportedCropNamespaces": "Stipe Crop nammeromten",
   "biome_based_crops.configuration.cropClimateRules": "Crop Climate Rules",
-  "biome_based_crops.configuration.defaultCropClimates": "Standert Crop Climates"
+  "biome_based_crops.configuration.defaultCropClimates": "Standert Crop Climates",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

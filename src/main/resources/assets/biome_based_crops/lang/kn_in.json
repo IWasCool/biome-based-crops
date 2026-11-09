@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "ಥರ್ಮೋರ್ಗ್ಯುಲೇಟರ್ ತ್ರಿಜ್ಯ",
   "biome_based_crops.configuration.supportedCropNamespaces": "ಬೆಂಬಲಿತ ಕ್ರಾಪ್ ನೇಮ್‌ಸ್ಪೇಸ್‌ಗಳು",
   "biome_based_crops.configuration.cropClimateRules": "ಬೆಳೆ ಹವಾಮಾನ ನಿಯಮಗಳು",
-  "biome_based_crops.configuration.defaultCropClimates": "ಡೀಫಾಲ್ಟ್ ಬೆಳೆ ಹವಾಮಾನ"
+  "biome_based_crops.configuration.defaultCropClimates": "ಡೀಫಾಲ್ಟ್ ಬೆಳೆ ಹವಾಮಾನ",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

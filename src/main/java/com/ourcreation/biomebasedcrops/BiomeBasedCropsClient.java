@@ -31,7 +31,8 @@ public class BiomeBasedCropsClient {
         // SERVER rules are synced when joining a world; no authoritative rules exist in menus.
         if (Config.SPEC.isLoaded()) {
             CropMatcher.profileForItem(stack).ifPresent(profile -> {
-                MutableComponent line = Component.translatable("biome_based_crops.tooltip.climate", profile.climateListComponent())
+                String key = profile.hasBiomeRule() ? "biome_based_crops.tooltip.biomes" : "biome_based_crops.tooltip.climate";
+                MutableComponent line = Component.translatable(key, profile.requirementsComponent())
                         .withStyle(ChatFormatting.GRAY);
                 event.getToolTip().add(line);
             });

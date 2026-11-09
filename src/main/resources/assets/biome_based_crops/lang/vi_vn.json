@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Bán kính điều nhiệt",
   "biome_based_crops.configuration.supportedCropNamespaces": "Không gian tên cây trồng được hỗ trợ",
   "biome_based_crops.configuration.cropClimateRules": "Quy tắc khí hậu cây trồng",
-  "biome_based_crops.configuration.defaultCropClimates": "Khí hậu cây trồng mặc định"
+  "biome_based_crops.configuration.defaultCropClimates": "Khí hậu cây trồng mặc định",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

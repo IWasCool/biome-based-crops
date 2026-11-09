@@ -80,7 +80,7 @@ public final class CommonEvents {
     }
 
     private static boolean canGrow(Level level, BlockPos pos, CropProfile profile) {
-        return profile.allows(CropClimate.at(level.getBiome(pos), pos))
+        return profile.allows(level.getBiome(pos), pos)
                 || ThermoregulatorDetector.canSupportProfile(level, pos, profile);
     }
 
@@ -105,6 +105,10 @@ public final class CommonEvents {
     }
 
     private static MutableComponent blockedMessage(CropProfile profile) {
+        if (profile.hasBiomeRule()) {
+            return Component.translatable("biome_based_crops.message.blocked_biomes", profile.requirementsComponent())
+                    .withStyle(ChatFormatting.RED);
+        }
         String key = ModList.get().isLoaded("toughasnails") && Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
                 ? "biome_based_crops.message.blocked_with_thermoregulator"
                 : "biome_based_crops.message.blocked";

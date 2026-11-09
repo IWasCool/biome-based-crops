@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Thermoregulator rediosi",
   "biome_based_crops.configuration.supportedCropNamespaces": "Atilẹyin Awọn aaye Orukọ Irugbin",
   "biome_based_crops.configuration.cropClimateRules": "Irugbin Climate Ofin",
-  "biome_based_crops.configuration.defaultCropClimates": "Aiyipada Irugbin Climates"
+  "biome_based_crops.configuration.defaultCropClimates": "Aiyipada Irugbin Climates",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

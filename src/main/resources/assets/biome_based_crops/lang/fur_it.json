@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Rai dal termoregoladôr",
   "biome_based_crops.configuration.supportedCropNamespaces": "Spazis di nons di ritai supuartâts",
   "biome_based_crops.configuration.cropClimateRules": "Regulis dal clime des coltivazions",
-  "biome_based_crops.configuration.defaultCropClimates": "Climis predefinîts pes coltivazions"
+  "biome_based_crops.configuration.defaultCropClimates": "Climis predefinîts pes coltivazions",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

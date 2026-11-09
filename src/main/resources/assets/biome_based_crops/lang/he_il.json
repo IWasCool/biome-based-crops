@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "רדיוס תרמוגולטור",
   "biome_based_crops.configuration.supportedCropNamespaces": "מרחבי שמות של חיתוך נתמכים",
   "biome_based_crops.configuration.cropClimateRules": "כללי אקלים יבול",
-  "biome_based_crops.configuration.defaultCropClimates": "אקלים יבול ברירת מחדל"
+  "biome_based_crops.configuration.defaultCropClimates": "אקלים יבול ברירת מחדל",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

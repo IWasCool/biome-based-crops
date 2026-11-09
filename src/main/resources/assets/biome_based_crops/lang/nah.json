@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "♨ ↔",
   "biome_based_crops.configuration.supportedCropNamespaces": "ID: Tlayōlēlīltilistli",
   "biome_based_crops.configuration.cropClimateRules": "Māwiltilistlanawatilli: Tlayōlēlīltilistli / Bioma",
-  "biome_based_crops.configuration.defaultCropClimates": "Sankwalli: Bioma"
+  "biome_based_crops.configuration.defaultCropClimates": "Sankwalli: Bioma",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

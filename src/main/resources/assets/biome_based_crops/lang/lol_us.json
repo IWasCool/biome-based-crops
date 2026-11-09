@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Heat thingy Reach",
   "biome_based_crops.configuration.supportedCropNamespaces": "Allowed Crop Name Places",
   "biome_based_crops.configuration.cropClimateRules": "Crop Weatherz Rules",
-  "biome_based_crops.configuration.defaultCropClimates": "Usual Crop Weatherzs"
+  "biome_based_crops.configuration.defaultCropClimates": "Usual Crop Weatherzs",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

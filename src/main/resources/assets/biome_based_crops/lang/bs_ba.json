@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Radijus termoregulatora",
   "biome_based_crops.configuration.supportedCropNamespaces": "Podržani prostori imena useva",
   "biome_based_crops.configuration.cropClimateRules": "Pravila o klimi useva",
-  "biome_based_crops.configuration.defaultCropClimates": "Podrazumevane klime useva"
+  "biome_based_crops.configuration.defaultCropClimates": "Podrazumevane klime useva",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

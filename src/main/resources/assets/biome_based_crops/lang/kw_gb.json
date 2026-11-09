@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "Skin an termorewler",
   "biome_based_crops.configuration.supportedCropNamespaces": "Rewyow hanowgh trevasow skoodhys",
   "biome_based_crops.configuration.cropClimateRules": "Rewlys hins trevasow",
-  "biome_based_crops.configuration.defaultCropClimates": "Hinsow defowt trevasow"
+  "biome_based_crops.configuration.defaultCropClimates": "Hinsow defowt trevasow",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }

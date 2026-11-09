@@ -36,5 +36,9 @@
   "biome_based_crops.configuration.thermoregulatorRadius": "lo glaregla jitro tutci vidru",
   "biome_based_crops.configuration.supportedCropNamespaces": "lo se sarji cagyspa cmene selcmu",
   "biome_based_crops.configuration.cropClimateRules": "lo tcima javni be lo cagyspa",
-  "biome_based_crops.configuration.defaultCropClimates": "lo cnano tcima be lo cagyspa"
+  "biome_based_crops.configuration.defaultCropClimates": "lo cnano tcima be lo cagyspa",
+  "biome_based_crops.biome.any": "Any biome",
+  "biome_based_crops.tooltip.biomes": "Biomes: %s",
+  "biome_based_crops.message.blocked_biomes": "Plant needs one of these biomes: %s.",
+  "biome_based_crops.configuration.cropBiomeRules": "Crop Biome Rules"
 }
