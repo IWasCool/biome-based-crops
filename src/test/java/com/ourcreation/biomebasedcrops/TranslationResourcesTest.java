@@ -55,7 +55,8 @@ class TranslationResourcesTest {
                 assertEquals(arguments(english.get(key).getAsString()), arguments(text), context + " format arguments");
                 assertFalse(ARGUMENT.matcher(text).replaceAll("").contains("%"), context + " invalid percent escape");
                 // Formatting must accept both ordinary %s and reordered %1$s/%2$s.
-                String.format(Locale.ROOT, text, "first", "second");
+                int count = arguments(text).stream().mapToInt(Integer::intValue).max().orElse(0);
+                String.format(Locale.ROOT, text, Collections.nCopies(count, "value").toArray());
             }
             Set<String> climateNames = Set.of("icy", "cold", "neutral", "warm", "hot").stream()
                     .map(name -> translated.get("biome_based_crops.climate." + name).getAsString())

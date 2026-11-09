@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "biome_based_crops:block/greenhouse_core"
+    }
+  }
+}

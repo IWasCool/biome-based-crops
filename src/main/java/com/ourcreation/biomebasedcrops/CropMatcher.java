@@ -81,7 +81,7 @@ public final class CropMatcher {
 
     public static boolean canGrowAt(Level level, BlockPos pos, BlockState state) {
         return profileForState(state)
-                .map(profile -> profile.allows(level.getBiome(pos), pos))
+                .map(profile -> CommonEvents.canGrow(level, pos, profile))
                 .orElse(true);
     }
 

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "biome_based_crops:item/greenhouse_probe"
+  }
+}

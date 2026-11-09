@@ -57,6 +57,12 @@ neoForge {
     runs {
         client {
             client()
+            if (providers.gradleProperty('clientGameDir').isPresent()) {
+                gameDirectory = file(providers.gradleProperty('clientGameDir').get())
+            }
+            if (providers.gradleProperty('previewWorld').isPresent()) {
+                programArguments.addAll '--quickPlaySingleplayer', providers.gradleProperty('previewWorld').get(), '--width', '1280', '--height', '800'
+            }
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 

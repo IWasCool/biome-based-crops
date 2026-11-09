@@ -10,11 +10,11 @@ public class Config {
     public static final ModConfigSpec.BooleanValue ENABLE_TOOLTIPS = ClientConfig.ENABLE_TOOLTIPS;
 
     public static final ModConfigSpec.BooleanValue BLOCK_NATURAL_GROWTH = BUILDER
-            .comment("Prevents natural plant growth outside allowed biome climates unless a matching thermoregulator is nearby.")
+            .comment("Enforces plant growth requirements using local temperature, valid greenhouses, and active thermoregulators.")
             .define("blockNaturalGrowth", true);
 
     public static final ModConfigSpec.BooleanValue BLOCK_BONEMEAL_GROWTH = BUILDER
-            .comment("Prevents bonemeal plant growth outside allowed biome climates unless a matching thermoregulator is nearby.")
+            .comment("Enforces plant growth requirements for bonemeal and supported fertilizers.")
             .define("blockBonemealGrowth", true);
 
     public static final ModConfigSpec.BooleanValue ENABLE_CROP_BIOME_DEPENDENCIES = BUILDER
@@ -171,7 +171,7 @@ public class Config {
             .comment("Optional biome overrides for crops and saplings. Format: crop=biome,biome,#biome_tag",
                     "Example: wheat=minecraft:plains,minecraft:forest or rice=#minecraft:is_jungle",
                     "Use * to allow a crop in every biome: wheat=*",
-                    "These replace climate requirements for matching plants; thermoregulators cannot bypass them.",
+                    "These replace climate requirements; valid greenhouses can emulate the listed biomes, but temperature sources alone cannot.",
                     "Crop tokens match block/item ids like cropClimateRules: longest token wins, first entry breaks ties.",
                     "An empty list keeps the climate rules. Biome and tag ids must include their namespace.")
             .defineListAllowEmpty("cropBiomeRules", List.of(), () -> "", Config::validateBiomeRule);

@@ -5,6 +5,7 @@
 - `config/biome_based_crops-server.toml`: gameplay rules, controlled by the server and synchronized to joining players.
 - `<world>/serverconfig/biome_based_crops-server.toml`: optional world-specific gameplay override.
 - `config/biome_based_crops-client.toml`: local tooltip preference.
+- `config/biome_based_crops-greenhouse.toml`: greenhouse and nearby temperature rules; the server controls these settings too.
 
 Stop the world/server before editing gameplay files, then restart to apply them and synchronize players. Singleplayer also supports the NeoForge config screen through **Mods → Biome Based Crops → Config** while a world is loaded. Multiplayer players use the server's rules.
 
@@ -31,6 +32,60 @@ cropBiomeRules = [
 - Missing biomes or tags do not match anything. Check spelling and install any mod supplying the referenced biome. Invalid syntax is rejected by config validation.
 
 The default is `cropBiomeRules = []`, preserving all climate defaults. Remove an override to restore the matching plant's climate rule. Tooltips show biome names or tag IDs when an override applies.
+
+## Greenhouses
+
+A valid greenhouse reproduces its selected biome for crops inside it, including explicit biome and biome-tag rules. It does not change world biome data, weather, mob spawning, or terrain. A greenhouse needs a sampled target biome, an enclosed room, glass, native specimen blocks, and a suitable temperature.
+
+1. Craft a **Greenhouse Core** with glass, copper ingots, bricks, a compass, and planks. Place it inside the intended growing room.
+2. Craft a **Greenhouse Probe** with glass, copper ingots, redstone, and a stick. Visit the biome you want, then sneak-use the probe on its ground to record a sample.
+3. Use the sampled probe on the core to set its target biome. The sample selects the biome; it does not replace the room's requirements.
+4. Enclose the room with a solid floor, walls, and roof. Keep the growing area within four blocks horizontally of the core. At the default radius, the surrounding shell fits within an 11 by 11 footprint; the floor can be one block below the core and the roof at most five blocks above it. Open doorways and holes invalidate the room. Close doors before checking it.
+5. Include at least four glass blocks or panes in the enclosing shell, with glass in the roof.
+6. Place at least four native specimen blocks in the room or its enclosing floor and walls. Any combination of blocks listed for the target biome counts toward the total; you do not need four of every type.
+7. Match the target biome's climate with nearby heat or cooling sources. Use the probe on a crop or core to see the current climate, chosen biome, and missing requirements.
+
+Craft a book with wheat to obtain the **Farmer's Field Guide**. Its biome catalogue shows the current specimen choices, required total, and climate for every registered biome. Vanilla biomes have familiar terrain materials; additional choices come from biome vegetation features. Mod biomes also receive recipes, with a stone/moss fallback when no native plant material can be read. The catalogue displays the actual recipe used by the server.
+
+Only crops connected to the core's interior space receive its emulated biome. A core outside the room cannot support crops through a wall. Changes can take up to one second to appear while greenhouse checks refresh. Without a valid greenhouse, crops use their actual biome and local temperature.
+
+### Heating and cooling
+
+Nearby temperature sources work outdoors too. The default search extends four blocks horizontally, from one block below the crop to two above it. A greenhouse uses its core as the temperature search centre, so crops in one room share its conditions.
+
+| Source | Heating or cooling strength |
+| --- | --- |
+| Fire, soul fire, lit campfire, lit soul campfire, lava | +8 heat |
+| Magma block | +4 heat |
+| Ice or snow block | +4 cooling |
+| Packed ice or blue ice | +8 cooling |
+| Snow layer | +1 cooling |
+
+Heat and cooling cancel. Every eight points of net strength moves the local climate one step along `icy → cold → neutral → warm → hot`. Outdoor sources can shift up to two steps from the actual biome's climate. An enclosed greenhouse can shift all four steps, allowing even icy and hot biomes to be reproduced far from home. Greenhouse sources must be inside the room or in its enclosing shell; heat cannot pass through a wall from outside. Unlit campfires provide no heat. Adding too much heat or cooling can make a crop's environment unsuitable. A suitable active Tough As Nails thermoregulator remains an alternative climate source.
+
+Blocks in `biome_based_crops:heat_sources` and `biome_based_crops:cooling_sources` also count. Additional tagged sources supply four points each; a heat source with a `lit` state must be lit. `biome_based_crops:greenhouse_glass` accepts common glass blocks and panes, and can be extended by a datapack.
+
+### Greenhouse settings
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `enableGreenhouses` | `true` | Allow valid cores to emulate a sampled biome. |
+| `enableAmbientTemperature` | `true` | Let nearby heat and cooling sources change crop temperature. |
+| `radius` | `4` | Temperature and greenhouse cultivation radius, from 1 to 6 blocks. |
+| `requiredSpecimens` | `4` | Total native specimen blocks, from 1 to 64. |
+| `cacheTicks` | `20` | Maximum refresh delay in ticks, from 1 to 20. |
+| `biomeMaterialRules` | `[]` | Replace the specimen choices for individual biomes. |
+
+For example:
+
+```toml
+biomeMaterialRules = [
+    "minecraft:desert=minecraft:sand,minecraft:sandstone,minecraft:cactus",
+    "example:orchard=example:fruit_leaves,minecraft:grass_block"
+]
+```
+
+Each entry replaces the named biome's specimen list. The last entry for a biome wins. Use installed block IDs; missing blocks cannot count as specimens. Stop and restart the world/server after editing these settings.
 
 ## Choose climates
 

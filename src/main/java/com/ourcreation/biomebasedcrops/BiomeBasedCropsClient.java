@@ -20,6 +20,10 @@ public class BiomeBasedCropsClient {
     public BiomeBasedCropsClient(ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         NeoForge.EVENT_BUS.addListener(BiomeBasedCropsClient::onTooltip);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> {
+            GreenhouseRecipes.clearClientRecipes();
+            com.ourcreation.biomebasedcrops.client.FieldGuideScreen.clearSurvey();
+        });
     }
 
     private static void onTooltip(ItemTooltipEvent event) {
@@ -41,12 +45,12 @@ public class BiomeBasedCropsClient {
         Player player = event.getEntity();
         if (player != null && CropMatcher.isThermometer(stack)) {
             CropClimate climate = currentClimate(player.level(), player.blockPosition());
-            event.getToolTip().add(Component.translatable("biome_based_crops.tooltip.current_climate", climate.component())
+            event.getToolTip().add(Component.translatable("biome_based_crops.tooltip.local_climate", climate.component())
                     .withStyle(ChatFormatting.GRAY));
         }
     }
 
     private static CropClimate currentClimate(Level level, BlockPos pos) {
-        return CropClimate.at(level.getBiome(pos), pos);
+        return GreenhouseEnvironment.effectiveClimate(level, pos);
     }
 }

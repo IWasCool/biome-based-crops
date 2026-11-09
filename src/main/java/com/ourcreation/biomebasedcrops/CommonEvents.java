@@ -79,8 +79,12 @@ public final class CommonEvents {
         showThermometerClimate(event.getEntity(), event.getHand());
     }
 
-    private static boolean canGrow(Level level, BlockPos pos, CropProfile profile) {
-        return profile.allows(level.getBiome(pos), pos)
+    public static boolean canGrow(Level level, BlockPos pos, CropProfile profile) {
+        if (GreenhouseEnvironment.inspect(level, pos).valid()) {
+            return GreenhouseEnvironment.canSupport(level, pos, profile);
+        }
+        return (profile.hasBiomeRule() ? profile.allows(level.getBiome(pos), pos)
+                    : profile.allows(GreenhouseEnvironment.effectiveClimate(level, pos)))
                 || ThermoregulatorDetector.canSupportProfile(level, pos, profile);
     }
 
@@ -90,7 +94,7 @@ public final class CommonEvents {
         }
 
         CropClimate climate = currentClimate(player.level(), player.blockPosition());
-        MutableComponent message = Component.translatable("biome_based_crops.message.biome_climate", climate.component())
+        MutableComponent message = Component.translatable("biome_based_crops.message.local_climate", climate.component())
                 .withStyle(ChatFormatting.GRAY);
 
         if (Config.SPEC.isLoaded() && ThermoregulatorDetector.hasThermoregulatorNearby(player.level(), player.blockPosition())) {
@@ -101,7 +105,7 @@ public final class CommonEvents {
     }
 
     private static CropClimate currentClimate(Level level, BlockPos pos) {
-        return CropClimate.at(level.getBiome(pos), pos);
+        return GreenhouseEnvironment.effectiveClimate(level, pos);
     }
 
     private static MutableComponent blockedMessage(CropProfile profile) {
