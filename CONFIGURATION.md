@@ -35,7 +35,9 @@ The default is `cropBiomeRules = []`, preserving all climate defaults. Remove an
 
 ## Greenhouses
 
-Greenhouses identify their biome automatically from the room's native materials and climate. No core, biome sample, or binding step is required. A recognized greenhouse supplies that biome for crop growth, including exact biome and biome-tag rules. World terrain, weather, and mob spawning stay unchanged.
+Greenhouses identify their biome automatically from the room's native materials and climate. No core, biome sample, or binding step is required. The detected biome applies inside its connected interior for crop growth, biome queries, and natural mob spawn lists. Floor, wall, roof, and outdoor positions keep their native biome.
+
+The room's biome is a reversible overlay: it does not rewrite saved chunk biomes or generate new terrain. Opening the enclosure or disabling greenhouses restores the native biome after the normal refresh. Natural spawning still follows normal light, space, structure, dimension, and mob-cap rules.
 
 1. Craft a **Greenhouse Probe** with glass, copper ingots, redstone, and a stick. Craft a book with wheat for the **Farmer's Field Guide**.
 2. Select your intended biome in the guide. Each block icon has its own required quantity. **Every listed type must meet its count**: extra sand cannot replace missing cactus, logs, leaves, or other materials.

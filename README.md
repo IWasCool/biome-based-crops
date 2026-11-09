@@ -15,6 +15,7 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 - Assign crops and saplings to climates, specific biomes, or biome tags.
 - Warm crops with fire, lit campfires, lava, and magma, or cool them with ice and snow.
 - Build greenhouses that automatically identify their biome from native materials and local temperature.
+- Apply the detected biome inside the room, including its natural mob spawn lists, while the surrounding world keeps its native biome.
 - Check conditions with a Greenhouse Probe and follow each biome's visual material recipe in the Farmer's Field Guide.
 - Control natural growth and bonemeal restrictions independently.
 - Disable restrictions separately for crops and trees with config settings or operator commands.

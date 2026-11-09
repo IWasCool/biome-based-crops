@@ -17,6 +17,7 @@ public class BiomeBasedCrops {
         GreenhouseContent.register(modEventBus);
         modEventBus.addListener(ConfigEvents::onConfigChanged);
         modEventBus.addListener(GrowthSettingsPayload::onRegisterPayloadHandlers);
+        modEventBus.addListener(GreenhouseBiomeNetwork::register);
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, GreenhouseSettings.SPEC, "biome_based_crops-greenhouse.toml");
@@ -26,6 +27,7 @@ public class BiomeBasedCrops {
         NeoForge.EVENT_BUS.addListener(CommonEvents::onRightClickItem);
         NeoForge.EVENT_BUS.addListener(CommonEvents::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(GrowthCommands::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(GreenhouseBiomeNetwork::onPlayerTick);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.TagsUpdatedEvent event) -> {
             GreenhouseEnvironment.clearCache();
             GreenhouseRecipes.clearCache();

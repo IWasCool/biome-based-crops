@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Locale;
 
 import com.ourcreation.biomebasedcrops.Config;
-import com.ourcreation.biomebasedcrops.CropClimate;
 import com.ourcreation.biomebasedcrops.GreenhouseContent;
 import com.ourcreation.biomebasedcrops.GreenhouseEnvironment;
 import com.ourcreation.biomebasedcrops.GreenhouseRecipes;
@@ -19,7 +18,6 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -144,7 +142,7 @@ public final class FieldGuideScreen extends Screen {
         updateControls();
     }
     private boolean matchingSurvey() {
-        return lastSurvey != null && selectedBiome != null && selectedBiome.equals(lastSurvey.targetBiome());
+        return surveyOpened && lastSurvey != null && selectedBiome != null && selectedBiome.equals(lastSurvey.targetBiome());
     }
     private GreenhouseRecipes.Recipe recipe() {
         return biomes.stream().filter(holder -> holder.key().location().equals(selectedBiome)).findFirst()
@@ -226,32 +224,24 @@ public final class FieldGuideScreen extends Screen {
         if (!requirements.isEmpty()) {
             var requirement = requirements.get(selectedMaterial);
             g.drawString(font, fit(EnglishGuideText.blockName(requirement.block()), pageWidth - (scroll ? 18 : 0)), x, caption, INK, false);
-            String need = "Need " + requirement.count();
+            line(g, "Minimum: " + requirement.count(), x, caption + 11);
             if (matchingSurvey()) {
                 int found = lastSurvey.requirements().stream().filter(progress -> progress.block().equals(requirement.block()))
                         .mapToInt(GreenhouseEnvironment.RequirementProgress::found).findFirst().orElse(0);
-                need += " | " + found + "/" + requirement.count();
+                line(g, "Found: " + found + "/" + requirement.count(), x, caption + 22);
             }
-            line(g, need, x, caption + 11);
             if (scroll) g.drawString(font, "<>", x + pageWidth - 14, caption, INK, false);
         }
-        CropClimate local = matchingSurvey() ? lastSurvey.climate() : nativeClimate();
-        int thermalY = caption + 27;
-        line(g, (matchingSurvey() ? "Room: " : "Natural: ") + EnglishGuideText.climateName(local).getString(), x, thermalY);
-        line(g, "Required: " + EnglishGuideText.climateName(recipe.climate()).getString(), x, thermalY + 11);
-        int cell = pageWidth / 5;
-        int[] paper = {0xFFCCDCE1, 0xFFD5DDDA, 0xFFE2D7BD, 0xFFE5CAA7, 0xFFE3B593};
-        for (int i = 0; i < 5; i++) {
-            int cx = x + cell * i, cy = thermalY + 24;
-            g.fill(cx, cy, cx + cell - 1, cy + 9, paper[i]);
-            if (i == recipe.climate().ordinal()) border(g, cx, cy, cell - 1, 9);
-            if (i == local.ordinal()) g.fill(cx + cell / 2 - 1, cy + 10, cx + cell / 2 + 2, cy + 12, 0xFF3D2D20);
+        int temperatureY = caption + (matchingSurvey() ? 39 : 27);
+        Component temperature = Component.literal("Required temperature: "
+                + EnglishGuideText.climateName(recipe.climate()).getString());
+        List<FormattedCharSequence> temperatureLines = font.split(temperature, pageWidth - 2);
+        for (int i = 0; i < temperatureLines.size(); i++) {
+            g.drawString(font, temperatureLines.get(i), x, temperatureY + i * 10, INK, false);
         }
-        int delta = recipe.climate().ordinal() - local.ordinal();
-        line(g, delta == 0 ? "Climate matches" : delta > 0 ? "Needs warming" : "Needs cooling", x, thermalY + 42);
-        String status = !GreenhouseSettings.enabled() ? "Greenhouses disabled"
-                : matchingSurvey() ? surveyIssue(lastSurvey.status()) : "Scan to check";
-        line(g, status, x, thermalY + 55);
+        if (matchingSurvey()) {
+            wrap(g, surveyIssue(lastSurvey.status()), x, temperatureY + temperatureLines.size() * 10 + 8, pageWidth, 2);
+        }
     }
 
     private void drawRoom(GuiGraphics g) {
@@ -277,13 +267,14 @@ public final class FieldGuideScreen extends Screen {
         g.renderItem(new ItemStack(Items.WHEAT), start + 48, y + 32);
         int labelY = y + 68;
         line(g, "1. Seal all 6 sides", x, labelY);
-        line(g, "4+ glass; roof too", x, labelY + 11);
+        line(g, "Minimum 4 glass", x, labelY + 11);
+        line(g, "Include glass roof", x, labelY + 22);
         int insideWidth = GreenhouseSettings.radius() * 2 + 1;
-        line(g, "Inside: " + insideWidth + "x" + insideWidth + "x5 max", x, labelY + 22);
-        line(g, "2. Expose each block", x, labelY + 33);
-        line(g, "3. Scan inside", x, labelY + 44);
-        g.renderItem(new ItemStack(GreenhouseContent.PROBE.get()), x + pageWidth - 18, labelY + 42);
-        line(g, "Blocks choose biome", x, labelY + 55);
+        line(g, "Inside: " + insideWidth + "x" + insideWidth + "x5 max", x, labelY + 33);
+        line(g, "2. Expose each block", x, labelY + 44);
+        line(g, "3. Scan inside", x, labelY + 55);
+        g.renderItem(new ItemStack(GreenhouseContent.PROBE.get()), x + pageWidth - 18, labelY + 53);
+        line(g, "Blocks choose biome", x, labelY + 66);
     }
 
     private void drawTemperature(GuiGraphics g) {
@@ -325,7 +316,7 @@ public final class FieldGuideScreen extends Screen {
             case "no_match", "missing_specimens" -> "Blocks missing";
             case "ambiguous" -> "Mixed biome layouts";
             case "too_large", "open", "outside" -> "Open / too large";
-            case "no_glass" -> "4+ glass; roof too";
+            case "no_glass" -> "Minimum 4 glass + glass roof";
             case "wrong_temperature" -> "Wrong climate";
             case "disabled" -> "Server disabled";
             case "unloaded" -> "Area not loaded";
@@ -333,19 +324,11 @@ public final class FieldGuideScreen extends Screen {
         };
     }
 
-    private CropClimate nativeClimate() {
-        BlockPos pos = minecraft.player == null ? BlockPos.ZERO : minecraft.player.blockPosition();
-        return minecraft.level == null ? CropClimate.NEUTRAL : CropClimate.at(minecraft.level.getBiome(pos), pos);
-    }
     private boolean tanOptional() {
         return ModList.get().isLoaded("toughasnails") && Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get();
     }
     private static Component bold(String value) { return Component.literal(value).withStyle(ChatFormatting.BOLD); }
     private void line(GuiGraphics g, String value, int x, int y) { g.drawString(font, fit(Component.literal(value), pageWidth), x, y, INK, false); }
-    private static void border(GuiGraphics g, int x, int y, int width, int height) {
-        g.fill(x,y,x+width,y+1,0xFF3D2D20); g.fill(x,y+height-1,x+width,y+height,0xFF3D2D20);
-        g.fill(x,y,x+1,y+height,0xFF3D2D20); g.fill(x+width-1,y,x+width,y+height,0xFF3D2D20);
-    }
     private static ItemStack specimenStack(ResourceLocation id) {
         if (id.equals(ResourceLocation.withDefaultNamespace("water"))) return new ItemStack(Items.WATER_BUCKET);
         if (id.equals(ResourceLocation.withDefaultNamespace("lava"))) return new ItemStack(Items.LAVA_BUCKET);

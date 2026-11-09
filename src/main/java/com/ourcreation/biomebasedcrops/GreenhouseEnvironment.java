@@ -11,11 +11,13 @@ import java.util.WeakHashMap;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DirtPathBlock;
@@ -32,8 +34,66 @@ public final class GreenhouseEnvironment {
     private static final TagKey<Block> GLASS = tag("greenhouse_glass");
     private static final Map<Level, Cache> CACHES = Collections.synchronizedMap(new WeakHashMap<>());
     private static final CropClimate[] CLIMATES = CropClimate.values();
+    private static final ThreadLocal<Integer> NATIVE_QUERY_DEPTH = ThreadLocal.withInitial(() -> 0);
 
     private GreenhouseEnvironment() {
+    }
+
+    /** Read the stored world biome while bypassing greenhouse query overlays. */
+    public static Holder<Biome> nativeBiome(Level level, BlockPos pos) {
+        return withoutOverlay(() -> level.getBiome(pos));
+    }
+
+    private static <T> T withoutOverlay(java.util.function.Supplier<T> action) {
+        int previous = NATIVE_QUERY_DEPTH.get();
+        NATIVE_QUERY_DEPTH.set(previous + 1);
+        try {
+            return action.get();
+        } finally {
+            if (previous == 0) NATIVE_QUERY_DEPTH.remove();
+            else NATIVE_QUERY_DEPTH.set(previous);
+        }
+    }
+
+    /** Resolve an exact gameplay position without changing persistent chunk biome palettes. */
+    public static Holder<Biome> overlayBiome(Level level, BlockPos pos, Holder<Biome> nativeBiome) {
+        if (NATIVE_QUERY_DEPTH.get() != 0) return nativeBiome;
+        if (level.isClientSide) return GreenhouseClientBiomes.biomeAt(level, pos, nativeBiome);
+        BiomeRegion region = regionAt(level, pos);
+        return region == null ? nativeBiome
+                : level.registryAccess().registryOrThrow(Registries.BIOME).getHolder(region.biome())
+                        .<Holder<Biome>>map(biome -> biome).orElse(nativeBiome);
+    }
+
+    /** A valid room's exact air/plant cells, excluding its floor, walls, and roof. */
+    public static BiomeRegion regionAt(Level level, BlockPos pos) {
+        if (level.isClientSide || NATIVE_QUERY_DEPTH.get() != 0 || !GreenhouseSettings.enabled() || !loaded(level, pos)) return null;
+        if (level.getServer() != null && !level.getServer().isSameThread()) return null;
+        Cache cache = cache(level);
+        Room room = cache.rooms.get(pos.asLong());
+        if (!fresh(room, level.getGameTime())) {
+            // Most biome queries are outdoors. A bounded room has a ceiling at
+            // most five cells overhead; reject those queries before flood fill.
+            return withoutOverlay(() -> {
+                if (sealed(level, pos) || !hasNearbyCeiling(level, pos)) return null;
+                return regionOf(roomAt(level, pos), pos);
+            });
+        }
+        return regionOf(room, pos);
+    }
+
+    private static BiomeRegion regionOf(Room room, BlockPos pos) {
+        if (!room.inspection.valid() || !room.interior.contains(pos.asLong())) return null;
+        return new BiomeRegion(room.inspection.targetBiome(), room.interior);
+    }
+
+    private static boolean hasNearbyCeiling(Level level, BlockPos pos) {
+        for (int height = 1; height <= 5; height++) {
+            BlockPos above = pos.above(height);
+            if (!loaded(level, above)) return false;
+            if (sealed(level, above)) return true;
+        }
+        return false;
     }
 
     public static Inspection inspect(Level level, BlockPos pos) {
@@ -42,8 +102,8 @@ public final class GreenhouseEnvironment {
         }
         if (!GreenhouseSettings.enabled()) {
             Temperature temperature = temperature(level, pos);
-            return result(false, null, shifted(CropClimate.at(level.getBiome(pos), pos), temperature, 2),
-                    temperature, 0, 0, List.of(), "disabled", CropClimate.at(level.getBiome(pos), pos));
+            return result(false, null, shifted(CropClimate.at(nativeBiome(level, pos), pos), temperature, 2),
+                    temperature, 0, 0, List.of(), "disabled", CropClimate.at(nativeBiome(level, pos), pos));
         }
         return roomAt(level, pos).inspection;
     }
@@ -67,6 +127,10 @@ public final class GreenhouseEnvironment {
     }
 
     private static Room roomAt(Level level, BlockPos pos) {
+        return withoutOverlay(() -> findRoomAt(level, pos));
+    }
+
+    private static Room findRoomAt(Level level, BlockPos pos) {
         Cache cache = cache(level);
         long now = level.getGameTime();
         Room existing = cache.rooms.get(pos.asLong());
@@ -172,7 +236,7 @@ public final class GreenhouseEnvironment {
             }
         }
         Temperature temperature = GreenhouseSettings.ambientEnabled() ? new Temperature(heat, cooling) : new Temperature(0, 0);
-        CropClimate baseClimate = CropClimate.at(level.getBiome(anchor), anchor);
+        CropClimate baseClimate = CropClimate.at(nativeBiome(level, anchor), anchor);
         CropClimate actual = shifted(baseClimate, temperature, 4);
         Map<CropClimate, Boolean> thermostat = new java.util.EnumMap<>(CropClimate.class);
         List<Match> complete = new java.util.ArrayList<>();
@@ -188,7 +252,7 @@ public final class GreenhouseEnvironment {
                 warmEnough.add(match);
             }
         }
-        ResourceLocation nativeId = level.getBiome(anchor).unwrapKey().map(biome -> biome.location()).orElse(null);
+        ResourceLocation nativeId = nativeBiome(level, anchor).unwrapKey().map(biome -> biome.location()).orElse(null);
         java.util.Comparator<Match> specificity = java.util.Comparator
                 .comparingInt((Match match) -> match.definition.recipe.count()).reversed()
                 .thenComparing(java.util.Comparator.comparingInt((Match match) -> match.definition.recipe.requirements().size()).reversed())
@@ -258,8 +322,8 @@ public final class GreenhouseEnvironment {
 
     private static Room outdoorRoom(Level level, BlockPos pos, long tick, String status) {
         Temperature temperature = temperature(level, pos);
-        return new Room(tick, result(false, null, shifted(CropClimate.at(level.getBiome(pos), pos), temperature, 2),
-                temperature, 0, 0, List.of(), status, CropClimate.at(level.getBiome(pos), pos)), Set.of(), Set.of());
+        return new Room(tick, result(false, null, shifted(CropClimate.at(nativeBiome(level, pos), pos), temperature, 2),
+                temperature, 0, 0, List.of(), status, CropClimate.at(nativeBiome(level, pos), pos)), Set.of(), Set.of());
     }
 
     private static Temperature temperature(Level level, BlockPos pos) {
@@ -374,6 +438,12 @@ public final class GreenhouseEnvironment {
     }
 
     public record RequirementProgress(ResourceLocation block, int found, int required) {
+    }
+
+    public record BiomeRegion(ResourceLocation biome, Set<Long> interior) {
+        public BiomeRegion {
+            interior = Set.copyOf(interior);
+        }
     }
 
     private record Definition(ResourceLocation id, GreenhouseRecipes.Recipe recipe) {
