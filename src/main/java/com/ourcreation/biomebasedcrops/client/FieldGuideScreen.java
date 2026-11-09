@@ -7,6 +7,7 @@ import java.util.Locale;
 
 import com.ourcreation.biomebasedcrops.Config;
 import com.ourcreation.biomebasedcrops.CropClimate;
+import com.ourcreation.biomebasedcrops.GreenhouseContent;
 import com.ourcreation.biomebasedcrops.GreenhouseEnvironment;
 import com.ourcreation.biomebasedcrops.GreenhouseRecipes;
 import com.ourcreation.biomebasedcrops.GreenhouseSettings;
@@ -25,55 +26,31 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biome;
 import net.neoforged.fml.ModList;
 
-/** English field index with complete, server-derived instructions for each biome. */
+/** A visual English field index. Every requirement stays on its selected biome's cards. */
 public final class FieldGuideScreen extends Screen {
-    private static final int INK = 0x493522;
-    private static final int FADED_INK = 0x786247;
-    private static final int GREEN_INK = 0x416042;
+    private static final int INK = 0x3D2D20;
+    private static final int FADED_INK = 0x6C5740;
     private static final ResourceLocation BOOK = ResourceLocation.withDefaultNamespace("textures/gui/book.png");
     private static GreenhouseEnvironment.Inspection lastSurvey;
-
-    private int biomeOffset;
-    private int setupPage;
-    private int bookX;
-    private int bookY;
-    private int bookWidth;
-    private int bookHeight;
-    private int pageWidth;
-    private int visibleBiomes;
-    private int ticks;
+    private int biomeOffset, setupPage, materialOffset, selectedMaterial;
+    private int bookX, bookY, bookWidth, bookHeight, pageWidth, visibleBiomes;
     private EditBox search;
     private String query = "";
-    private List<Holder.Reference<Biome>> biomes = List.of();
-    private List<Holder.Reference<Biome>> filtered = List.of();
+    private List<Holder.Reference<Biome>> biomes = List.of(), filtered = List.of();
     private ResourceLocation selectedBiome;
-    private ResourceLocation hoveredSpecimen;
-    private ResourceLocation hoveredBiome;
-    private PageButton indexPrevious;
-    private PageButton indexNext;
-    private PageButton setupPrevious;
-    private PageButton setupNext;
+    private PageButton indexPrevious, indexNext, setupPrevious, setupNext;
     private final List<BiomeLink> biomeLinks = new ArrayList<>();
-    private List<List<PageLine>> setupPages = List.of(List.of());
     private boolean surveyOpened;
 
-    public FieldGuideScreen() {
-        super(Component.literal("Biome field index"));
-    }
-
-    public static void open() {
-        Minecraft.getInstance().setScreen(new FieldGuideScreen());
-    }
-
-    public static void clearSurvey() {
-        lastSurvey = null;
-    }
-
+    public FieldGuideScreen() { super(Component.literal("Biome field index")); }
+    public static void open() { Minecraft.getInstance().setScreen(new FieldGuideScreen()); }
+    public static void clearSurvey() { lastSurvey = null; }
     public static void openSurvey(GreenhouseEnvironment.Inspection inspection) {
         lastSurvey = inspection;
         FieldGuideScreen screen = new FieldGuideScreen();
@@ -82,14 +59,13 @@ public final class FieldGuideScreen extends Screen {
         Minecraft.getInstance().setScreen(screen);
     }
 
-    @Override
-    protected void init() {
+    @Override protected void init() {
         bookWidth = Math.min(456, width - 12);
         bookHeight = Math.min(300, height - 12);
         bookX = (width - bookWidth) / 2;
         bookY = (height - bookHeight) / 2;
         pageWidth = bookWidth / 2 - 48;
-        visibleBiomes = Math.max(1, (bookHeight - 96) / 20);
+        visibleBiomes = Math.max(1, (bookHeight - 96) / 22);
         if (minecraft.level != null) {
             biomes = minecraft.level.registryAccess().registryOrThrow(Registries.BIOME).holders()
                     .sorted(Comparator.comparing(holder -> EnglishGuideText.biomeName(holder.key().location())
@@ -104,10 +80,10 @@ public final class FieldGuideScreen extends Screen {
                 }
             }
         }
-        indexPrevious = pageCorner(leftX(), false, "Previous biomes", () -> turnIndex(-1));
-        indexNext = pageCorner(leftX() + pageWidth - 23, true, "Next biomes", () -> turnIndex(1));
-        setupPrevious = pageCorner(rightX(), false, "Previous setup page", () -> turnSetup(-1));
-        setupNext = pageCorner(rightX() + pageWidth - 23, true, "Next setup page", () -> turnSetup(1));
+        indexPrevious = corner(leftX(), false, "Previous biomes", () -> turnIndex(-1));
+        indexNext = corner(leftX() + pageWidth - 23, true, "Next biomes", () -> turnIndex(1));
+        setupPrevious = corner(rightX(), false, "Previous diagram", () -> turnSetup(-1));
+        setupNext = corner(rightX() + pageWidth - 23, true, "Next diagram", () -> turnSetup(1));
         search = new EditBox(font, leftX(), bookY + 37, pageWidth, 14, Component.literal("Find a biome"));
         search.setMaxLength(128);
         search.setBordered(false);
@@ -117,245 +93,83 @@ public final class FieldGuideScreen extends Screen {
         search.setValue(query);
         search.setResponder(value -> {
             query = value;
-            biomeOffset = 0;
-            setupPage = 0;
+            biomeOffset = setupPage = materialOffset = selectedMaterial = 0;
             filterBiomes();
-            rebuildSetup();
             updateControls();
         });
         addRenderableWidget(search);
         biomeLinks.clear();
-        for (int row = 0; row < visibleBiomes; row++) {
-            biomeLinks.add(addRenderableWidget(new BiomeLink(row)));
-        }
-        rebuildSetup();
+        for (int row = 0; row < visibleBiomes; row++) biomeLinks.add(addRenderableWidget(new BiomeLink(row)));
         updateControls();
     }
 
-    private PageButton pageCorner(int x, boolean forward, String narration, Runnable action) {
+    private PageButton corner(int x, boolean forward, String narration, Runnable action) {
         PageButton corner = addRenderableWidget(new PageButton(x, bookY + bookHeight - 30,
                 forward, button -> action.run(), true));
         corner.setMessage(Component.literal(narration));
         return corner;
     }
-
     private void filterBiomes() {
         String needle = query.trim().toLowerCase(Locale.ROOT);
         filtered = biomes.stream().filter(holder -> holder.key().location().toString().contains(needle)
                 || EnglishGuideText.biomeName(holder.key().location()).getString().toLowerCase(Locale.ROOT).contains(needle)).toList();
         biomeOffset = Math.min(biomeOffset, Math.max(0, filtered.size() - visibleBiomes));
-        if (!filtered.isEmpty() && filtered.stream().noneMatch(holder -> holder.key().location().equals(selectedBiome))) {
+        if (!filtered.isEmpty() && filtered.stream().noneMatch(holder -> holder.key().location().equals(selectedBiome)))
             selectedBiome = filtered.getFirst().key().location();
-        }
     }
-
     private void updateControls() {
         for (BiomeLink link : biomeLinks) {
             int index = biomeOffset + link.row;
-            link.visible = index < filtered.size();
-            link.active = link.visible;
-            if (link.visible) {
-                ResourceLocation id = filtered.get(index).key().location();
-                link.setMessage(Component.literal(EnglishGuideText.biomeName(id).getString() + ", " + id));
-            }
+            link.visible = link.active = index < filtered.size();
+            if (link.visible) link.setMessage(EnglishGuideText.biomeName(filtered.get(index).key().location()));
         }
-        showCorner(indexPrevious, biomeOffset > 0);
-        showCorner(indexNext, biomeOffset + visibleBiomes < filtered.size());
-        showCorner(setupPrevious, setupPage > 0);
-        showCorner(setupNext, setupPage + 1 < setupPages.size());
+        show(indexPrevious, biomeOffset > 0);
+        show(indexNext, biomeOffset + visibleBiomes < filtered.size());
+        setupPage = Math.min(setupPage, cardCount() - 1);
+        show(setupPrevious, setupPage > 0);
+        show(setupNext, setupPage + 1 < cardCount());
     }
-
-    private static void showCorner(PageButton corner, boolean visible) {
-        corner.visible = visible;
-        corner.active = visible;
-    }
-
+    private static void show(PageButton button, boolean visible) { button.visible = button.active = visible; }
     private void turnIndex(int direction) {
-        biomeOffset = Math.clamp(biomeOffset + direction * visibleBiomes, 0,
-                Math.max(0, filtered.size() - visibleBiomes));
+        biomeOffset = Math.clamp(biomeOffset + direction * visibleBiomes, 0, Math.max(0, filtered.size() - visibleBiomes));
         updateControls();
     }
-
     private void turnSetup(int direction) {
-        setupPage = Math.clamp(setupPage + direction, 0, Math.max(0, setupPages.size() - 1));
+        setupPage = Math.clamp(setupPage + direction, 0, cardCount() - 1);
         updateControls();
     }
-
-    @Override
-    public void tick() {
-        if (++ticks % 20 == 0) {
-            rebuildSetup();
-            updateControls();
-        }
+    private boolean hasSurvey() {
+        return surveyOpened && lastSurvey != null && (lastSurvey.targetBiome() == null || selectedBiome != null && selectedBiome.equals(lastSurvey.targetBiome()));
+    }
+    private int cardCount() { return hasSurvey() ? 4 : 3; }
+    private int card() { return setupPage - (hasSurvey() ? 1 : 0); }
+    private GreenhouseRecipes.Recipe recipe() {
+        return biomes.stream().filter(holder -> holder.key().location().equals(selectedBiome)).findFirst()
+                .map(GreenhouseRecipes::forBiome).orElse(null);
     }
 
-    private void rebuildSetup() {
-        var selected = biomes.stream().filter(holder -> holder.key().location().equals(selectedBiome)).findFirst();
-        List<PageLine> lines = new ArrayList<>();
-        if (selected.isEmpty()) {
-            addText(lines, "Choose a biome in the index to read its complete greenhouse setup.", false);
-        } else {
-            var recipe = GreenhouseRecipes.forBiome(selected.get());
-            String biome = EnglishGuideText.biomeName(selectedBiome).getString();
-            String climate = EnglishGuideText.climateName(recipe.climate()).getString();
-            int radius = GreenhouseSettings.radius();
-            if (surveyOpened && lastSurvey != null && (lastSurvey.targetBiome() == null || selectedBiome.equals(lastSurvey.targetBiome()))) {
-                addSurvey(lines);
-            }
-            if (!GreenhouseSettings.enabled()) {
-                addText(lines, "Greenhouses are disabled by this server. These requirements cannot emulate " + biome + " until the server enables them.", true);
-            }
-            addText(lines, "Target climate: " + climate + ".", true);
-            addText(lines, "Growing radius: " + radius + " blocks. Native blocks: " + recipe.count() + " total, in any mixture.", false);
-            addText(lines, "Native choices", true);
-            for (int i = 0; i < Math.min(3, recipe.specimens().size()); i++) {
-                addSpecimen(lines, recipe.specimens().get(i));
-            }
-            if (recipe.specimens().size() > 3) {
-                addText(lines, "More native choices follow the setup instructions.", false);
-            }
-            addText(lines, "1. Sample " + biome, true);
-            addText(lines, "Probe recipe: glass top-centre; copper, redstone, copper across the middle; a stick bottom-centre. Core recipe: glass, copper, glass across the top; bricks, compass, bricks across the middle; planks, copper, planks across the bottom.", false);
-            addText(lines, "Visit " + biome + " (" + selectedBiome + "). Sneak-use the probe there to store its biome sample. Use the sampled probe on your core to bind this biome.", false);
-            addText(lines, "2. Enclose the growing room", true);
-            addText(lines, "Set the core in the floor near the centre. Keep crops within " + radius + " blocks horizontally and between the core's level and four blocks above it.", false);
-            addText(lines, "Seal the floor, walls, and roof; close doors and trapdoors. The walls can be one block beyond the growing radius. Keep the roof at most five blocks above the core. Use at least four glass blocks, including glass overhead.", false);
-            addText(lines, "3. Add " + recipe.count() + " native blocks", true);
-            addText(lines, "Place " + recipe.count() + " blocks from the listed native choices inside the connected room or in its floor and walls. Any mixture counts; you do not need " + recipe.count() + " of each type. Blocks outside the shell do not count.", false);
-            addText(lines, "4. Reach " + climate, true);
-            addTemperature(lines, recipe.climate(), radius);
-            boolean tanEnabled = GreenhouseSettings.SPEC.isLoaded()
-                    ? Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get() : Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.getDefault();
-            if (ModList.get().isLoaded("toughasnails") && tanEnabled) {
-                String mode = switch (recipe.climate()) {
-                    case ICY, COLD -> "cooling mode";
-                    case WARM, HOT -> "heating mode";
-                    case NEUTRAL -> "either active heating or cooling mode, or both together";
-                };
-                addText(lines, "Tough As Nails alternative: an enabled, active thermoregulator in " + mode + " can satisfy this " + climate + " target. Place it within " + Config.THERMOREGULATOR_RADIUS.get() + " blocks horizontally of the core, from one block below to three above. An empty, inactive, or redstone-disabled regulator cannot. The enclosure and native blocks are still required.", false);
-            }
-            addText(lines, "5. Verify the greenhouse", true);
-            addText(lines, "Close the door, then use your probe on the core or a crop. The survey must report Valid, target " + biome + ", and climate " + climate + ". After moving sources or fixing gaps, use the probe again for a fresh reading. Conditions otherwise refresh within one second.", false);
-            addText(lines, "A valid " + biome + " greenhouse also satisfies crop rules that require this exact biome or one of its biome tags. It changes growth conditions without changing the world's real biome.", false);
-            if (recipe.specimens().size() > 3) {
-                addText(lines, "Other native choices", true);
-                for (int i = 3; i < recipe.specimens().size(); i++) {
-                    addSpecimen(lines, recipe.specimens().get(i));
-                }
-            }
-            if (!surveyOpened && lastSurvey != null && selectedBiome.equals(lastSurvey.targetBiome())) {
-                addSurvey(lines);
-            }
+    @Override public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        renderBackground(g, mouseX, mouseY, partialTick);
+        drawBook(g);
+        if (filtered.isEmpty()) wrap(g, "No matches", leftX(), bookY + 61, pageWidth, 2);
+        GreenhouseRecipes.Recipe recipe = recipe();
+        if (recipe != null) {
+            Component name = EnglishGuideText.biomeName(selectedBiome).copy().withStyle(ChatFormatting.BOLD);
+            g.drawString(font, fit(name, pageWidth), rightX(), bookY + 18, INK, false);
+            String label = card() < 0 ? "Probe reading" : switch (card()) {
+                case 0 -> "Materials";
+                case 1 -> "Build the room";
+                default -> "Craft & sample";
+            };
+            g.drawString(font, fit(bold(label), pageWidth), rightX(), bookY + 35, INK, false);
+            if (card() < 0) drawSurvey(g, recipe);
+            else if (card() == 0) drawMaterials(g, recipe);
+            else if (card() == 1) drawRoom(g, recipe);
+            else drawCrafting(g);
         }
-        List<List<PageLine>> pages = new ArrayList<>();
-        List<PageLine> page = new ArrayList<>();
-        int used = 0;
-        int capacity = Math.max(20, bookHeight - 91);
-        for (PageLine line : lines) {
-            if (!page.isEmpty() && used + line.height() > capacity) {
-                pages.add(List.copyOf(page));
-                page.clear();
-                used = 0;
-            }
-            page.add(line);
-            used += line.height();
-        }
-        if (!page.isEmpty() || pages.isEmpty()) {
-            pages.add(List.copyOf(page));
-        }
-        setupPages = List.copyOf(pages);
-        setupPage = Math.min(setupPage, setupPages.size() - 1);
-    }
-
-    private void addTemperature(List<PageLine> lines, CropClimate target, int radius) {
-        BlockPos location = minecraft.player == null ? BlockPos.ZERO : minecraft.player.blockPosition();
-        CropClimate local = minecraft.level == null ? CropClimate.NEUTRAL : CropClimate.at(minecraft.level.getBiome(location), location);
-        String from = EnglishGuideText.climateName(local).getString();
-        String to = EnglishGuideText.climateName(target).getString();
-        int steps = target.ordinal() - local.ordinal();
-        addText(lines, "Your current location starts at " + from + "; this greenhouse needs " + to + ". The calculation below assumes you build here, with no other temperature sources.", false);
-        if (!GreenhouseSettings.ambientEnabled()) {
-            addText(lines, "Block heating and cooling are disabled by this server. Fire and ice will not change the climate. "
-                    + (steps == 0 ? "The native climate here already matches." : "Build in a naturally " + to + " biome, enable block temperature changes, or use a compatible active thermoregulator if available."), true);
-        } else if (steps > 0) {
-            addText(lines, "Raise the climate " + steps + " step" + (steps == 1 ? "" : "s") + ": supply " + steps * 8
-                    + " net heat points. " + steps + " lit campfire" + (steps == 1 ? "" : "s") + " provide that heat. Fire or lava also supplies 8 points per block; magma supplies 4.", false);
-        } else if (steps < 0) {
-            int cold = -steps;
-            addText(lines, "Lower the climate " + cold + " step" + (cold == 1 ? "" : "s") + ": supply " + cold * 8
-                    + " net cooling points. " + cold + " packed-ice or blue-ice block" + (cold == 1 ? "" : "s")
-                    + " provide that cooling. Ordinary ice and snow blocks supply 4 points; snow layers supply 1.", false);
-        } else {
-            addText(lines, "No heating or cooling is needed here. Keep opposing sources balanced so the greenhouse remains " + to + ".", false);
-        }
-        addText(lines, "Place sources within " + radius + " blocks horizontally of the core, from one block below it to two above. They must be inside the connected room or in its shell. Sources beyond the walls do not count.", false);
-        addText(lines, "Eight net points move one climate step. Heat and cooling cancel each other. A sealed greenhouse can move all four steps between Icy and Hot; outdoor plants are limited to two. Unlit campfires give no heat. Keep plants safely away from open fire.", false);
-    }
-
-    private void addSurvey(List<PageLine> lines) {
-        addText(lines, "Last probe survey", true);
-        addText(lines, surveyStatus(lastSurvey.status()), false);
-        String target = lastSurvey.targetBiome() == null ? "none sampled" : EnglishGuideText.biomeName(lastSurvey.targetBiome()).getString();
-        addText(lines, "Target: " + target + ". Effective climate: " + EnglishGuideText.climateName(lastSurvey.climate()).getString()
-                + ". Room: " + (lastSurvey.enclosed() ? "sealed" : "open or incomplete") + ". Glass: " + lastSurvey.glass()
-                + "/4. Native blocks: " + lastSurvey.specimens() + "/" + lastSurvey.requiredSpecimens()
-                + ". Heat: " + lastSurvey.heat() + ". Cooling: " + lastSurvey.cooling() + ".", false);
-        addText(lines, "This is the last scanned reading. Use the probe again after making changes.", false);
-    }
-
-    private static String surveyStatus(String key) {
-        return switch (key.substring(key.lastIndexOf('.') + 1)) {
-            case "valid" -> "Valid greenhouse.";
-            case "disabled" -> "Greenhouses are disabled by the server.";
-            case "no_core" -> "No greenhouse core is within range.";
-            case "unloaded" -> "This area is not loaded.";
-            case "outside" -> "The scanned position is outside the greenhouse.";
-            case "open" -> "The room is open, incomplete, or too large.";
-            case "no_glass" -> "Add four glass blocks and glass overhead.";
-            case "unsampled" -> "Bind a sampled biome to the core.";
-            case "unknown_biome" -> "The sampled biome is not available in this world.";
-            case "missing_specimens" -> "More native specimen blocks are needed.";
-            case "wrong_temperature" -> "The greenhouse has the wrong temperature.";
-            default -> "Scan the greenhouse again for a fresh reading.";
-        };
-    }
-
-    private void addText(List<PageLine> lines, String value, boolean heading) {
-        Component component = Component.literal(value);
-        if (heading) component = component.copy().withStyle(ChatFormatting.DARK_GREEN);
-        for (FormattedCharSequence line : font.split(component, pageWidth - 2)) {
-            lines.add(new PageLine(line, null, 10));
-        }
-        lines.add(new PageLine(FormattedCharSequence.EMPTY, null, 5));
-    }
-
-    private void addSpecimen(List<PageLine> lines, ResourceLocation id) {
-        List<FormattedCharSequence> name = font.split(EnglishGuideText.blockName(id), pageWidth - 24);
-        lines.add(new PageLine(name.getFirst(), id, Math.max(20, name.size() * 10 + 2)));
-    }
-
-    @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
-        drawBook(graphics);
-        hoveredSpecimen = null;
-        hoveredBiome = null;
-        if (filtered.isEmpty()) {
-            drawWrapped(graphics, Component.literal("No matching biomes. Try a name or mod ID."), leftX(), bookY + 61, pageWidth, 5, FADED_INK);
-        }
-        renderSetup(graphics, mouseX, mouseY);
-        for (var child : children()) {
-            if (child instanceof net.minecraft.client.gui.components.Renderable renderable) {
-                renderable.render(graphics, mouseX, mouseY, partialTick);
-            }
-        }
-        if (hoveredSpecimen != null) {
-            graphics.renderComponentTooltip(font, List.of(EnglishGuideText.blockName(hoveredSpecimen),
-                    Component.literal(hoveredSpecimen.toString()).withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
-        } else if (hoveredBiome != null) {
-            graphics.renderComponentTooltip(font, List.of(EnglishGuideText.biomeName(hoveredBiome),
-                    Component.literal(hoveredBiome.toString()).withStyle(ChatFormatting.GRAY)), mouseX, mouseY);
-        }
+        updateControls();
+        for (var child : children()) if (child instanceof net.minecraft.client.gui.components.Renderable renderable)
+            renderable.render(g, mouseX, mouseY, partialTick);
     }
 
     private void drawBook(GuiGraphics g) {
@@ -374,11 +188,11 @@ public final class FieldGuideScreen extends Screen {
                 g.fill(bookX + bookWidth - 14, bookY + dy + 9, bookX + bookWidth - 12, bookY + dy + 11, 0xFFE8DAB7);
             }
         }
-        g.drawString(font, fit(title, pageWidth), leftX(), bookY + 18, INK, false);
+        g.drawString(font, fit(bold("Biome field index"), pageWidth), leftX(), bookY + 18, INK, false);
         g.fill(leftX(), bookY + 51, leftX() + pageWidth - 2, bookY + 52, 0x997D7850);
         String range = filtered.isEmpty() ? "0" : (biomeOffset + 1) + "-" + Math.min(filtered.size(), biomeOffset + visibleBiomes) + "/" + filtered.size();
         drawFolio(g, range, leftX());
-        drawFolio(g, (setupPage + 1) + "/" + setupPages.size(), rightX());
+        drawFolio(g, (setupPage + 1) + "/" + cardCount(), rightX());
     }
 
     private void drawFolio(GuiGraphics g, String value, int x) {
@@ -390,100 +204,254 @@ public final class FieldGuideScreen extends Screen {
                 mirrored ? -146 : 146, 180, 256, 256);
     }
 
-    private void renderSetup(GuiGraphics g, int mouseX, int mouseY) {
-        Component heading = selectedBiome == null ? Component.literal("Greenhouse setup") : EnglishGuideText.biomeName(selectedBiome);
-        g.drawString(font, fit(heading, pageWidth), rightX(), bookY + 18, GREEN_INK, false);
-        g.drawString(font, "Greenhouse setup", rightX(), bookY + 35, FADED_INK, false);
-        g.fill(rightX(), bookY + 47, rightX() + pageWidth - 2, bookY + 48, 0x775A6841);
-        int y = bookY + 52;
-        for (PageLine line : setupPages.get(setupPage)) {
-            if (line.specimen() == null) {
-                g.drawString(font, line.text(), rightX(), y, INK, false);
-            } else {
-                ItemStack stack = specimenStack(line.specimen());
-                g.renderItem(stack, rightX(), y + 1);
-                List<FormattedCharSequence> name = font.split(EnglishGuideText.blockName(line.specimen()), pageWidth - 24);
-                for (int i = 0; i < name.size(); i++) {
-                    g.drawString(font, name.get(i), rightX() + 22, y + i * 10 + 1, INK, false);
-                }
-                if (isWithin(mouseX, mouseY, rightX(), y, pageWidth, line.height())) hoveredSpecimen = line.specimen();
-            }
-            y += line.height();
+    private void drawMaterials(GuiGraphics g, GreenhouseRecipes.Recipe recipe) {
+        int x = rightX(), y = bookY + 53;
+        g.drawString(font, bold(recipe.count() + " total; any mix"), x, y, INK, false);
+        int columns = Math.max(1, pageWidth / 18);
+        boolean scroll = scrollMaterials(recipe);
+        int rows = scroll ? 1 : Math.max(1, (recipe.specimens().size() + columns - 1) / columns);
+        materialOffset = scroll ? Math.clamp(materialOffset, 0, Math.max(0, recipe.specimens().size() - columns)) : 0;
+        int visible = Math.min(recipe.specimens().size() - materialOffset, columns * rows);
+        for (int i = 0; i < visible; i++) {
+            int at = materialOffset + i, ix = x + i % columns * 18, iy = y + 14 + i / columns * 18;
+            if (at == selectedMaterial) g.fill(ix - 1, iy - 1, ix + 17, iy + 17, 0x30A58B5B);
+            g.renderItem(specimenStack(recipe.specimens().get(at)), ix, iy);
+        }
+        selectedMaterial = Math.clamp(selectedMaterial, 0, Math.max(0, recipe.specimens().size() - 1));
+        int caption = y + 16 + rows * 18;
+        if (!recipe.specimens().isEmpty()) {
+            Component name = EnglishGuideText.blockName(recipe.specimens().get(selectedMaterial));
+            g.drawString(font, fit(name, pageWidth - (scroll ? 18 : 0)), x, caption, FADED_INK, false);
+            if (scroll) g.drawString(font, "<>", x + pageWidth - 14, caption, INK, false);
+        }
+        CropClimate local = nativeClimate();
+        int thermalY = caption + 15;
+        String from = EnglishGuideText.climateName(local).getString(), to = EnglishGuideText.climateName(recipe.climate()).getString();
+        g.drawString(font, fit(Component.literal(from + " -> " + to), pageWidth), x, thermalY, INK, false);
+        int cell = pageWidth / 5;
+        String[] names = cell >= 30 ? new String[]{"Icy", "Cold", "N", "Warm", "Hot"} : new String[]{"I", "C", "N", "W", "H"};
+        int[] paper = {0xFFCCDCE1, 0xFFD5DDDA, 0xFFE2D7BD, 0xFFE5CAA7, 0xFFE3B593};
+        for (int i = 0; i < 5; i++) {
+            int cx = x + cell * i, cy = thermalY + 12;
+            g.fill(cx, cy, cx + cell - 1, cy + 14, paper[i]);
+            if (i == recipe.climate().ordinal()) border(g, cx, cy, cell - 1, 14);
+            g.drawString(font, names[i], cx + (cell - font.width(names[i])) / 2, cy + 3, INK, false);
+            if (i == local.ordinal()) g.fill(cx + cell / 2 - 1, cy + 15, cx + cell / 2 + 2, cy + 17, 0xFF3D2D20);
+        }
+        int steps = recipe.climate().ordinal() - local.ordinal(), sourceY = thermalY + 34;
+        if (!GreenhouseSettings.ambientEnabled()) {
+            itemLabel(g, Items.BARRIER, "Blocks disabled", x, sourceY);
+        } else if (steps == 0) {
+            itemLabel(g, Items.CLOCK, "No heat / cold", x, sourceY);
+        } else {
+            Item item = steps > 0 ? Items.CAMPFIRE : Items.PACKED_ICE;
+            g.renderItem(new ItemStack(item), x, sourceY);
+            g.drawString(font, fit(bold("x" + Math.abs(steps) + " -> " + to), pageWidth - 21), x + 21, sourceY + 2, INK, false);
+            g.drawString(font, Math.abs(steps) * 8 + (steps > 0 ? " net heat" : " net cooling"), x + 21, sourceY + 12, FADED_INK, false);
+        }
+        int noteY = sourceY + 25;
+        if (!GreenhouseSettings.enabled()) line(g, "No greenhouses", x, noteY);
+        else if (!GreenhouseSettings.ambientEnabled()) line(g, tanActive() ? "Native or active TAN" : "Native climate only", x, noteY);
+        else if (tanActive()) wrap(g, "TAN: " + switch (recipe.climate()) {
+            case ICY, COLD -> "cooling (on)";
+            case WARM, HOT -> "heating (on)";
+            case NEUTRAL -> "either (on)";
+        }, x, noteY, pageWidth, 2);
+        else wrap(g, "Heat cancels cold.", x, noteY, pageWidth, 1);
+    }
+
+    private void drawRoom(GuiGraphics g, GreenhouseRecipes.Recipe recipe) {
+        int x = rightX(), y = bookY + 53, start = x + (pageWidth - 80) / 2;
+        Item nativeBlock = recipe.specimens().isEmpty() ? Items.MOSS_BLOCK : specimenStack(recipe.specimens().getFirst()).getItem();
+        for (int col = 0; col < 5; col++) {
+            g.renderItem(new ItemStack(Items.GLASS), start + col * 16, y);
+            Item floor = col == 2 ? GreenhouseContent.CORE_ITEM.get() : col == 1 || col == 3 ? Items.FARMLAND : Items.DIRT;
+            g.renderItem(new ItemStack(floor), start + col * 16, y + 48);
+        }
+        for (int row = 1; row < 3; row++) {
+            g.renderItem(new ItemStack(Items.GLASS), start, y + row * 16);
+            g.renderItem(new ItemStack(Items.GLASS), start + 64, y + row * 16);
+        }
+        g.renderItem(new ItemStack(nativeBlock), start + 32, y + 16);
+        g.renderItem(new ItemStack(Items.WHEAT), start + 16, y + 32);
+        g.renderItem(new ItemStack(Items.WHEAT), start + 48, y + 32);
+        int climateSteps = recipe.climate().ordinal() - nativeClimate().ordinal();
+        if (climateSteps != 0 && GreenhouseSettings.ambientEnabled()) {
+            ItemStack source = new ItemStack(climateSteps < 0 ? Items.PACKED_ICE : Items.CAMPFIRE, Math.abs(climateSteps));
+            g.renderItem(source, start + 32, y + 32);
+            g.renderItemDecorations(font, source, start + 32, y + 32);
+        }
+        int labelY = y + 68;
+        int radius = GreenhouseSettings.radius();
+        line(g, "Radius " + radius + "; roof +5", x, labelY);
+        line(g, "4+ glass incl. roof", x, labelY + 11);
+        line(g, "Seal all 6 sides", x, labelY + 22);
+        line(g, "Sources inside r=" + radius, x, labelY + 33);
+        line(g, "Heat/ice: Y-1..+2", x, labelY + 44);
+        line(g, "Close door; scan", x, labelY + 55);
+    }
+
+    private void drawCrafting(GuiGraphics g) {
+        int x = rightX(), y = bookY + 53, grid = 48, gap = Math.max(6, pageWidth - grid * 2);
+        int right = x + grid + gap;
+        g.drawString(font, bold("Probe"), x + 8, y, INK, false);
+        g.drawString(font, bold("Core"), right + 9, y, INK, false);
+        Item air = Items.AIR, glass = Items.GLASS, copper = Items.COPPER_INGOT;
+        drawRecipe(g, x, y + 12, new Item[]{air,glass,air,copper,Items.REDSTONE,copper,air,Items.STICK,air});
+        drawRecipe(g, right, y + 12, new Item[]{glass,copper,glass,Items.BRICKS,Items.COMPASS,Items.BRICKS,Items.OAK_PLANKS,copper,Items.OAK_PLANKS});
+        g.renderItem(new ItemStack(GreenhouseContent.PROBE.get()), x + 16, y + 65);
+        g.renderItem(new ItemStack(GreenhouseContent.CORE_ITEM.get()), right + 16, y + 65);
+        line(g, "Visit biome first", x, y + 85);
+        int column = pageWidth / 3;
+        Item[] icons = {GreenhouseContent.PROBE.get(), GreenhouseContent.CORE_ITEM.get(), GreenhouseContent.PROBE.get()};
+        String[] labels = {"Sneak", "Bind", "Scan"};
+        for (int i = 0; i < 3; i++) {
+            int ix = x + i * column + (column - 16) / 2;
+            g.renderItem(new ItemStack(icons[i]), ix, y + 99);
+            g.drawString(font, labels[i], x + i * column + (column - font.width(labels[i])) / 2, y + 118, INK, false);
+            if (i < 2) g.drawString(font, ">", x + (i + 1) * column - 3, y + 103, INK, false);
         }
     }
 
+    private void drawRecipe(GuiGraphics g, int x, int y, Item[] items) {
+        for (int i = 0; i < 9; i++) {
+            int ix = x + i % 3 * 16, iy = y + i / 3 * 16;
+            g.fill(ix, iy, ix + 16, iy + 16, 0x22A18C69);
+            if (items[i] != Items.AIR) g.renderItem(new ItemStack(items[i]), ix, iy);
+        }
+    }
+
+    private void drawSurvey(GuiGraphics g, GreenhouseRecipes.Recipe recipe) {
+        int x = rightX(), y = bookY + 53;
+        line(g, lastSurvey.valid() ? "[OK] VALID" : "[ ] NEEDS WORK", x, y);
+        String issue = switch (lastSurvey.status().substring(lastSurvey.status().lastIndexOf('.') + 1)) {
+            case "valid" -> "Ready to grow";
+            case "no_core" -> "No core nearby";
+            case "open" -> "Room open / too large";
+            case "no_glass" -> "Add glass + roof glass";
+            case "missing_specimens" -> "Add native blocks";
+            case "wrong_temperature" -> "Adjust heat / cooling";
+            case "unsampled" -> "Sample then bind core";
+            case "disabled" -> "Disabled by server";
+            case "outside" -> "Outside the room";
+            default -> "Check the core";
+        };
+        line(g, issue, x, y + 13);
+        itemLabel(g, GreenhouseContent.CORE_ITEM.get(), lastSurvey.enclosed() ? "[OK] Sealed" : "[ ] Seal room", x, y + 29);
+        itemLabel(g, Items.GLASS, lastSurvey.glass() + "/4 glass + roof", x, y + 49);
+        Item material = recipe.specimens().isEmpty() ? Items.MOSS_BLOCK : specimenStack(recipe.specimens().getFirst()).getItem();
+        itemLabel(g, material, lastSurvey.specimens() + "/" + lastSurvey.requiredSpecimens() + " native", x, y + 69);
+        itemLabel(g, lastSurvey.cooling() > lastSurvey.heat() ? Items.PACKED_ICE : Items.CAMPFIRE,
+                EnglishGuideText.climateName(lastSurvey.climate()).getString(), x, y + 89);
+        line(g, "Heat " + lastSurvey.heat() + " / cold " + lastSurvey.cooling(), x, y + 111);
+        line(g, "Scan again to refresh", x, y + 123);
+    }
+
+    private CropClimate nativeClimate() {
+        BlockPos pos = minecraft.player == null ? BlockPos.ZERO : minecraft.player.blockPosition();
+        return minecraft.level == null ? CropClimate.NEUTRAL : CropClimate.at(minecraft.level.getBiome(pos), pos);
+    }
+    private boolean tanActive() {
+        return ModList.get().isLoaded("toughasnails") && (GreenhouseSettings.SPEC.isLoaded()
+                ? Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get() : Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.getDefault());
+    }
+    private static Component bold(String value) { return Component.literal(value).withStyle(ChatFormatting.BOLD); }
+    private void line(GuiGraphics g, String value, int x, int y) { g.drawString(font, fit(Component.literal(value), pageWidth), x, y, INK, false); }
+    private void itemLabel(GuiGraphics g, Item item, String value, int x, int y) {
+        g.renderItem(new ItemStack(item), x, y);
+        g.drawString(font, fit(Component.literal(value), pageWidth - 22), x + 22, y + 4, INK, false);
+    }
+    private static void border(GuiGraphics g, int x, int y, int width, int height) {
+        g.fill(x,y,x+width,y+1,0xFF3D2D20); g.fill(x,y+height-1,x+width,y+height,0xFF3D2D20);
+        g.fill(x,y,x+1,y+height,0xFF3D2D20); g.fill(x+width-1,y,x+width,y+height,0xFF3D2D20);
+    }
     private static ItemStack specimenStack(ResourceLocation id) {
         if (id.equals(ResourceLocation.withDefaultNamespace("water"))) return new ItemStack(Items.WATER_BUCKET);
         if (id.equals(ResourceLocation.withDefaultNamespace("lava"))) return new ItemStack(Items.LAVA_BUCKET);
         return new ItemStack(BuiltInRegistries.BLOCK.get(id).asItem());
     }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (isWithin(mouseX, mouseY, leftX() - 3, bookY + 54, pageWidth + 3, visibleBiomes * 20 + 6)) {
-            biomeOffset = Math.clamp(biomeOffset - (int) Math.signum(scrollY), 0, Math.max(0, filtered.size() - visibleBiomes));
-            updateControls();
-            return true;
+    private boolean scrollMaterials(GreenhouseRecipes.Recipe recipe) {
+        int columns = Math.max(1, pageWidth / 18);
+        return recipe.specimens().size() > columns * (pageWidth < 140 ? 1 : 2);
+    }
+    @Override public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        GreenhouseRecipes.Recipe recipe = recipe();
+        if (button == 0 && card() == 0 && recipe != null) {
+            int columns = Math.max(1, pageWidth / 18);
+            int rows = scrollMaterials(recipe) ? 1 : Math.max(1, (recipe.specimens().size() + columns - 1) / columns);
+            int y = bookY + 67;
+            if (inside(mouseX, mouseY, rightX(), y, columns * 18, rows * 18)) {
+                int index = materialOffset + (int)(mouseY - y) / 18 * columns + (int)(mouseX - rightX()) / 18;
+                if (index < recipe.specimens().size()) selectedMaterial = index;
+                return true;
+            }
         }
-        if (isWithin(mouseX, mouseY, rightX(), bookY + 52, pageWidth, bookHeight - 90)) {
-            turnSetup(-(int) Math.signum(scrollY));
-            return true;
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+    @Override public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (inside(mouseX, mouseY, leftX() - 3, bookY + 54, pageWidth + 3, visibleBiomes * 22 + 6)) {
+            biomeOffset = Math.clamp(biomeOffset - (int)Math.signum(scrollY), 0, Math.max(0, filtered.size() - visibleBiomes));
+            updateControls(); return true;
+        }
+        GreenhouseRecipes.Recipe recipe = recipe();
+        int columns = Math.max(1, pageWidth / 18);
+        if (card() == 0 && recipe != null && scrollMaterials(recipe)
+                && inside(mouseX, mouseY, rightX(), bookY + 65, pageWidth, 38)) {
+            materialOffset = Math.clamp(materialOffset - (int)Math.signum(scrollY), 0, recipe.specimens().size() - columns);
+            selectedMaterial = materialOffset; return true;
+        }
+        if (inside(mouseX, mouseY, rightX(), bookY + 52, pageWidth, bookHeight - 90)) {
+            turnSetup(-(int)Math.signum(scrollY)); return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
-
-    @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
-
+    @Override public boolean isPauseScreen() { return false; }
     private int leftX() { return bookX + 22; }
     private int rightX() { return bookX + bookWidth / 2 + 26; }
-
-    private void drawWrapped(GuiGraphics g, Component component, int x, int y, int width, int maxLines, int color) {
-        List<FormattedCharSequence> lines = font.split(component, width);
-        for (int i = 0; i < Math.min(maxLines, lines.size()); i++) g.drawString(font, lines.get(i), x, y + i * 10, color, false);
+    private void wrap(GuiGraphics g, String value, int x, int y, int width, int maxLines) {
+        List<FormattedCharSequence> lines = font.split(Component.literal(value), width);
+        for (int i = 0; i < Math.min(maxLines, lines.size()); i++) g.drawString(font, lines.get(i), x, y + i * 10, INK, false);
     }
-
-    private String fit(Component component, int maxWidth) {
-        String value = component.getString();
-        return font.width(value) <= maxWidth ? value : font.plainSubstrByWidth(value, Math.max(0, maxWidth - font.width("..."))) + "...";
+    private Component fit(Component value, int maxWidth) {
+        String text = value.getString();
+        if (font.width(value) <= maxWidth) return value;
+        while (!text.isEmpty()) {
+            Component clipped = Component.literal(text + "...").withStyle(value.getStyle());
+            if (font.width(clipped) <= maxWidth) return clipped;
+            text = text.substring(0, text.length() - 1);
+        }
+        return Component.empty();
     }
-
-    private static boolean isWithin(double mouseX, double mouseY, int x, int y, int width, int height) {
+    private static boolean inside(double mouseX, double mouseY, int x, int y, int width, int height) {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
-
-    private record PageLine(FormattedCharSequence text, ResourceLocation specimen, int height) {}
-
     private final class BiomeLink extends AbstractButton {
         private final int row;
-        private BiomeLink(int row) {
-            super(leftX(), bookY + 56 + row * 20, pageWidth - 2, 19, Component.empty());
-            this.row = row;
-        }
+        private BiomeLink(int row) { super(leftX(),bookY+56+row*22,pageWidth-2,21,Component.empty()); this.row=row; }
         @Override public void onPress() {
-            int index = biomeOffset + row;
-            if (index < filtered.size()) {
-                selectedBiome = filtered.get(index).key().location();
-                setupPage = 0;
-                rebuildSetup();
-                updateControls();
+            int index=biomeOffset+row;
+            if(index<filtered.size()) {
+                selectedBiome=filtered.get(index).key().location(); setupPage=materialOffset=selectedMaterial=0; updateControls();
             }
         }
         @Override protected void updateWidgetNarration(NarrationElementOutput output) { defaultButtonNarrationText(output); }
-        @Override protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-            int index = biomeOffset + row;
-            if (index >= filtered.size()) return;
-            ResourceLocation id = filtered.get(index).key().location();
-            if (isHoveredOrFocused()) hoveredBiome = id;
-            if (id.equals(selectedBiome)) {
-                g.fill(getX() - 2, getY(), getX() + width, getY() + height, 0x305F7040);
-                g.fill(getX() - 2, getY(), getX(), getY() + height, 0xFF657744);
+        @Override protected void renderWidget(GuiGraphics g,int mouseX,int mouseY,float partialTick) {
+            int index=biomeOffset+row;
+            if(index>=filtered.size()) return;
+            var holder=filtered.get(index);
+            ResourceLocation id=holder.key().location();
+            boolean selected=id.equals(selectedBiome);
+            if(selected) {
+                g.fill(getX()-2,getY(),getX()+width,getY()+height,0x26A68A58);
+                g.fill(getX()-2,getY(),getX(),getY()+height,0xFF6D5033);
             }
-            if (isHoveredOrFocused()) g.fill(getX() + 3, getY() + height - 1, getX() + width - 3, getY() + height, 0x775D7044);
-            g.drawString(font, fit(EnglishGuideText.biomeName(id), width - 5), getX() + 3, getY() + 2, INK, false);
-            g.drawString(font, fit(Component.literal(id.toString()), width - 5), getX() + 3, getY() + 11, FADED_INK, false);
+            if(isFocused()) g.fill(getX()+20,getY()+height-1,getX()+width-2,getY()+height,0x994B3825);
+            var materials=GreenhouseRecipes.forBiome(holder).specimens();
+            if(!materials.isEmpty()) g.renderItem(specimenStack(materials.getFirst()),getX(),getY()+2);
+            Component name=EnglishGuideText.biomeName(id);
+            if(selected) name=name.copy().withStyle(ChatFormatting.BOLD);
+            List<FormattedCharSequence> lines=font.split(name,width-22);
+            for(int i=0;i<Math.min(2,lines.size());i++) g.drawString(font,lines.get(i),getX()+21,getY()+1+i*10,INK,false);
         }
     }
 }

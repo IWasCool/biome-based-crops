@@ -15,7 +15,7 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 - Assign crops and saplings to climates, specific biomes, or biome tags.
 - Warm crops with fire, lit campfires, lava, and magma, or cool them with ice and snow.
 - Build enclosed greenhouses that emulate sampled biomes using native blocks and suitable temperatures.
-- Check conditions with a Greenhouse Probe and read complete setup instructions for each biome in the Farmer's Field Guide.
+- Check conditions with a Greenhouse Probe and follow visual setup pages for each biome in the Farmer's Field Guide.
 - Control natural growth and bonemeal restrictions independently.
 - Disable restrictions separately for crops and trees with config settings or operator commands.
 - Show growth requirements in item tooltips.
@@ -25,7 +25,7 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 
 Craft a **Greenhouse Core**, **Greenhouse Probe**, and **Farmer's Field Guide**. Sneak-use the probe on the ground in the biome you want to reproduce, then use it on the core to select that biome. Build an enclosed room with glass in its roof, add the native specimen blocks listed in the guide, and balance heating or cooling until the probe reports a valid greenhouse.
 
-Use the probe on a crop or the core to check its registered biome, temperature, enclosure, and missing requirements. Select a biome in the guide's searchable index to read its full building instructions, native material choices, and climate requirements. The guide covers installed mod biomes and uses English text. See [the greenhouse configuration guide](CONFIGURATION.md#greenhouses) for building limits and temperature sources.
+Use the probe on a crop or the core to check its registered biome, temperature, enclosure, and missing requirements. Select a biome in the guide's searchable index for labeled material icons, a greenhouse cutaway, climate targets, and crafting layouts. The guide covers installed mod biomes and uses English text. See [the greenhouse configuration guide](CONFIGURATION.md#greenhouses) for building limits and temperature sources.
 
 ## Configuration
 

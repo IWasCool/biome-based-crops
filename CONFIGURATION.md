@@ -45,7 +45,7 @@ A valid greenhouse reproduces its selected biome for crops inside it, including 
 6. Place at least four native specimen blocks in the room or its enclosing floor and walls. Any combination of blocks listed for the target biome counts toward the total; you do not need four of every type.
 7. Match the target biome's climate with nearby heat or cooling sources. Use the probe on a crop or core to see the current climate, chosen biome, and missing requirements.
 
-Craft a book with wheat to obtain the **Farmer's Field Guide**. It opens to a searchable biome index. Select a biome to read its complete setup instructions, including enclosure limits, glass, native material choices, and temperature requirements. Turn the book's pages to read longer entries. The guide uses English text and the server's actual specimen requirements.
+Craft a book with wheat to obtain the **Farmer's Field Guide**. It opens to a searchable biome index. Select a biome for visual setup pages: labeled native materials, climate and heat/cooling counts, a greenhouse cutaway, and crafting grids. Turn the book's pages to move between diagrams. Labels and counts appear directly on the page without hover popups. The guide uses English text and the server's actual specimen requirements.
 
 Every registered biome has an entry. Vanilla biomes have familiar terrain materials; additional choices come from biome vegetation features. Mod biomes also receive recipes, with a stone/moss fallback when no native plant material can be read.
 
