@@ -79,6 +79,13 @@ public final class GreenhouseRecipes {
         return Math.toIntExact(Math.max(baseCount, proportional));
     }
 
+    public static int scaledCount(MaterialRequirement material, int roomVolume, int floorArea, int referenceVolume) {
+        if (floorArea < 0 || floorArea > 1048576) throw new IllegalArgumentException("Invalid greenhouse floor area");
+        int volumeCount = scaledCount(material.count(), roomVolume, referenceVolume);
+        return material.floorDivisor() == 0 ? volumeCount
+                : Math.max(volumeCount, (floorArea + material.floorDivisor() - 1) / material.floorDivisor());
+    }
+
     private static void validateScale(int baseCount, int roomVolume, int referenceVolume) {
         if (baseCount < 1 || baseCount > 64 || roomVolume < 0 || roomVolume > 1048576
                 || referenceVolume < 64 || referenceVolume > 1048576) {
@@ -100,29 +107,26 @@ public final class GreenhouseRecipes {
                 }
             }
         }
-        if (override != null) return new Recipe(climate, override);
+        if (override != null) return new Recipe(climate, override, floorFor(id, climate, true));
+        String planet = nativePlanet(id);
+        if (planet != null) {
+            List<MaterialRequirement> nativeRock = new ArrayList<>();
+            for (String kind : List.of("stone", "deep_stone", "gravel")) {
+                ResourceLocation block = ResourceLocation.fromNamespaceAndPath("northstar", planet + "_" + kind);
+                if (usable(block)) nativeRock.add(new MaterialRequirement(block, 16));
+            }
+            if (!nativeRock.isEmpty()) return habitat(climate, nativeRock, id);
+        }
         if (id.getNamespace().equals("minecraft") && VANILLA.containsKey(id.getPath())) {
             List<MaterialRequirement> materials = VANILLA.get(id.getPath());
-            // A datapack may classify a snowy biome as Cold rather than Icy. Its
-            // mandatory scenery must not force an extra temperature reduction.
-            if (climate == CropClimate.COLD && materials.stream().anyMatch(material -> coolingMaterial(material.block()))) {
-                materials = coldTerrain(id.getPath(), materials);
-            }
-            if (climate != CropClimate.HOT && id.getPath().equals("nether_wastes")) {
-                materials = List.of(requirement("minecraft:netherrack", 8), requirement("minecraft:nether_quartz_ore", 4),
-                        requirement("minecraft:soul_sand", 2));
-            } else if (climate != CropClimate.HOT && id.getPath().equals("basalt_deltas")) {
-                materials = List.of(requirement("minecraft:basalt", 8), requirement("minecraft:blackstone", 8),
-                        requirement("minecraft:polished_basalt", 4));
-            }
-            return new Recipe(climate, materials);
+            return habitat(climate, materials, id);
         }
         // These registered BOP materials also have survival crafting/loot definitions.
         if (id.equals(ResourceLocation.parse("biomesoplenty:ominous_woods"))) {
             List<MaterialRequirement> ominous = List.of(
                     requirement("biomesoplenty:umbran_log", 8), requirement("biomesoplenty:umbran_leaves", 8),
                     requirement("biomesoplenty:dead_leaves", 4), requirement("biomesoplenty:umbran_wood", 4));
-            if (ominous.stream().allMatch(material -> usable(material.block()))) return new Recipe(climate, ominous);
+            if (ominous.stream().allMatch(material -> usable(material.block()))) return habitat(climate, ominous, id);
         }
         return deriveModRecipe(biome, id, climate);
     }
@@ -148,14 +152,96 @@ public final class GreenhouseRecipes {
         foliage.stream().sorted(nativeFirst).limit(1).forEach(selected::add);
         // Keep actual native flowers/ground cover rather than choosing unrelated building blocks.
         plants.stream().sorted(nativeFirst).filter(block -> !selected.contains(block))
-                .filter(block -> climate != CropClimate.COLD || !coolingMaterial(block)).limit(2).forEach(selected::add);
+                .limit(2).forEach(selected::add);
         selected.add(substrate(id.getPath(), climate));
         for (String fallback : List.of("stone", "dirt", "moss_block", "gravel")) {
             if (selected.size() >= 3) break;
             selected.add(ResourceLocation.withDefaultNamespace(fallback));
         }
         int count = GreenhouseSettings.requiredSpecimens();
-        return new Recipe(climate, selected.stream().limit(5).map(block -> new MaterialRequirement(block, count)).toList());
+        return habitat(climate, selected.stream().limit(5).map(block -> new MaterialRequirement(block, count)).toList(), id);
+    }
+
+    private static Recipe habitat(CropClimate climate, List<MaterialRequirement> materials, ResourceLocation biome) {
+        FloorRequirement floor = floorFor(biome, climate, false);
+        List<MaterialRequirement> abundant = new ArrayList<>();
+        boolean firstLog = true;
+        for (MaterialRequirement material : materials) {
+            if (floor.blocks().contains(material.block())) continue;
+            String path = material.block().getPath();
+            boolean log = path.endsWith("_log") || path.endsWith("_wood") || path.endsWith("_stem") || path.endsWith("_hyphae");
+            boolean canopy = (path.endsWith("_leaves") && !path.equals("dead_leaves")) || path.endsWith("wart_block");
+            boolean cactus = path.equals("cactus");
+            boolean plant = cactus || path.contains("flower") || path.contains("sapling") || path.contains("grass") && !path.endsWith("_block")
+                    || path.contains("fern") || path.contains("mushroom") || path.contains("fungus") || path.contains("vine")
+                    || path.contains("petals") || Set.of("dandelion", "poppy", "allium", "azure_bluet", "oxeye_daisy", "cornflower",
+                            "lily_pad", "cocoa", "bamboo", "sugar_cane", "dead_bush", "kelp", "seagrass", "sea_pickle", "dead_leaves").contains(path);
+            int minimum = canopy ? 64 : log ? (firstLog ? 16 : 8) : cactus ? 3 : plant ? 8 : 16;
+            abundant.add(new MaterialRequirement(material.block(), Math.max(material.count(), minimum), canopy ? 2 : log ? 8 : 16,
+                    canopy ? 2 : log || plant ? 1 : 0));
+            if (log) firstLog = false;
+        }
+        if (abundant.isEmpty()) abundant.add(new MaterialRequirement(ResourceLocation.withDefaultNamespace("gravel"), 16, 8, 0));
+        return new Recipe(climate, abundant, floor);
+    }
+
+    private static String nativePlanet(ResourceLocation biome) {
+        if (!biome.getNamespace().equals("northstar")) return null;
+        String path = biome.getPath();
+        if (path.startsWith("lunar_")) return "moon";
+        if (path.startsWith("martian_")) return "mars";
+        if (path.startsWith("mercury_")) return "mercury";
+        if (path.startsWith("venusian_") || path.startsWith("venus_")) return "venus";
+        return null;
+    }
+
+    private static FloorRequirement floorFor(ResourceLocation biome, CropClimate climate, boolean customMaterials) {
+        FloorRequirement configured = GreenhouseSettings.floorOverride(biome);
+        if (configured != null) return configured;
+        if (customMaterials) return FloorRequirement.none();
+        String path = biome.getPath();
+        if (biome.toString().equals("biomesoplenty:visceral_heap")) return floor(90, "biomesoplenty:flesh");
+        if (biome.toString().equals("biomesoplenty:end_wilds")) return floor(100, "biomesoplenty:algal_end_stone");
+        if (biome.toString().equals("biomesoplenty:end_corruption")) return floor(100, "biomesoplenty:unmapped_end_stone");
+        String nativePlanet = switch (biome.toString()) {
+            case "northstar:lunar_plains", "northstar:lunar_hills", "northstar:lunar_crater_fields" -> "northstar:moon_sand";
+            case "northstar:martian_dunes" -> "northstar:mars_sand";
+            case "northstar:martian_highlands" -> "northstar:mars_soil,northstar:mars_gravel";
+            case "northstar:martian_peaks" -> "minecraft:snow_block";
+            case "northstar:mercury_basins" -> "northstar:mercury_stone";
+            case "northstar:venusian_plains" -> "northstar:venus_stone";
+            case "northstar:venusian_wastes" -> "northstar:volcanic_ash";
+            default -> null;
+        };
+        if (nativePlanet != null) return floor(100, nativePlanet);
+        String planet = nativePlanet(biome);
+        if (planet != null) return floor(100, "northstar:" + planet + (path.contains("cave") ? "_deep_stone" : "_stone"));
+        if (path.equals("desert") || path.contains("dune") || path.contains("desert")) return floor(100, "sand");
+        if (path.contains("badland")) return floor(90, "red_sand,terracotta,orange_terracotta,yellow_terracotta,white_terracotta,coarse_dirt");
+        if (path.equals("warped_forest")) return floor(90, "warped_nylium");
+        if (path.equals("crimson_forest")) return floor(90, "crimson_nylium");
+        if (path.equals("soul_sand_valley")) return floor(100, "soul_sand,soul_soil");
+        if (path.equals("basalt_deltas")) return floor(90, "basalt,blackstone");
+        if (path.contains("nether") || path.contains("hell")) return floor(100, "netherrack");
+        if (path.equals("the_end") || path.startsWith("end_") || path.equals("small_end_islands")) return floor(100, "end_stone");
+        if (path.contains("mushroom")) return floor(90, "mycelium");
+        if (path.equals("lush_caves")) return floor(90, "moss_block,clay,dirt");
+        if (path.equals("deep_dark")) return floor(90, "sculk,deepslate");
+        if (path.contains("cave") || path.contains("peak") || path.contains("mountain") || path.contains("stony") || path.equals("the_void"))
+            return floor(90, "stone,deepslate,dripstone_block,calcite,snow_block");
+        if (path.contains("ocean") || path.contains("river")) return floor(90, "sand,gravel,clay,stone");
+        if (path.contains("beach")) return floor(90, "sand,gravel");
+        if (path.contains("mangrove")) return floor(90, "mud,muddy_mangrove_roots,clay");
+        if (path.contains("swamp") || path.contains("bog") || path.contains("bayou") || path.contains("wetland")) return floor(90, "mud,grass_block,dirt,clay");
+        if (path.contains("old_growth")) return floor(90, "podzol,coarse_dirt,grass_block");
+        if (path.contains("taiga")) return floor(90, "podzol,grass_block,coarse_dirt,snow_block");
+        if (climate == CropClimate.ICY) return floor(90, "snow_block,packed_ice,grass_block,dirt");
+        return floor(90, "grass_block,dirt,rooted_dirt,coarse_dirt");
+    }
+
+    private static FloorRequirement floor(int percent, String blocks) {
+        return new FloorRequirement(java.util.Arrays.stream(blocks.split(","))
+                .map(block -> ResourceLocation.parse(block.contains(":") ? block : "minecraft:" + block)).toList(), percent);
     }
 
     private static ResourceLocation substrate(String path, CropClimate climate) {
@@ -185,31 +271,6 @@ public final class GreenhouseRecipes {
         return BuiltInRegistries.BLOCK.getOptional(id).map(block -> block.asItem() != Items.AIR).orElse(false);
     }
 
-    private static boolean coolingMaterial(ResourceLocation id) {
-        return id.getNamespace().equals("minecraft") && Set.of("snow", "snow_block", "ice", "packed_ice", "blue_ice").contains(id.getPath());
-    }
-
-    private static List<MaterialRequirement> coldTerrain(String biome, List<MaterialRequirement> fallback) {
-        String recipe = switch (biome) {
-            case "snowy_plains" -> "grass_block*8,spruce_log*4,short_grass*4";
-            case "ice_spikes" -> "stone*8,calcite*4,diorite*4";
-            case "snowy_taiga" -> "spruce_log*8,spruce_leaves*4,podzol*4";
-            case "grove" -> "spruce_log*4,spruce_leaves*4,dirt*8";
-            case "snowy_slopes" -> "stone*8,dirt*4,gravel*4";
-            case "frozen_peaks" -> "stone*8,calcite*4,andesite*4";
-            case "jagged_peaks" -> "stone*8,calcite*8,tuff*4";
-            case "frozen_river" -> "gravel*8,clay*4,stone*4";
-            case "snowy_beach" -> "sand*8,gravel*4,stone*2";
-            case "frozen_ocean" -> "gravel*8,kelp*4,clay*4";
-            case "deep_frozen_ocean" -> "stone*8,gravel*4,clay*4,kelp*4";
-            default -> null;
-        };
-        if (recipe == null) return fallback;
-        Map<String, List<MaterialRequirement>> parsed = new LinkedHashMap<>();
-        put(parsed, biome, recipe);
-        return parsed.get(biome);
-    }
-
     private static Map<String, List<MaterialRequirement>> vanillaRecipes() {
         Map<String, List<MaterialRequirement>> recipes = new LinkedHashMap<>();
         put(recipes, "the_void", "stone*8,smooth_stone*4,cobblestone*2");
@@ -217,7 +278,7 @@ public final class GreenhouseRecipes {
         put(recipes, "sunflower_plains", "grass_block*8,sunflower*2,poppy*2");
         put(recipes, "snowy_plains", "snow_block*8,grass_block*4,ice*2");
         put(recipes, "ice_spikes", "packed_ice*8,snow_block*4,blue_ice*2");
-        put(recipes, "desert", "sand*8,sandstone*4,cactus*2");
+        put(recipes, "desert", "sand*8,sandstone*4,cactus*2,dead_bush*4");
         put(recipes, "swamp", "mud*8,oak_log*4,lily_pad*2,brown_mushroom*2");
         put(recipes, "mangrove_swamp", "mangrove_log*8,mangrove_leaves*4,mud*4,mangrove_roots*2");
         put(recipes, "forest", "oak_log*8,oak_leaves*4,birch_log*2");
@@ -292,17 +353,32 @@ public final class GreenhouseRecipes {
         return new MaterialRequirement(ResourceLocation.parse(block), count);
     }
 
-    public record MaterialRequirement(ResourceLocation block, int count) {
+    public record MaterialRequirement(ResourceLocation block, int count, int floorDivisor, int minHeight) {
         public MaterialRequirement {
             Objects.requireNonNull(block, "block");
             if (count < 1 || count > 64) throw new IllegalArgumentException("A material requirement must contain 1 to 64 blocks");
+            if (floorDivisor < 0 || floorDivisor > 256 || minHeight < 0 || minHeight > 2)
+                throw new IllegalArgumentException("Invalid greenhouse material placement");
         }
+        public MaterialRequirement(ResourceLocation block, int count) { this(block, count, 0, 0); }
+        public MaterialRequirement(ResourceLocation block, int count, int floorDivisor) { this(block, count, floorDivisor, 0); }
+    }
+
+    public record FloorRequirement(List<ResourceLocation> blocks, int coveragePercent) {
+        public FloorRequirement {
+            blocks = List.copyOf(new LinkedHashSet<>(blocks));
+            if (blocks.size() > 16 || coveragePercent < 0 || coveragePercent > 100 || coveragePercent > 0 && blocks.isEmpty())
+                throw new IllegalArgumentException("Invalid greenhouse native floor");
+        }
+        public static FloorRequirement none() { return new FloorRequirement(List.of(), 0); }
+        public int required(int area) { return (int) (((long) area * coveragePercent + 99) / 100); }
     }
 
     public record Recipe(CropClimate climate, List<ResourceLocation> specimens, int count,
-                         List<MaterialRequirement> requirements) {
+                         List<MaterialRequirement> requirements, FloorRequirement floor) {
         public Recipe {
             Objects.requireNonNull(climate, "climate");
+            Objects.requireNonNull(floor, "floor");
             requirements = List.copyOf(requirements);
             if (requirements.isEmpty() || requirements.size() > 32) {
                 throw new IllegalArgumentException("A greenhouse recipe needs 1 to 32 distinct materials");
@@ -318,11 +394,19 @@ public final class GreenhouseRecipes {
         }
 
         public Recipe(CropClimate climate, List<MaterialRequirement> requirements) {
-            this(climate, List.of(), 0, requirements);
+            this(climate, requirements, FloorRequirement.none());
+        }
+
+        public Recipe(CropClimate climate, List<MaterialRequirement> requirements, FloorRequirement floor) {
+            this(climate, List.of(), 0, requirements, floor);
+        }
+
+        public Recipe(CropClimate climate, List<ResourceLocation> specimens, int count, List<MaterialRequirement> requirements) {
+            this(climate, specimens, count, requirements, FloorRequirement.none());
         }
 
         public Recipe(CropClimate climate, List<ResourceLocation> specimens, int count) {
-            this(climate, specimens, count, specimens.stream().map(block -> new MaterialRequirement(block, count)).toList());
+            this(climate, specimens, count, specimens.stream().map(block -> new MaterialRequirement(block, count)).toList(), FloorRequirement.none());
         }
     }
 }

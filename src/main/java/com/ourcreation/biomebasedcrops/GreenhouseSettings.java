@@ -39,11 +39,17 @@ public final class GreenhouseSettings {
             .defineInRange("cacheTicks", 20, 1, 20);
     public static final ModConfigSpec.ConfigValue<List<? extends String>> BIOME_MATERIAL_RULES = BUILDER
             .comment("Override a biome's complete material recipe: biome_id=block_id*count,block_id*count",
-                    "Example: minecraft:desert=minecraft:sand*8,minecraft:sandstone*4,minecraft:cactus*2",
+                    "Example: minecraft:desert=minecraft:sandstone*16,minecraft:cactus*3,minecraft:dead_bush*8",
                     "EVERY listed type and its full count is required; materials are not alternatives.",
                     "Bare block ids use requiredSpecimens for EACH type. Duplicate ids are rejected.",
                     "Up to 32 distinct types with 1 to 64 blocks each. The last entry for a biome wins.")
             .defineListAllowEmpty("biomeMaterialRules", List.of(), () -> "", GreenhouseSettings::validateMaterialRule);
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> BIOME_FLOOR_RULES = BUILDER
+            .comment("Override native floor coverage: biome_id=percent:block_id,block_id",
+                    "Example: minecraft:desert=100:minecraft:sand. Listed blocks are alternatives; walls never count.",
+                    "Farmland and climate units may sit directly above a listed native floor block.",
+                    "Custom biomeMaterialRules omit automatic floors unless this list defines one. Last matching entry wins.")
+            .defineListAllowEmpty("biomeFloorRules", List.of(), () -> "", GreenhouseSettings::validateFloorRule);
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private GreenhouseSettings() {
@@ -83,6 +89,40 @@ public final class GreenhouseSettings {
         } catch (IllegalArgumentException exception) {
             return false;
         }
+    }
+
+    static boolean validateFloorRule(Object value) {
+        if (!(value instanceof String raw)) return false;
+        String[] pair = raw.split("=", -1);
+        if (pair.length != 2 || !validId(pair[0])) return false;
+        try { parseFloor(pair[1]); return true; }
+        catch (IllegalArgumentException exception) { return false; }
+    }
+
+    static GreenhouseRecipes.FloorRequirement parseFloor(String raw) {
+        String[] parts = raw.split(":", 2);
+        if (parts.length != 2) throw new IllegalArgumentException("Missing native floor percentage");
+        int percent = Integer.parseInt(parts[0].trim());
+        String[] tokens = parts[1].split(",", -1);
+        List<ResourceLocation> blocks = new ArrayList<>();
+        for (String token : tokens) {
+            if (!validId(token)) throw new IllegalArgumentException("Invalid native floor block");
+            ResourceLocation id = ResourceLocation.parse(token.trim());
+            if (blocks.contains(id)) throw new IllegalArgumentException("Duplicate native floor block");
+            blocks.add(id);
+        }
+        return new GreenhouseRecipes.FloorRequirement(blocks, percent);
+    }
+
+    static GreenhouseRecipes.FloorRequirement floorOverride(ResourceLocation biome) {
+        GreenhouseRecipes.FloorRequirement selected = null;
+        List<? extends String> rules = SPEC.isLoaded() ? BIOME_FLOOR_RULES.get() : BIOME_FLOOR_RULES.getDefault();
+        for (String raw : rules) {
+            if (!validateFloorRule(raw)) continue;
+            String[] pair = raw.split("=", 2);
+            if (biome.equals(ResourceLocation.parse(pair[0].trim()))) selected = parseFloor(pair[1]);
+        }
+        return selected;
     }
 
     static List<GreenhouseRecipes.MaterialRequirement> parseRequirements(String raw, int defaultCount) {

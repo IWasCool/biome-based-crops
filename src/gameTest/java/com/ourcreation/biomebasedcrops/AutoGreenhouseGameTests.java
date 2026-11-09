@@ -284,18 +284,12 @@ public final class AutoGreenhouseGameTests {
             GreenhouseRecipes.clearCache();
             ServerLevel level = helper.getLevel();
             BlockPos center = house(helper);
-            for (int x = -4; x <= 3; x++) {
-                level.setBlock(center.offset(x, -1, 0), Blocks.OAK_LOG.defaultBlockState(), Block.UPDATE_ALL);
-            }
-            for (int x = -2; x <= 1; x++) {
-                level.setBlock(center.offset(x, -1, 2), Blocks.OAK_LEAVES.defaultBlockState()
-                        .setValue(BlockStateProperties.PERSISTENT, true), Block.UPDATE_ALL);
-            }
-            for (int x = -2; x <= -1; x++) {
-                level.setBlock(center.offset(x, -1, -2), Blocks.BIRCH_LOG.defaultBlockState(), Block.UPDATE_ALL);
-            }
+            for (int x = -4; x <= 4; x++) for (int z = -4; z <= 4; z++)
+                level.setBlock(center.offset(x, -1, z), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            GreenhouseHabitatGameTests.forestVegetation(level, center);
             BlockPos crop = center.south();
             plant(level, crop);
+            level.setBlock(crop.below(2), Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
             Config.CROP_BIOME_RULES.set(List.of("wheat=minecraft:forest"));
             CropClimateRules.clearCache();
             GreenhouseEnvironment.invalidateClimate();
@@ -303,7 +297,7 @@ public final class AutoGreenhouseGameTests {
             helper.assertTrue(survey.valid(), "Curated forest palette was invalid: " + survey);
             helper.assertTrue(id("minecraft:forest").equals(survey.targetBiome()), "Curated forest recognized as " + survey.targetBiome());
             helper.assertValueEqual(survey.requirements().size(), 3, "curated forest material types");
-            helper.assertValueEqual(survey.specimens(), 14, "curated forest matched material count");
+            helper.assertValueEqual(survey.specimens(), 91, "curated forest matched material count scaled to81floor cells");
             helper.assertValueEqual(survey.heat(), 0, "curated forest heat sources");
             helper.assertValueEqual(survey.cooling(), 0, "curated forest cooling sources");
             helper.assertTrue(CommonEvents.canGrowNaturally(level, crop, level.getBlockState(crop)), "Curated forest could not satisfy exact crop biome");

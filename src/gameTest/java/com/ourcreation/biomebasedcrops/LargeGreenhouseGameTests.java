@@ -71,7 +71,7 @@ public final class LargeGreenhouseGameTests {
             }
             int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
             for (int x = -1; x <= width; x++) for (int z = -1; z <= depth; z++) {
-                level.setBlock(min.offset(x, -1, z), Blocks.OBSIDIAN.defaultBlockState(), flags);
+                level.setBlock(min.offset(x, -1, z), Blocks.GLASS.defaultBlockState(), flags);
                 Block roof = (x + z) % 3 == 0 ? Blocks.TINTED_GLASS : (x + z) % 3 == 1 ? Blocks.GLASS_PANE : Blocks.RED_STAINED_GLASS;
                 level.setBlock(min.offset(x, height, z), roof.defaultBlockState(), flags);
             }

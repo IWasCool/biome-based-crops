@@ -52,4 +52,29 @@ class GreenhouseScalingTest {
         }
         assertEquals(serverReference, GreenhouseRecipes.referenceVolume());
     }
+
+    @Test
+    void habitatVegetationUsesTheLargestMinimumVolumeAndMeasuredFootprintQuota() {
+        var cactus = new GreenhouseRecipes.MaterialRequirement(net.minecraft.resources.ResourceLocation.withDefaultNamespace("cactus"), 3, 16, 1);
+        assertEquals(3, GreenhouseRecipes.scaledCount(cactus, 64, 16, 512));
+        assertEquals(4, GreenhouseRecipes.scaledCount(cactus, 512, 64, 512));
+        assertEquals(6, GreenhouseRecipes.scaledCount(cactus, 404, 81, 512));
+        assertEquals(12, GreenhouseRecipes.scaledCount(cactus, 2048, 64, 512));
+        var canopy = new GreenhouseRecipes.MaterialRequirement(net.minecraft.resources.ResourceLocation.withDefaultNamespace("oak_leaves"), 64, 2, 2);
+        assertEquals(64, GreenhouseRecipes.scaledCount(canopy, 512, 64, 512));
+        assertEquals(100, GreenhouseRecipes.scaledCount(canopy, 512, 200, 512));
+        assertEquals(512, GreenhouseRecipes.scaledCount(canopy, 4096, 64, 512));
+    }
+
+    @Test
+    void nativeFloorPercentagesRoundUpAndOverrideParserIsBounded() {
+        var soil = GreenhouseSettings.parseFloor("90:minecraft:grass_block,minecraft:dirt");
+        assertEquals(58, soil.required(64));
+        assertEquals(73, soil.required(81));
+        assertEquals(64, GreenhouseSettings.parseFloor("100:minecraft:sand").required(64));
+        for (String invalid : java.util.List.of("minecraft:forest=101:minecraft:dirt", "minecraft:forest=-1:minecraft:dirt",
+                "minecraft:forest=90:", "minecraft:forest=90:minecraft:dirt,minecraft:dirt")) {
+            org.junit.jupiter.api.Assertions.assertFalse(GreenhouseSettings.validateFloorRule(invalid), invalid);
+        }
+    }
 }

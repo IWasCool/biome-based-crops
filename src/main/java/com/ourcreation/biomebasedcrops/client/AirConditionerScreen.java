@@ -20,12 +20,13 @@ import org.lwjgl.glfw.GLFW;
 
 public final class AirConditionerScreen extends AbstractContainerScreen<AirConditionerMenu> {
     private static final ResourceLocation CONTAINER = ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
-    private static final ResourceLocation CLOCK = ResourceLocation.withDefaultNamespace("textures/item/clock_00.png");
-    private static final ResourceLocation COMPASS = ResourceLocation.withDefaultNamespace("textures/item/compass_00.png");
-    private static final ResourceLocation ENERGY_BACKGROUND = ResourceLocation.withDefaultNamespace("hud/experience_bar_background");
-    private static final ResourceLocation ENERGY_FILL = ResourceLocation.withDefaultNamespace("hud/experience_bar_progress");
-    private static final ResourceLocation AIR = ResourceLocation.withDefaultNamespace("hud/air");
-    private static final ResourceLocation AIR_PARTIAL = ResourceLocation.withDefaultNamespace("hud/air_bursting");
+    private static final ResourceLocation DIAL = texture("temperature_dial");
+    private static final ResourceLocation NEEDLE = texture("temperature_needle");
+    private static final ResourceLocation HUB = texture("temperature_hub");
+    private static final ResourceLocation ENERGY_BACKGROUND = texture("energy_empty");
+    private static final ResourceLocation ENERGY_FILL = texture("energy_filled");
+    private static final int ENERGY_X = 13, ENERGY_Y = 35, ENERGY_WIDTH = 18, ENERGY_HEIGHT = 44;
+    private static final int THERMOMETER_X = 150, THERMOMETER_Y = 21;
     private TemperatureDial dial;
 
     public AirConditionerScreen(AirConditionerMenu menu, Inventory inventory, Component title) {
@@ -36,7 +37,7 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
 
     @Override protected void init() {
         super.init();
-        dial = addRenderableWidget(new TemperatureDial(leftPos + 85, topPos + 29, 58));
+        dial = addRenderableWidget(new TemperatureDial(leftPos + 60, topPos + 30, 56));
     }
 
     @Override public void containerTick() {
@@ -50,39 +51,32 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
         g.blit(CONTAINER, x, y, 0, 0, imageWidth, 17);
         g.blit(CONTAINER, x, y + 17, imageWidth, 91, 0.0F, 8.0F, 176, 8, 256, 256);
         g.blit(CONTAINER, x, y + 108, 0, 126, imageWidth, 96);
-        for (int bubble = 0; bubble < 5; bubble++) {
-            float filled = menu.oxygenPercent() - bubble * 20.0F;
-            if (filled > 0) g.blitSprite(filled >= 20 ? AIR : AIR_PARTIAL, x + 8 + bubble * 9, y + 75, 9, 9);
-        }
-        int barX = x + 8, barY = y + 97, barWidth = imageWidth - 16;
-        g.blitSprite(ENERGY_BACKGROUND, barX, barY, barWidth, 5);
+        int barX = x + ENERGY_X, barY = y + ENERGY_Y;
+        g.blit(ENERGY_BACKGROUND, barX, barY, 0, 0, ENERGY_WIDTH, ENERGY_HEIGHT, ENERGY_WIDTH, ENERGY_HEIGHT);
         int stored = Math.clamp(menu.energyStored(), 0, AirConditionerBlockEntity.CAPACITY);
-        int fill = (int) ((long) barWidth * stored / Math.max(1, AirConditionerBlockEntity.CAPACITY));
+        int fill = (int) ((long) ENERGY_HEIGHT * stored / AirConditionerBlockEntity.CAPACITY);
         if (fill > 0) {
-            g.enableScissor(barX, barY, barX + fill, barY + 5);
-            g.blitSprite(ENERGY_FILL, barX, barY, barWidth, 5);
-            g.disableScissor();
+            g.blit(ENERGY_FILL, barX, barY + ENERGY_HEIGHT - fill, 0, ENERGY_HEIGHT - fill,
+                    ENERGY_WIDTH, fill, ENERGY_WIDTH, ENERGY_HEIGHT);
         }
-        g.renderItem(new ItemStack(GreenhouseContent.THERMOMETER.get()), x + 8, y + 33);
+        g.renderItem(new ItemStack(GreenhouseContent.THERMOMETER.get()), x + THERMOMETER_X, y + THERMOMETER_Y);
     }
 
     @Override protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
         g.drawString(font, "Thermoregulator", titleLabelX, titleLabelY, 0x404040, false);
         g.drawString(font, "Inventory", inventoryLabelX, inventoryLabelY, 0x404040, false);
-        g.drawString(font, "Current", 8, 21, 0x404040, false);
-        g.drawString(font, temperature(menu.currentTemperature()), 29, 37, 0x202020, false);
-        g.drawString(font, "Oxygen", 8, 59, 0x404040, false);
-        g.drawString(font, Math.round(menu.oxygenPercent()) + "%", 57, 76, 0x202020, false);
-        g.drawString(font, "Target", 99, 21, 0x404040, false);
+        g.drawString(font, "Target", 88 - font.width("Target") / 2, 20, 0x404040, false);
         String target = dial.displayedTarget() + "\u00B0C";
-        g.drawString(font, target, 114 - font.width(target) / 2, 86, 0x202020, false);
-        g.drawString(font, "FE", 149, 86, 0x404040, false);
+        g.drawString(font, target, 88 - font.width(target) / 2, 91, 0x202020, false);
+        g.drawString(font, "FE", ENERGY_X + (ENERGY_WIDTH - font.width("FE")) / 2, 84, 0x404040, false);
     }
 
     @Override public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         super.render(g, mouseX, mouseY, partialTick);
         renderTooltip(g, mouseX, mouseY);
-        if (inside(mouseX, mouseY, leftPos + 8, topPos + 93, imageWidth - 16, 12)) {
+        if (inside(mouseX, mouseY, leftPos + THERMOMETER_X, topPos + THERMOMETER_Y, 16, 16)) {
+            g.renderTooltip(font, Component.literal("Current temperature: " + temperature(menu.currentTemperature())), mouseX, mouseY);
+        } else if (inside(mouseX, mouseY, leftPos + ENERGY_X, topPos + ENERGY_Y, ENERGY_WIDTH, ENERGY_HEIGHT)) {
             g.renderComponentTooltip(font, List.of(Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", menu.energyStored(), AirConditionerBlockEntity.CAPACITY)),
                     Component.literal(String.format(Locale.ROOT, "%,d FE/t", menu.energyCost())),
                     Component.literal(String.format(Locale.ROOT, "Room: %,d blocks", menu.roomVolume()))), mouseX, mouseY);
@@ -90,6 +84,9 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
     }
 
     private static String temperature(float value) { return String.format(Locale.ROOT, "%.1f\u00B0C", value); }
+    private static ResourceLocation texture(String name) {
+        return ResourceLocation.fromNamespaceAndPath("biome_based_crops", "textures/gui/" + name + ".png");
+    }
     private static boolean inside(double x, double y, int left, int top, int width, int height) {
         return x >= left && x < left + width && y >= top && y < top + height;
     }
@@ -146,17 +143,15 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
         }
         @Override protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
             int cx = getX() + width / 2, cy = getY() + height / 2;
-            g.blit(CLOCK, cx - 25, cy - 25, 50, 50, 0.0F, 0.0F, 16, 16, 16, 16);
-            // Reuse the compass's needle without rotating its entire casing over the dial.
-            float angle = 45.0F + (target - AirConditionerMenu.MIN_TARGET)
+            g.blit(DIAL, getX(), getY(), 0, 0, 56, 56, 56, 56);
+            float angle = 225.0F + (target - AirConditionerMenu.MIN_TARGET)
                     / (float) (AirConditionerMenu.MAX_TARGET - AirConditionerMenu.MIN_TARGET) * 270.0F;
             g.pose().pushPose();
             g.pose().translate(cx, cy, 0);
             g.pose().mulPose(Axis.ZP.rotationDegrees(angle));
-            g.blit(COMPASS, -2, -3, 4, 22, 7.0F, 6.0F, 1, 4, 16, 16);
+            g.blit(NEEDLE, -3, -21, 0, 0, 6, 24, 6, 24);
             g.pose().popPose();
-            g.blitSprite(ResourceLocation.withDefaultNamespace(isFocused()
-                    ? "widget/slider_handle_highlighted" : "widget/slider_handle"), cx - 3, cy - 3, 6, 6);
+            g.blit(HUB, cx - 4, cy - 4, 0, 0, 8, 8, 8, 8);
         }
     }
 }

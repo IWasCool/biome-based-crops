@@ -24,7 +24,7 @@ public final class GreenhouseNetwork {
     }
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        event.registrar("4").playToClient(ViewPayload.TYPE, ViewPayload.CODEC,
+        event.registrar("5").playToClient(ViewPayload.TYPE, ViewPayload.CODEC,
                 (payload, context) -> com.ourcreation.biomebasedcrops.client.GreenhouseViews.open(payload));
     }
 
@@ -37,7 +37,7 @@ public final class GreenhouseNetwork {
             PENDING_SURVEYS.put(player, new PendingSurvey(position.immutable(), player.level().dimension().location(),
                     player.level().getGameTime() + 6000, false));
         }
-        send(player, null, false, context.roomVolume());
+        send(player, null, false, context.roomVolume(), context.floorArea());
     }
 
     public static void showSurvey(ServerPlayer player, BlockPos pos) {
@@ -63,7 +63,7 @@ public final class GreenhouseNetwork {
         var inspection = GreenhouseEnvironment.inspect(player.level(), pending.position());
         if (!inspection.status().endsWith(".scanning")) {
             PENDING_SURVEYS.remove(player);
-            send(player, pending.survey() ? inspection : null, true, inspection.roomVolume());
+            send(player, pending.survey() ? inspection : null, true, inspection.roomVolume(), inspection.floorArea());
         }
     }
 
@@ -72,29 +72,35 @@ public final class GreenhouseNetwork {
     }
 
     private static void send(ServerPlayer player, @Nullable GreenhouseEnvironment.Inspection inspection, boolean updateOnly) {
-        send(player, inspection, updateOnly, inspection == null ? 0 : inspection.roomVolume());
+        send(player, inspection, updateOnly, inspection == null ? 0 : inspection.roomVolume(), inspection == null ? 0 : inspection.floorArea());
     }
 
-    private static void send(ServerPlayer player, @Nullable GreenhouseEnvironment.Inspection inspection, boolean updateOnly, int contextVolume) {
+    private static void send(ServerPlayer player, @Nullable GreenhouseEnvironment.Inspection inspection, boolean updateOnly, int contextVolume, int contextFloorArea) {
         Map<ResourceLocation, GreenhouseRecipes.Recipe> recipes = new LinkedHashMap<>();
         player.registryAccess().registryOrThrow(Registries.BIOME).holders().forEach(biome ->
                 recipes.put(biome.key().location(), GreenhouseRecipes.forServerBiome(biome)));
         PacketDistributor.sendToPlayer(player, new ViewPayload(recipes, inspection, updateOnly,
-                GreenhouseSettings.materialReferenceVolume(), contextVolume));
+                GreenhouseSettings.materialReferenceVolume(), contextVolume, contextFloorArea));
     }
 
     private record PendingSurvey(BlockPos position, ResourceLocation dimension, long expires, boolean survey) {}
 
     public record ViewPayload(Map<ResourceLocation, GreenhouseRecipes.Recipe> recipes,
                               @Nullable GreenhouseEnvironment.Inspection inspection, boolean updateOnly,
-                              int referenceVolume, int contextVolume) implements CustomPacketPayload {
+                              int referenceVolume, int contextVolume, int contextFloorArea) implements CustomPacketPayload {
         public static final Type<ViewPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(BiomeBasedCrops.MODID, "greenhouse_view"));
         public static final StreamCodec<FriendlyByteBuf, ViewPayload> CODEC = StreamCodec.of(ViewPayload::write, ViewPayload::read);
 
         public ViewPayload {
             recipes = Map.copyOf(recipes);
-            if (referenceVolume < 64 || referenceVolume > 1048576 || contextVolume < 0 || contextVolume > 1048576)
+            if (referenceVolume < 64 || referenceVolume > 1048576 || contextVolume < 0 || contextVolume > 1048576
+                    || contextFloorArea < 0 || contextFloorArea > 1048576)
                 throw new IllegalArgumentException("Invalid greenhouse volume context");
+        }
+
+        public ViewPayload(Map<ResourceLocation, GreenhouseRecipes.Recipe> recipes,
+                           @Nullable GreenhouseEnvironment.Inspection inspection, boolean updateOnly, int referenceVolume, int contextVolume) {
+            this(recipes, inspection, updateOnly, referenceVolume, contextVolume, inspection == null ? 0 : inspection.floorArea());
         }
 
         public ViewPayload(Map<ResourceLocation, GreenhouseRecipes.Recipe> recipes,
@@ -105,7 +111,7 @@ public final class GreenhouseNetwork {
         public ViewPayload(Map<ResourceLocation, GreenhouseRecipes.Recipe> recipes,
                            @Nullable GreenhouseEnvironment.Inspection inspection, boolean updateOnly) {
             this(recipes, inspection, updateOnly, GreenhouseSettings.materialReferenceVolume(),
-                    inspection == null ? 0 : inspection.roomVolume());
+                    inspection == null ? 0 : inspection.roomVolume(), inspection == null ? 0 : inspection.floorArea());
         }
 
         private static void write(FriendlyByteBuf buf, ViewPayload payload) {
@@ -117,7 +123,11 @@ public final class GreenhouseNetwork {
                 recipe.requirements().forEach(requirement -> {
                     buf.writeResourceLocation(requirement.block());
                     buf.writeVarInt(requirement.count());
+                    buf.writeVarInt(requirement.floorDivisor());
+                    buf.writeVarInt(requirement.minHeight());
                 });
+                writeBlocks(buf, recipe.floor().blocks());
+                buf.writeVarInt(recipe.floor().coveragePercent());
             });
             buf.writeBoolean(payload.inspection != null);
             if (payload.inspection != null) {
@@ -140,10 +150,16 @@ public final class GreenhouseNetwork {
                 });
                 buf.writeEnum(report.baseClimate());
                 buf.writeVarInt(report.roomVolume());
+                buf.writeVarInt(report.floorArea());
+                writeBlocks(buf, report.floor().blocks());
+                buf.writeVarInt(report.floor().found());
+                buf.writeVarInt(report.floor().required());
+                buf.writeVarInt(report.floor().total());
             }
             buf.writeBoolean(payload.updateOnly);
             buf.writeVarInt(payload.referenceVolume);
             buf.writeVarInt(payload.contextVolume);
+            buf.writeVarInt(payload.contextFloorArea);
         }
 
         private static ViewPayload read(FriendlyByteBuf buf) {
@@ -155,11 +171,13 @@ public final class GreenhouseNetwork {
                 int count = bounded(buf.readVarInt(), 32);
                 List<GreenhouseRecipes.MaterialRequirement> requirements = new ArrayList<>();
                 for (int j = 0; j < count; j++) {
-                    requirements.add(new GreenhouseRecipes.MaterialRequirement(buf.readResourceLocation(), bounded(buf.readVarInt(), 64)));
+                    requirements.add(new GreenhouseRecipes.MaterialRequirement(buf.readResourceLocation(), bounded(buf.readVarInt(), 64),
+                            bounded(buf.readVarInt(), 256), bounded(buf.readVarInt(), 2)));
                 }
+                var floor = new GreenhouseRecipes.FloorRequirement(readBlocks(buf), bounded(buf.readVarInt(), 100));
                 recipes.put(id, new GreenhouseRecipes.Recipe(climate,
                         requirements.stream().map(GreenhouseRecipes.MaterialRequirement::block).toList(),
-                        requirements.stream().mapToInt(GreenhouseRecipes.MaterialRequirement::count).sum(), requirements));
+                        requirements.stream().mapToInt(GreenhouseRecipes.MaterialRequirement::count).sum(), requirements, floor));
             }
             GreenhouseEnvironment.Inspection inspection = null;
             if (buf.readBoolean()) {
@@ -179,11 +197,15 @@ public final class GreenhouseNetwork {
                     progress.add(new GreenhouseEnvironment.RequirementProgress(buf.readResourceLocation(),
                             bounded(buf.readVarInt(), 8_000_000), bounded(buf.readVarInt(), 1_048_576)));
                 }
+                CropClimate base = buf.readEnum(CropClimate.class);
+                int volume = bounded(buf.readVarInt(), 1_048_576), area = bounded(buf.readVarInt(), 1_048_576);
+                var floor = new GreenhouseEnvironment.FloorProgress(readBlocks(buf), bounded(buf.readVarInt(), 1_048_576),
+                        bounded(buf.readVarInt(), 1_048_576), bounded(buf.readVarInt(), 1_048_576));
                 inspection = new GreenhouseEnvironment.Inspection(enclosed, target, climate, heat, cooling,
-                        glass, specimens, required, status, blocks, progress, buf.readEnum(CropClimate.class), bounded(buf.readVarInt(), 1_048_576));
+                        glass, specimens, required, status, blocks, progress, base, volume, area, floor);
             }
             return new ViewPayload(recipes, inspection, buf.readBoolean(), bounded(buf.readVarInt(), 1_048_576),
-                    bounded(buf.readVarInt(), 1_048_576));
+                    bounded(buf.readVarInt(), 1_048_576), bounded(buf.readVarInt(), 1_048_576));
         }
 
         private static void writeBlocks(FriendlyByteBuf buf, List<ResourceLocation> blocks) {

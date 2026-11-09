@@ -74,5 +74,7 @@
   "biome_based_crops.thermometer.tooltip": "Use to read the current temperature and air supply.",
   "biome_based_crops.message.temperature_reading": "Temperature: %s°C | Oxygen: %s",
   "biome_based_crops.configuration.materialReferenceVolume": "Interior Blocks per Material Recipe",
-  "biome_based_crops.greenhouse.status.filling_air": "Room air is filling"
+  "biome_based_crops.greenhouse.status.filling_air": "Room air is filling",
+  "biome_based_crops.greenhouse.status.missing_floor": "The floor needs the biome's native ground blocks.",
+  "biome_based_crops.configuration.biomeFloorRules": "Biome floor requirements"
 }

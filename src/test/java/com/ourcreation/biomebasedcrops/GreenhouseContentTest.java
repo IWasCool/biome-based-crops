@@ -107,6 +107,25 @@ class GreenhouseContentTest {
     }
 
     @Test
+    void nativeFloorAndLivingMaterialPlacementSurviveGuideNetworkRoundTrip() {
+        var forest = id("minecraft:forest");
+        var ground = List.of(id("minecraft:grass_block"), id("minecraft:dirt"));
+        var recipe = new GreenhouseRecipes.Recipe(CropClimate.NEUTRAL, List.of(
+                new GreenhouseRecipes.MaterialRequirement(id("minecraft:oak_log"), 16, 8, 1),
+                new GreenhouseRecipes.MaterialRequirement(id("minecraft:oak_leaves"), 64, 2, 2)),
+                new GreenhouseRecipes.FloorRequirement(ground, 90));
+        var report = new GreenhouseEnvironment.Inspection(true, forest, CropClimate.NEUTRAL,
+                0, 0, 100, 80, 80, "biome_based_crops.greenhouse.status.missing_floor", recipe.specimens(),
+                List.of(new GreenhouseEnvironment.RequirementProgress(id("minecraft:oak_log"), 16, 16),
+                        new GreenhouseEnvironment.RequirementProgress(id("minecraft:oak_leaves"), 64, 64)),
+                CropClimate.NEUTRAL, 512, 64, new GreenhouseEnvironment.FloorProgress(ground, 57, 58, 64));
+        var payload = new GreenhouseNetwork.ViewPayload(Map.of(forest, recipe), report, true, 512, 512, 64);
+        assertEquals(payload, roundTrip(payload));
+        var contextOnly = new GreenhouseNetwork.ViewPayload(Map.of(forest, recipe), null, true, 512, 8192, 256);
+        assertEquals(contextOnly, roundTrip(contextOnly), "Ordinary guide updates must retain the floor footprint");
+    }
+
+    @Test
     void survivalRecipesLoadAndCraftTheirRegisteredItems(MinecraftServer server) {
         assertCrafts(server, "greenhouse_core", List.of(
                 new ItemStack(Items.GLASS), new ItemStack(Items.COPPER_INGOT), new ItemStack(Items.GLASS),

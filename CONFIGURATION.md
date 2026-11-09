@@ -37,34 +37,47 @@ The default is `cropBiomeRules = []`, preserving all climate defaults. Remove an
 
 Greenhouses identify their biome automatically from required native materials, actual room temperature, and breathable air. No core, biome sample, or binding step is required. The detected biome applies inside its connected interior for crop growth, biome queries, and natural mob spawn lists. Floor, wall, roof, and outdoor positions keep their native biome.
 
-The room's biome is a reversible overlay: it does not rewrite saved chunk biomes or generate new terrain. Opening the enclosure or disabling greenhouses restores the native biome after the normal refresh. Natural spawning still follows normal light, space, structure, dimension, and mob-cap rules.
+The room's biome is a reversible overlay: it does not rewrite saved chunk biomes or generate new terrain. Opening the enclosure or disabling greenhouses restores the native biome. Natural spawning still follows normal light, space, structure, dimension, and mob-cap rules.
 
 1. Craft a **Greenhouse Probe** with glass, copper ingots, redstone, and a stick. Craft a book with wheat for the **Farmer's Field Guide**.
-2. Select your intended biome in the guide. **Every listed material must meet its count**: extra sand cannot replace missing cactus, logs, leaves, or other materials. Counts scale with the scanned room's volume.
+2. Select your intended biome in the guide. Meet its native-floor coverage and **every listed material count**. Counts scale with the scanned room's volume and floor area.
 3. Build a closed room of any shape with a solid floor, walls, and roof. By default, at least 50% of its exposed ceiling area and 10% of its wall area must be glass, with at least four glass wall blocks. Glass blocks and panes count in every orientation, including coloured and tagged mod glass. Close doors and trapdoors.
-4. Place all required materials inside the connected room or in its enclosing floor and walls. Keep them exposed to the room: buried blocks behind a solid floor or wall do not count.
+4. Build the required native ground. Place the listed habitat materials inside the room above its floor, with tree canopies above the trunks. The guide shows floor and material progress separately.
 5. Match the required temperature and air conditions. A naturally suitable room needs no machine. Otherwise, place a powered **Thermoregulator** inside the connected room, choose a Celsius target, and wait for temperature and oxygen to settle.
 6. Use the probe inside the room to check the detected biome, enclosure, temperature, and individual material progress. In hostile atmospheres, room oxygen must reach 95% before it is breathable.
 
-### Material scaling
+### Native floors and material scaling
 
-Base recipes cover `materialReferenceVolume` interior blocks, **512** by default. Each material scales separately, rounding up:
+Each default biome requires native ground across its measured floor area. Listed ground blocks are alternatives and may be mixed. Forest needs **90%** grass blocks, dirt, rooted dirt, or coarse dirt; Desert needs **100% sand**. One lowest supporting floor position counts per room column.
+
+For an **8 x 8 Desert floor**, all **64 positions** must register as sand. Put crop farmland directly on a sand underlay; the scanner checks exactly one block beneath farmland or a climate machine. Other floor blocks use their own material. Sandstone can form the wall frame. Tree logs and plants count above ground inside the room, with leaf canopies at least two blocks above the floor.
+
+Examples at **512 interior blocks** and **64 floor positions**:
+
+| Biome | Native ground | Required habitat materials |
+| --- | --- | --- |
+| Desert | All 64 positions sand | 16 sandstone, 4 cactus, 8 dead bushes |
+| Forest | At least 58 positions native soil | 16 oak logs, 64 oak leaves, 8 birch logs |
+
+Larger rooms increase each feature count using the greatest of its base count, volume requirement, and floor-density requirement:
 
 ```text
-required count = max(base count, ceil(base count * room volume / reference volume))
+required = max(base count, ceil(base count * room volume / reference volume), floor-density count)
 ```
 
-Rooms below the reference volume keep the base counts. For example, Desert requires **8 sand + 4 sandstone + 2 cactus** up to 512 interior blocks, or **16 + 8 + 4** at 1,024 blocks. Biomes O' Plenty's Ominous Woods has base counts of **8 umbran logs + 8 umbran leaves + 4 dead leaves + 4 umbran wood**.
+Default density adds one log per eight floor positions, one canopy block per two, and one plant or other feature per sixteen. Base minima still apply. Floor coverage remains a percentage of actual ground area, independent of room height. `materialReferenceVolume` controls the volume term and defaults to **512**.
 
-The English guide shows the selected biome's materials, required temperature, and short building instructions on one right-hand page. Before a room scan, it shows base counts; after scanning, all biome choices use the same room volume. Large count overlays are abbreviated, with exact counts and found progress in ingredient tooltips. Left-click for recipes or right-click for uses in an installed JEI, EMI, or REI viewer; without one, ordinary item tooltips remain available.
+The English guide shows native-floor coverage, every required material, temperature, and short building instructions on one right-hand page. After a scan, quantities use that room's volume and floor area. Large count overlays are abbreviated, with exact counts and found progress in ingredient tooltips. Left-click for recipes or right-click for uses in an installed JEI, EMI, or REI viewer; without one, ordinary item tooltips remain available.
 
-Vanilla biomes have distinct curated recipes; installed mod biomes derive several required materials from native vegetation and terrain. Custom recipes can replace them. If several recipes fit, the most specific completed recipe takes priority. Remove unrelated materials when changing the intended greenhouse. Existing greenhouse cores remain optional inspection stations.
+Vanilla biomes have curated habitats; installed mod biomes derive materials from native vegetation and terrain. Custom recipes can replace them. If several recipes fit, the most specific completed recipe takes priority. Remove unrelated materials when changing the intended greenhouse. Existing greenhouse cores remain optional inspection stations.
 
 ### Thermoregulator
 
 The **Thermoregulator** retains the registry ID `biome_based_crops:air_conditioner` for saved-world compatibility. Supply Forge Energy (FE) from any side. It stores **100,000,000 FE** and accepts up to **20,000,000 FE per transfer**. A redstone signal stops conditioning.
 
-Right-click to set its Celsius dial from **-20 to 50 C**, default **20 C**. The screen shows actual current temperature, oxygen, and stored FE. Hover the energy meter for exact energy, power use, and room volume. The screen and book use Minecraft container, widget, and item assets, so resource packs can replace their artwork.
+Right-click to set its centered Celsius dial from **-20 to 50 C**, default **20 C**. Hover the top-right Thermometer for current temperature. The vertical red FE gauge shows stored energy; hover it for exact energy, power use, and room volume. The screen uses a vanilla container background with custom dial and gauge textures. Room oxygen remains part of conditioning and can be checked with the Thermometer or probe.
+
+The machine is a full block with original 16-pixel painted-metal textures, intake and outlet grilles, a control lens, and rear mechanical details. Resource packs can replace its artwork.
 
 While conditioning, each unit uses:
 
@@ -107,23 +120,28 @@ Glass requirements scale with the actual room boundary: the default is 50% roof 
 | `enableGreenhouses` | `true` | Recognize suitable enclosed greenhouse biomes. |
 | `maxRoomBlocks` | `262144` | Maximum interior volume, from 64 to 1,048,576 blocks. |
 | `scanBlocksPerTick` | `1024` | Background scan work per level tick, from 256 to 16,384. |
-| `materialReferenceVolume` | `512` | Interior volume covered by base material counts, from 64 to 1,048,576 blocks. |
+| `materialReferenceVolume` | `512` | Reference for volume-scaled material counts, from 64 to 1,048,576 blocks; native floor coverage and feature density are checked separately. |
 | `minimumRoofGlassRatio` | `0.5` | Minimum fraction of exposed ceiling faces made from glass. |
 | `minimumWallGlassRatio` | `0.1` | Minimum fraction of exposed wall faces made from glass; at least four glass wall blocks are required. |
-| `requiredSpecimens` | `4` | Default count for **each** material in generated mod recipes and bare-ID overrides. |
+| `requiredSpecimens` | `4` | Base count for each generated mod material and bare-ID override; default habitats also enforce vegetation minima. |
 | `cacheTicks` | `20` | Maximum refresh delay in ticks, from 1 to 20. |
 | `biomeMaterialRules` | `[]` | Replace complete material recipes for individual biomes. |
+| `biomeFloorRules` | `[]` | Override native-floor coverage and accepted ground blocks for individual biomes. |
 
 Custom recipes use `biome=block*count,block*count`:
 
 ```toml
 biomeMaterialRules = [
-    "minecraft:desert=minecraft:sand*8,minecraft:sandstone*4,minecraft:cactus*2",
-    "example:orchard=example:fruit_log*6,example:fruit_leaves*8,minecraft:grass_block*8"
+    "minecraft:desert=minecraft:sandstone*16,minecraft:cactus*4,minecraft:dead_bush*8"
+]
+biomeFloorRules = [
+    "minecraft:desert=100:minecraft:sand"
 ]
 ```
 
-Every listed material is mandatory. Base counts run from 1 to 64 for up to 32 distinct block IDs, then scale with room volume; duplicate IDs are rejected. The last entry for a biome wins. Use installed block IDs. Stop and restart the world/server after editing these settings.
+Every material in `biomeMaterialRules` is mandatory. Custom recipes deliberately replace the automatic habitat plan, including its floor; add a matching `biomeFloorRules` entry to require native ground. Custom base counts run from 1 to 64 for up to 32 distinct block IDs and scale with volume. Duplicate IDs are rejected.
+
+Floor rules use `biome=percentage:block,block`. The percentage runs from 0 to 100; up to 16 listed block IDs are alternatives for that coverage. The last matching entry in each setting wins. Use installed IDs, then restart the world/server after editing.
 
 Older bare-ID rules still load, but now require `requiredSpecimens` blocks of **each** type rather than a combined total. The legacy setting does not change explicit `*count` entries or the curated vanilla recipes.
 
@@ -159,7 +177,7 @@ Biomes resolve to one climate. Explicit `toughasnails:*_biomes` tags take priori
 
 Vanilla crop and sapling classes are recognized automatically. Namespaces containing `delight` are also supported. Plants can still be placed outside their growth requirements. Disabling either category restores ordinary growth for it and hides its requirement tooltips. `enableTooltips` is in the client config.
 
-Active cooling thermoregulators supply icy/cold/neutral climates; heating supplies neutral/warm/hot; both supply neutral. Empty, inactive, and redstone-disabled regulators supply none. The search covers one block below to three blocks above the plant in loaded chunks. Tough As Nails is optional.
+Active cooling thermoregulators supply icy/cold/neutral climates; heating supplies neutral/warm/hot; both supply neutral. Empty, inactive, and redstone-disabled regulators supply none. In greenhouses, these modes condition the shared air gradually. The search covers one block below to three blocks above the plant in loaded chunks. Tough As Nails is optional.
 
 ## Commands
 

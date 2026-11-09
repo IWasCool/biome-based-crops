@@ -338,7 +338,7 @@ public final class GreenhouseEnvironment {
         }
         ResourceLocation nativeId = nativeBiome(level, anchor).unwrapKey().map(biome -> biome.location()).orElse(null);
         java.util.Comparator<Match> specificity = java.util.Comparator
-                .comparingInt(Match::totalRequired).reversed()
+                .comparingInt(Match::requiredTotal).reversed()
                 .thenComparing(java.util.Comparator.comparingInt((Match match) -> match.definition.recipe.requirements().size()).reversed())
                 .thenComparing(match -> !match.definition.id.equals(nativeId))
                 .thenComparing(match -> match.definition.id.toString());
@@ -356,17 +356,19 @@ public final class GreenhouseEnvironment {
         if (!geometry.glassValid()) status = "no_glass";
         else if (!air.breathable()) status = "filling_air";
         else if (!warmEnough.isEmpty()) status = "valid";
+        else if (chosen != null && chosen.floor.found() < chosen.floor.required()) status = "missing_floor";
         else if (!complete.isEmpty()) status = "wrong_temperature";
         else status = "missing_specimens";
         // A room with no recognizable specimens has no plausible target to advertise.
-        if (chosen != null && chosen.matched == 0) chosen = null;
+        if (chosen != null && chosen.matched == 0 && chosen.floor.found() == 0) chosen = null;
         ResourceLocation target = chosen == null ? null : chosen.definition.id;
         List<RequirementProgress> progress = chosen == null ? List.of() : chosen.progress;
         List<ResourceLocation> specimens = chosen == null ? List.of() : chosen.definition.recipe.specimens();
         Inspection inspection = new Inspection(true, target,
                 actual, 0, 0,
                 geometry.glass, chosen == null ? 0 : chosen.matched, chosen == null ? 0 : chosen.totalRequired,
-                key(status), specimens, progress, baseClimate, roomVolume);
+                key(status), specimens, progress, baseClimate, roomVolume, geometry.floorSamples.size(),
+                chosen == null ? FloorProgress.none() : chosen.floor);
         return new Room(tick, inspection, geometry.interior, Set.copyOf(aliases));
     }
 
@@ -374,7 +376,7 @@ public final class GreenhouseEnvironment {
         List<Match> complete = new java.util.ArrayList<>();
         Match closest = null;
         for (Definition definition : definitions(level, cache)) {
-            Match match = match(definition, geometry.counts, geometry.interior.size());
+            Match match = match(definition, geometry);
             if (closest == null || compareProgress(match, closest) < 0) closest = match;
             if (match.complete()) complete.add(match);
         }
@@ -390,25 +392,32 @@ public final class GreenhouseEnvironment {
         return cache.definitions;
     }
 
-    private static Match match(Definition definition, Map<ResourceLocation, Integer> counts, int roomVolume) {
+    private static Match match(Definition definition, GreenhouseRoomScanner.Geometry geometry) {
         int matched = 0;
         int totalRequired = 0;
         boolean complete = true;
         List<RequirementProgress> progress = new java.util.ArrayList<>();
         for (var required : definition.recipe.requirements()) {
+            Map<ResourceLocation, Integer> counts = required.minHeight() == 2 ? geometry.canopy
+                    : required.minHeight() == 1 ? geometry.features : geometry.counts;
             int found = counts.getOrDefault(required.block(), 0);
-            int scaled = GreenhouseRecipes.scaledCount(required.count(), roomVolume);
+            int scaled = GreenhouseRecipes.scaledCount(required, geometry.interior.size(), geometry.floorSamples.size(),
+                    GreenhouseSettings.materialReferenceVolume());
             totalRequired += scaled;
             matched += Math.min(found, scaled);
             complete &= found >= scaled;
             progress.add(new RequirementProgress(required.block(), found, scaled));
         }
-        return new Match(definition, matched, complete, List.copyOf(progress), totalRequired);
+        var floor = definition.recipe.floor();
+        int floorFound = floor.blocks().stream().mapToInt(block -> geometry.floorCounts.getOrDefault(block, 0)).sum();
+        int floorRequired = floor.required(geometry.floorSamples.size());
+        FloorProgress floorProgress = new FloorProgress(floor.blocks(), floorFound, floorRequired, geometry.floorSamples.size());
+        return new Match(definition, matched, complete && floorFound >= floorRequired, List.copyOf(progress), totalRequired, floorProgress);
     }
 
     private static int compareProgress(Match first, Match second) {
-        long a = (long) first.matched * second.totalRequired;
-        long b = (long) second.matched * first.totalRequired;
+        long a = (long) first.matchedTotal() * second.requiredTotal();
+        long b = (long) second.matchedTotal() * first.requiredTotal();
         if (a != b) return Long.compare(b, a);
         if (first.matched != second.matched) return Integer.compare(second.matched, first.matched);
         int distinct = Integer.compare(second.definition.recipe.requirements().size(), first.definition.recipe.requirements().size());
@@ -416,7 +425,7 @@ public final class GreenhouseEnvironment {
     }
 
     private static boolean sameSignature(GreenhouseRecipes.Recipe first, GreenhouseRecipes.Recipe second) {
-        if (first.climate() != second.climate() || first.count() != second.count()) return false;
+        if (first.climate() != second.climate() || first.count() != second.count() || !first.floor().equals(second.floor())) return false;
         return new HashSet<>(first.requirements()).equals(new HashSet<>(second.requirements()));
     }
 
@@ -478,11 +487,20 @@ public final class GreenhouseEnvironment {
 
     public record Inspection(boolean enclosed, ResourceLocation targetBiome, CropClimate climate, int heat, int cooling,
             int glass, int specimens, int requiredSpecimens, String status, List<ResourceLocation> specimenBlocks,
-            List<RequirementProgress> requirements, CropClimate baseClimate, int roomVolume) {
+            List<RequirementProgress> requirements, CropClimate baseClimate, int roomVolume, int floorArea, FloorProgress floor) {
         public Inspection {
             specimenBlocks = List.copyOf(specimenBlocks);
             requirements = List.copyOf(requirements);
             if (roomVolume < 0 || roomVolume > 1048576) throw new IllegalArgumentException("Invalid greenhouse room volume");
+            if (floorArea < 0 || floorArea > 1048576) throw new IllegalArgumentException("Invalid greenhouse floor area");
+            java.util.Objects.requireNonNull(floor, "floor");
+        }
+
+        public Inspection(boolean enclosed, ResourceLocation targetBiome, CropClimate climate, int heat, int cooling,
+                int glass, int specimens, int requiredSpecimens, String status, List<ResourceLocation> specimenBlocks,
+                List<RequirementProgress> requirements, CropClimate baseClimate, int roomVolume) {
+            this(enclosed, targetBiome, climate, heat, cooling, glass, specimens, requiredSpecimens, status,
+                    specimenBlocks, requirements, baseClimate, roomVolume, 0, FloorProgress.none());
         }
 
         public Inspection(boolean enclosed, ResourceLocation targetBiome, CropClimate climate, int heat, int cooling,
@@ -511,6 +529,11 @@ public final class GreenhouseEnvironment {
     public record RequirementProgress(ResourceLocation block, int found, int required) {
     }
 
+    public record FloorProgress(List<ResourceLocation> blocks, int found, int required, int total) {
+        public FloorProgress { blocks = List.copyOf(blocks); }
+        public static FloorProgress none() { return new FloorProgress(List.of(), 0, 0, 0); }
+    }
+
     public record BiomeRegion(ResourceLocation biome, Set<Long> interior) {
         public BiomeRegion {
             // Completed geometry already supplies one stable, immutable primitive
@@ -522,7 +545,10 @@ public final class GreenhouseEnvironment {
     private record Definition(ResourceLocation id, GreenhouseRecipes.Recipe recipe) {
     }
 
-    private record Match(Definition definition, int matched, boolean complete, List<RequirementProgress> progress, int totalRequired) {
+    private record Match(Definition definition, int matched, boolean complete, List<RequirementProgress> progress, int totalRequired,
+                         FloorProgress floor) {
+        int matchedTotal() { return matched + Math.min(floor.found(), floor.required()); }
+        int requiredTotal() { return totalRequired + floor.required(); }
     }
 
     private record MaterialMatches(long materialRevision, List<Match> complete, Match closest) {
