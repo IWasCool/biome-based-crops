@@ -14,8 +14,8 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 
 - Assign crops and saplings to climates, specific biomes, or biome tags.
 - Warm crops with fire, lit campfires, lava, and magma, or cool them with ice and snow.
-- Build enclosed greenhouses that emulate sampled biomes using native blocks and suitable temperatures.
-- Check conditions with a Greenhouse Probe and follow visual setup pages for each biome in the Farmer's Field Guide.
+- Build greenhouses that automatically identify their biome from native materials and local temperature.
+- Check conditions with a Greenhouse Probe and follow each biome's visual material recipe in the Farmer's Field Guide.
 - Control natural growth and bonemeal restrictions independently.
 - Disable restrictions separately for crops and trees with config settings or operator commands.
 - Show growth requirements in item tooltips.
@@ -23,9 +23,9 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 
 ## Greenhouses
 
-Craft a **Greenhouse Core**, **Greenhouse Probe**, and **Farmer's Field Guide**. Sneak-use the probe on the ground in the biome you want to reproduce, then use it on the core to select that biome. Build an enclosed room with glass in its roof, add the native specimen blocks listed in the guide, and balance heating or cooling until the probe reports a valid greenhouse.
+Craft a **Greenhouse Probe** and **Farmer's Field Guide**. Build an enclosed room with roof glass, place every material type and quantity shown for your chosen biome, and match its climate. The greenhouse identifies its biome automatically; no core or sample is required.
 
-Use the probe on a crop or the core to check its registered biome, temperature, enclosure, and missing requirements. Select a biome in the guide's searchable index for labeled material icons, a greenhouse cutaway, climate targets, and crafting layouts. The guide covers installed mod biomes and uses English text. See [the greenhouse configuration guide](CONFIGURATION.md#greenhouses) for building limits and temperature sources.
+Use the probe inside the room to check its detected biome, climate, enclosure, and each material count. Select a biome in the guide's searchable index for its complete material recipe and climate. Small **Temperature** and **How to build** links open shared references on the right-hand page. The guide covers installed mod biomes and uses English text. See [the greenhouse configuration guide](CONFIGURATION.md#greenhouses) for building limits and temperature sources.
 
 ## Configuration
 
@@ -52,7 +52,7 @@ Use a Java 21 JDK:
 .\gradlew.bat runGameTestServer -PenableGameTests=true -PincludeLocalMods=false
 ```
 
-On Linux and macOS use `bash ./gradlew`. The release JAR is `build/libs/biome_based_crops-1.0.0.jar`. Optional local test mods belong in `libs/` and are never bundled. Test code is excluded from the release JAR.
+On Linux and macOS use `bash ./gradlew`. The built JAR is `build/libs/biome_based_crops-1.0.0.jar`. Optional local test mods belong in `libs/` and are never bundled. Test code is excluded from the release JAR.
 
 Language resources cover all 137 Minecraft 1.21.1 locales. New biome-rule and greenhouse text uses English fallbacks; translation corrections are welcome.
 

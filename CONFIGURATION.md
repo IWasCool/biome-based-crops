@@ -35,59 +35,64 @@ The default is `cropBiomeRules = []`, preserving all climate defaults. Remove an
 
 ## Greenhouses
 
-A valid greenhouse reproduces its selected biome for crops inside it, including explicit biome and biome-tag rules. It does not change world biome data, weather, mob spawning, or terrain. A greenhouse needs a sampled target biome, an enclosed room, glass, native specimen blocks, and a suitable temperature.
+Greenhouses identify their biome automatically from the room's native materials and climate. No core, biome sample, or binding step is required. A recognized greenhouse supplies that biome for crop growth, including exact biome and biome-tag rules. World terrain, weather, and mob spawning stay unchanged.
 
-1. Craft a **Greenhouse Core** with glass, copper ingots, bricks, a compass, and planks. Place it inside the intended growing room.
-2. Craft a **Greenhouse Probe** with glass, copper ingots, redstone, and a stick. Visit the biome you want, then sneak-use the probe on its ground to record a sample.
-3. Use the sampled probe on the core to set its target biome. The sample selects the biome; it does not replace the room's requirements.
-4. Enclose the room with a solid floor, walls, and roof. Keep the growing area within four blocks horizontally of the core. At the default radius, the surrounding shell fits within an 11 by 11 footprint; the floor can be one block below the core and the roof at most five blocks above it. Open doorways and holes invalidate the room. Close doors before checking it.
-5. Include at least four glass blocks or panes in the enclosing shell, with glass in the roof.
-6. Place at least four native specimen blocks in the room or its enclosing floor and walls. Any combination of blocks listed for the target biome counts toward the total; you do not need four of every type.
-7. Match the target biome's climate with nearby heat or cooling sources. Use the probe on a crop or core to see the current climate, chosen biome, and missing requirements.
+1. Craft a **Greenhouse Probe** with glass, copper ingots, redstone, and a stick. Craft a book with wheat for the **Farmer's Field Guide**.
+2. Select your intended biome in the guide. Each block icon has its own required quantity. **Every listed type must meet its count**: extra sand cannot replace missing cactus, logs, leaves, or other materials.
+3. Build a closed room with a solid floor, walls, and roof. Include at least four glass blocks or panes, with glass in the roof. Close doors and trapdoors. At the default radius, the interior can be up to 9 by 9 blocks and five blocks tall; the complete floor, walls, and roof fit within 11 by 11 by 7 blocks.
+4. Place all required materials inside the connected room or in its enclosing floor and walls. Keep them exposed to the room: buried blocks behind a solid floor or wall do not count.
+5. Match the required climate. Your actual biome is the starting climate, so a naturally Cold room already suits a Cold recipe without adding ice.
+6. Use the probe inside the room to check the detected biome, enclosure, temperature, and individual material progress.
 
-Craft a book with wheat to obtain the **Farmer's Field Guide**. It opens to a searchable biome index. Select a biome for visual setup pages: labeled native materials, climate and heat/cooling counts, a greenhouse cutaway, and crafting grids. Turn the book's pages to move between diagrams. Labels and counts appear directly on the page without hover popups. The guide uses English text and the server's actual specimen requirements.
+For example, the default Desert recipe requires **8 sand + 4 sandstone + 2 cactus**, all together. With Biomes O' Plenty installed, Ominous Woods requires **8 umbran logs + 8 umbran leaves + 4 dead leaves + 4 umbran wood**.
 
-Every registered biome has an entry. Vanilla biomes have familiar terrain materials; additional choices come from biome vegetation features. Mod biomes also receive recipes, with a stone/moss fallback when no native plant material can be read.
+The guide keeps each biome's material recipe and required climate on one right-hand summary. Its small **Temperature** and **How to build** links open shared references on that same page. Labels and counts appear directly on the English pages, without hover popups. Vanilla biomes have distinct curated material recipes; installed mod biomes derive several required materials from their native vegetation and a terrain substrate. Custom recipes can replace these choices.
 
-Only crops connected to the core's interior space receive its emulated biome. A core outside the room cannot support crops through a wall. Changes can take up to one second to appear while greenhouse checks refresh. Without a valid greenhouse, crops use their actual biome and local temperature.
+If several recipes fit a room, the most specific completed recipe takes priority. Remove unrelated material types when changing the intended greenhouse. Changes normally refresh within one second; the probe requests a fresh reading. Existing greenhouse cores remain optional inspection stations.
 
 ### Heating and cooling
 
-Nearby temperature sources work outdoors too. The default search extends four blocks horizontally, from one block below the crop to two above it. A greenhouse uses its core as the temperature search centre, so crops in one room share its conditions.
+The strongest nearby heat source and strongest cooling source determine the temperature change. Repeated sources do not stack: two campfires have the same effect as one. Opposing strengths cancel.
 
-| Source | Heating or cooling strength |
-| --- | --- |
-| Fire, soul fire, lit campfire, lit soul campfire, lava | +8 heat |
-| Magma block | +4 heat |
-| Ice or snow block | +4 cooling |
-| Packed ice or blue ice | +8 cooling |
-| Snow layer | +1 cooling |
+| Source | Strength | Climate change by itself |
+| --- | --- | --- |
+| Fire, soul fire, lit campfire, lit soul campfire | 8 heat | +1 step |
+| Magma block | 16 heat | +2 steps |
+| Lava | 32 heat | +4 steps |
+| Snow block or snow layer | 8 cooling | -1 step |
+| Ice | 16 cooling | -2 steps |
+| Packed ice | 24 cooling | -3 steps |
+| Blue ice | 32 cooling | -4 steps |
 
-Heat and cooling cancel. Every eight points of net strength moves the local climate one step along `icy → cold → neutral → warm → hot`. Outdoor sources can shift up to two steps from the actual biome's climate. An enclosed greenhouse can shift all four steps, allowing even icy and hot biomes to be reproduced far from home. Greenhouse sources must be inside the room or in its enclosing shell; heat cannot pass through a wall from outside. Unlit campfires provide no heat. Adding too much heat or cooling can make a crop's environment unsuitable. A suitable active Tough As Nails thermoregulator remains an alternative climate source.
+The climate order is `icy -> cold -> neutral -> warm -> hot`. Subtract the strongest cooling strength from the strongest heat strength, then divide by eight to find the shift. For example, lava and packed ice give `32 - 24 = 8`, or one warming step. Outdoor plants are limited to two steps; enclosed greenhouses can span all four. Unlit campfires provide no heat.
 
-Blocks in `biome_based_crops:heat_sources` and `biome_based_crops:cooling_sources` also count. Additional tagged sources supply four points each; a heat source with a `lit` state must be lit. `biome_based_crops:greenhouse_glass` accepts common glass blocks and panes, and can be extended by a datapack.
+The default source radius is four blocks horizontally from the room's centre, from its physical floor blocks to three blocks above them. Outdoors, the radius is centred on the plant and reaches one block below to two above it. Greenhouse sources must be inside its connected room or in its enclosing shell. Outside sources cannot heat a greenhouse through its walls. A suitable active Tough As Nails thermoregulator remains an alternative climate source; the room and all materials are still required.
+
+Datapacks can extend `biome_based_crops:heat_sources`, `biome_based_crops:cooling_sources`, and `biome_based_crops:greenhouse_glass`. Additional tagged temperature sources have strength 8. A heat source with a `lit` state must be lit.
 
 ### Greenhouse settings
 
 | Setting | Default | Effect |
 | --- | --- | --- |
-| `enableGreenhouses` | `true` | Allow valid cores to emulate a sampled biome. |
-| `enableAmbientTemperature` | `true` | Let nearby heat and cooling sources change crop temperature. |
-| `radius` | `4` | Temperature and greenhouse cultivation radius, from 1 to 6 blocks. |
-| `requiredSpecimens` | `4` | Total native specimen blocks, from 1 to 64. |
+| `enableGreenhouses` | `true` | Recognize suitable enclosed greenhouse biomes. |
+| `enableAmbientTemperature` | `true` | Apply nearby heat and cooling sources. |
+| `radius` | `4` | Interior and temperature search radius, from 1 to 6 blocks. |
+| `requiredSpecimens` | `4` | Default count for **each** material in generated mod recipes and bare-ID overrides. |
 | `cacheTicks` | `20` | Maximum refresh delay in ticks, from 1 to 20. |
-| `biomeMaterialRules` | `[]` | Replace the specimen choices for individual biomes. |
+| `biomeMaterialRules` | `[]` | Replace complete material recipes for individual biomes. |
 
-For example:
+Custom recipes use `biome=block*count,block*count`:
 
 ```toml
 biomeMaterialRules = [
-    "minecraft:desert=minecraft:sand,minecraft:sandstone,minecraft:cactus",
-    "example:orchard=example:fruit_leaves,minecraft:grass_block"
+    "minecraft:desert=minecraft:sand*8,minecraft:sandstone*4,minecraft:cactus*2",
+    "example:orchard=example:fruit_log*6,example:fruit_leaves*8,minecraft:grass_block*8"
 ]
 ```
 
-Each entry replaces the named biome's specimen list. The last entry for a biome wins. Use installed block IDs; missing blocks cannot count as specimens. Stop and restart the world/server after editing these settings.
+Every listed material is mandatory; each count is a minimum. Counts run from 1 to 64 for up to 32 distinct block IDs; duplicate IDs are rejected. The last entry for a biome wins. Use installed block IDs. Stop and restart the world/server after editing these settings.
+
+Older bare-ID rules still load, but now require `requiredSpecimens` blocks of **each** type rather than a combined total. The legacy setting does not change explicit `*count` entries or the curated vanilla recipes.
 
 ## Choose climates
 

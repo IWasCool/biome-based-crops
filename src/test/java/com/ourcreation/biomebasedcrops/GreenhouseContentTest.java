@@ -14,7 +14,6 @@ import java.util.Map;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -22,7 +21,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -32,23 +30,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(EphemeralTestServerProvider.class)
 class GreenhouseContentTest {
-    @Test
-    void probeSamplesRemainBoundWhenCopiedAndIgnoreMalformedIds() {
-        ItemStack probe = new ItemStack(GreenhouseContent.PROBE.get());
-        assertNull(GreenhouseProbeItem.sampledBiome(probe));
-        CustomData.update(DataComponents.CUSTOM_DATA, probe, tag -> {
-            tag.putString("SampledBiome", "minecraft:cherry_grove");
-            tag.putString("OwnerNote", "spring orchard");
-        });
-        ItemStack copy = probe.copy();
-        assertEquals(id("minecraft:cherry_grove"), GreenhouseProbeItem.sampledBiome(copy));
-        assertEquals("spring orchard", copy.get(DataComponents.CUSTOM_DATA).copyTag().getString("OwnerNote"));
-
-        CustomData.update(DataComponents.CUSTOM_DATA, copy, tag -> tag.putString("SampledBiome", "Not a biome!"));
-        assertNull(GreenhouseProbeItem.sampledBiome(copy));
-        assertEquals(id("minecraft:cherry_grove"), GreenhouseProbeItem.sampledBiome(probe));
-    }
-
     @Test
     void sampledCoreTargetSurvivesWorldSaveAndInvalidOldDataIsSafe(MinecraftServer server) {
         BlockPos position = new BlockPos(12, 64, -8);
@@ -91,7 +72,9 @@ class GreenhouseContentTest {
         var recipes = Map.of(biome, new GreenhouseRecipes.Recipe(CropClimate.HOT, materials, 4));
         for (String status : List.of("valid", "missing_specimens", "outside", "no_glass")) {
             var report = new GreenhouseEnvironment.Inspection(true, biome, CropClimate.WARM,
-                    16, 8, 5, 2, 4, "biome_based_crops.greenhouse.status." + status, materials);
+                    16, 8, 5, 2, 4, "biome_based_crops.greenhouse.status." + status, materials,
+                    List.of(new GreenhouseEnvironment.RequirementProgress(id("minecraft:sand"), 2, 8),
+                            new GreenhouseEnvironment.RequirementProgress(id("minecraft:cactus"), 0, 2)), CropClimate.COLD);
             var decoded = roundTrip(new GreenhouseNetwork.ViewPayload(recipes, report));
             assertEquals(report, decoded.inspection());
             assertEquals(recipes, decoded.recipes());

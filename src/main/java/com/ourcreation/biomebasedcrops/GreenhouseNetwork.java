@@ -20,7 +20,7 @@ public final class GreenhouseNetwork {
     }
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        event.registrar("1").playToClient(ViewPayload.TYPE, ViewPayload.CODEC,
+        event.registrar("2").playToClient(ViewPayload.TYPE, ViewPayload.CODEC,
                 (payload, context) -> com.ourcreation.biomebasedcrops.client.GreenhouseViews.open(payload));
     }
 
@@ -54,8 +54,11 @@ public final class GreenhouseNetwork {
             payload.recipes.forEach((id, recipe) -> {
                 buf.writeResourceLocation(id);
                 buf.writeEnum(recipe.climate());
-                writeBlocks(buf, recipe.specimens());
-                buf.writeVarInt(recipe.count());
+                buf.writeVarInt(recipe.requirements().size());
+                recipe.requirements().forEach(requirement -> {
+                    buf.writeResourceLocation(requirement.block());
+                    buf.writeVarInt(requirement.count());
+                });
             });
             buf.writeBoolean(payload.inspection != null);
             if (payload.inspection != null) {
@@ -70,6 +73,13 @@ public final class GreenhouseNetwork {
                 buf.writeVarInt(report.requiredSpecimens());
                 buf.writeUtf(report.status(), 128);
                 writeBlocks(buf, report.specimenBlocks());
+                buf.writeVarInt(report.requirements().size());
+                report.requirements().forEach(requirement -> {
+                    buf.writeResourceLocation(requirement.block());
+                    buf.writeVarInt(requirement.found());
+                    buf.writeVarInt(requirement.required());
+                });
+                buf.writeEnum(report.baseClimate());
             }
         }
 
@@ -79,14 +89,35 @@ public final class GreenhouseNetwork {
             for (int i = 0; i < size; i++) {
                 ResourceLocation id = buf.readResourceLocation();
                 CropClimate climate = buf.readEnum(CropClimate.class);
-                List<ResourceLocation> blocks = readBlocks(buf);
-                recipes.put(id, new GreenhouseRecipes.Recipe(climate, blocks, bounded(buf.readVarInt(), 256)));
+                int count = bounded(buf.readVarInt(), 32);
+                List<GreenhouseRecipes.MaterialRequirement> requirements = new ArrayList<>();
+                for (int j = 0; j < count; j++) {
+                    requirements.add(new GreenhouseRecipes.MaterialRequirement(buf.readResourceLocation(), bounded(buf.readVarInt(), 64)));
+                }
+                recipes.put(id, new GreenhouseRecipes.Recipe(climate,
+                        requirements.stream().map(GreenhouseRecipes.MaterialRequirement::block).toList(),
+                        requirements.stream().mapToInt(GreenhouseRecipes.MaterialRequirement::count).sum(), requirements));
             }
             GreenhouseEnvironment.Inspection inspection = null;
             if (buf.readBoolean()) {
-                inspection = new GreenhouseEnvironment.Inspection(buf.readBoolean(), buf.readNullable(FriendlyByteBuf::readResourceLocation),
-                        buf.readEnum(CropClimate.class), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
-                        buf.readVarInt(), buf.readVarInt(), buf.readUtf(128), readBlocks(buf));
+                boolean enclosed = buf.readBoolean();
+                ResourceLocation target = buf.readNullable(FriendlyByteBuf::readResourceLocation);
+                CropClimate climate = buf.readEnum(CropClimate.class);
+                int heat = bounded(buf.readVarInt(), 16384);
+                int cooling = bounded(buf.readVarInt(), 16384);
+                int glass = bounded(buf.readVarInt(), 16384);
+                int specimens = bounded(buf.readVarInt(), 2048);
+                int required = bounded(buf.readVarInt(), 2048);
+                String status = buf.readUtf(128);
+                List<ResourceLocation> blocks = readBlocks(buf);
+                int progressCount = bounded(buf.readVarInt(), 32);
+                List<GreenhouseEnvironment.RequirementProgress> progress = new ArrayList<>();
+                for (int j = 0; j < progressCount; j++) {
+                    progress.add(new GreenhouseEnvironment.RequirementProgress(buf.readResourceLocation(),
+                            bounded(buf.readVarInt(), 16384), bounded(buf.readVarInt(), 64)));
+                }
+                inspection = new GreenhouseEnvironment.Inspection(enclosed, target, climate, heat, cooling,
+                        glass, specimens, required, status, blocks, progress, buf.readEnum(CropClimate.class));
             }
             return new ViewPayload(recipes, inspection);
         }

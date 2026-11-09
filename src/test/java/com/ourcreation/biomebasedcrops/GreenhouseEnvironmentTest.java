@@ -14,12 +14,12 @@ class GreenhouseEnvironmentTest {
         assertEquals(8, GreenhouseEnvironment.heatStrength(Blocks.CAMPFIRE.defaultBlockState().setValue(BlockStateProperties.LIT, true)));
         assertEquals(0, GreenhouseEnvironment.heatStrength(Blocks.CAMPFIRE.defaultBlockState().setValue(BlockStateProperties.LIT, false)));
         assertEquals(8, GreenhouseEnvironment.heatStrength(Blocks.FIRE.defaultBlockState()));
-        assertEquals(8, GreenhouseEnvironment.heatStrength(Blocks.LAVA.defaultBlockState()));
-        assertEquals(4, GreenhouseEnvironment.heatStrength(Blocks.MAGMA_BLOCK.defaultBlockState()));
-        assertEquals(4, GreenhouseEnvironment.coolingStrength(Blocks.ICE.defaultBlockState()));
-        assertEquals(8, GreenhouseEnvironment.coolingStrength(Blocks.PACKED_ICE.defaultBlockState()));
-        assertEquals(8, GreenhouseEnvironment.coolingStrength(Blocks.BLUE_ICE.defaultBlockState()));
-        assertEquals(1, GreenhouseEnvironment.coolingStrength(Blocks.SNOW.defaultBlockState()));
+        assertEquals(32, GreenhouseEnvironment.heatStrength(Blocks.LAVA.defaultBlockState()));
+        assertEquals(16, GreenhouseEnvironment.heatStrength(Blocks.MAGMA_BLOCK.defaultBlockState()));
+        assertEquals(16, GreenhouseEnvironment.coolingStrength(Blocks.ICE.defaultBlockState()));
+        assertEquals(24, GreenhouseEnvironment.coolingStrength(Blocks.PACKED_ICE.defaultBlockState()));
+        assertEquals(32, GreenhouseEnvironment.coolingStrength(Blocks.BLUE_ICE.defaultBlockState()));
+        assertEquals(8, GreenhouseEnvironment.coolingStrength(Blocks.SNOW.defaultBlockState()));
     }
 
     @Test
