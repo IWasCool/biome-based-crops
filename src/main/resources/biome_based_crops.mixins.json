@@ -9,7 +9,9 @@
     "GreenhouseSpawnBiomeMixin",
     "CreateTreeFertilizerMixin",
     "SliceAndDiceFertilizerMixin",
-    "GreenhouseBlockChangeMixin"
+    "GreenhouseBlockChangeMixin",
+    "NorthstarRoomOxygenMixin",
+    "NorthstarRoomTemperatureMixin"
   ],
   "injectors": {
     "defaultRequire": 1

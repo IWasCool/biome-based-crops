@@ -18,7 +18,8 @@ public final class GreenhouseClientBiomes {
     public static void accept(GreenhouseBiomeNetwork.RoomPayload payload) {
         Long2ObjectOpenHashMap<GreenhouseBiomeNetwork.SectionMask> sections = new Long2ObjectOpenHashMap<>();
         for (var section : payload.sections()) sections.put(section.sectionKey(), section);
-        room = new Snapshot(payload.dimension(), payload.biome(), Long2ObjectMaps.unmodifiable(sections));
+        room = new Snapshot(payload.dimension(), payload.biome(), Long2ObjectMaps.unmodifiable(sections),
+                payload.temperature(), payload.oxygenPercent());
     }
 
     public static void clear() { room = null; }
@@ -31,12 +32,44 @@ public final class GreenhouseClientBiomes {
     }
 
     static ResourceLocation biomeIdAt(ResourceLocation dimension, BlockPos pos) {
+        Snapshot snapshot = at(dimension, pos);
+        return snapshot == null ? null : snapshot.biome;
+    }
+
+    public static float temperatureAt(Level level, BlockPos pos, float fallback) {
+        return temperatureAt(level.dimension().location(), pos, fallback);
+    }
+
+    static float temperatureAt(ResourceLocation dimension, BlockPos pos, float fallback) {
+        Snapshot snapshot = at(dimension, pos);
+        return snapshot == null ? fallback : snapshot.temperature;
+    }
+
+    public static float oxygenAt(Level level, BlockPos pos, float fallback) {
+        return oxygenAt(level.dimension().location(), pos, fallback);
+    }
+
+    static float oxygenAt(ResourceLocation dimension, BlockPos pos, float fallback) {
+        Snapshot snapshot = at(dimension, pos);
+        return snapshot == null ? fallback : snapshot.oxygen;
+    }
+
+    public static boolean hasOxygen(Level level, BlockPos pos) {
+        return hasOxygen(level.dimension().location(), pos);
+    }
+
+    static boolean hasOxygen(ResourceLocation dimension, BlockPos pos) {
+        Snapshot snapshot = at(dimension, pos);
+        return snapshot != null && snapshot.oxygen >= 95;
+    }
+
+    private static Snapshot at(ResourceLocation dimension, BlockPos pos) {
         Snapshot snapshot = room;
-        if (snapshot == null || snapshot.biome == null || !snapshot.dimension.equals(dimension)) return null;
+        if (snapshot == null || !snapshot.dimension.equals(dimension)) return null;
         var mask = snapshot.sections.get(GreenhouseBiomeNetwork.sectionKey(pos));
-        return mask != null && mask.contains(pos) ? snapshot.biome : null;
+        return mask != null && mask.contains(pos) ? snapshot : null;
     }
 
     private record Snapshot(ResourceLocation dimension, ResourceLocation biome,
-                            Long2ObjectMap<GreenhouseBiomeNetwork.SectionMask> sections) { }
+                            Long2ObjectMap<GreenhouseBiomeNetwork.SectionMask> sections, float temperature, float oxygen) { }
 }

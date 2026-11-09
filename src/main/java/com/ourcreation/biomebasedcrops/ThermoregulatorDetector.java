@@ -2,6 +2,7 @@ package com.ourcreation.biomebasedcrops;
 
 import java.util.Set;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -123,6 +124,32 @@ public final class ThermoregulatorDetector {
         if (celsius <= 10) return CropClimate.COLD;
         if (celsius <= 25) return CropClimate.NEUTRAL;
         return celsius <= 35 ? CropClimate.WARM : CropClimate.HOT;
+    }
+
+    /** Actual verified machine output, used as a gradual room-air drive. */
+    public static OptionalDouble providedTemperatureAt(Level level, BlockPos machine, BlockPos query) {
+        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()) return OptionalDouble.empty();
+        BlockState state = level.getBlockState(machine);
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        if (id.equals(THERMOREGULATOR_ID)) {
+            if (supportsClimates(state, Set.of(CropClimate.HOT))) return OptionalDouble.of(45);
+            if (supportsClimates(state, Set.of(CropClimate.ICY))) return OptionalDouble.of(-10);
+            if (supportsClimates(state, Set.of(CropClimate.NEUTRAL))) return OptionalDouble.of(20);
+            return OptionalDouble.empty();
+        }
+        if (!id.equals(NORTHSTAR_REGULATOR_ID)) return OptionalDouble.empty();
+        BlockEntity entity = level.getBlockEntity(machine);
+        if (entity == null || entity.isRemoved()) return OptionalDouble.empty();
+        Optional<NorthstarAccess> access = NORTHSTAR_ACCESS.get(entity.getClass());
+        if (access.isEmpty()) return OptionalDouble.empty();
+        try {
+            if (!(Boolean) access.get().sealed.invoke(entity, query)) return OptionalDouble.empty();
+            float temperature = (Float) access.get().temperature.invoke(entity);
+            return Float.isFinite(temperature) ? OptionalDouble.of(temperature) : OptionalDouble.empty();
+        } catch (ReflectiveOperationException exception) {
+            logNorthstarFailure(exception);
+            return OptionalDouble.empty();
+        }
     }
 
     private static void logNorthstarFailure(ReflectiveOperationException exception) {

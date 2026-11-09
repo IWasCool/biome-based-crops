@@ -29,12 +29,14 @@ public final class LargeGreenhouseGameTests {
         List<? extends String> oldMaterials = List.copyOf(GreenhouseSettings.BIOME_MATERIAL_RULES.get());
         boolean oldEnabled = GreenhouseSettings.ENABLE_GREENHOUSES.get();
         int oldMaximum = GreenhouseSettings.MAX_ROOM_BLOCKS.get(), oldBudget = GreenhouseSettings.SCAN_BLOCKS_PER_TICK.get();
+        int oldReference = GreenhouseSettings.MATERIAL_REFERENCE_VOLUME.get();
         double oldRoof = GreenhouseSettings.MIN_ROOF_GLASS_RATIO.get(), oldWalls = GreenhouseSettings.MIN_WALL_GLASS_RATIO.get();
         Runnable restore = () -> {
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(oldMaterials);
             GreenhouseSettings.ENABLE_GREENHOUSES.set(oldEnabled);
             GreenhouseSettings.MAX_ROOM_BLOCKS.set(oldMaximum);
             GreenhouseSettings.SCAN_BLOCKS_PER_TICK.set(oldBudget);
+            GreenhouseSettings.MATERIAL_REFERENCE_VOLUME.set(oldReference);
             GreenhouseSettings.MIN_ROOF_GLASS_RATIO.set(oldRoof);
             GreenhouseSettings.MIN_WALL_GLASS_RATIO.set(oldWalls);
             GreenhouseEnvironment.clearCache();
@@ -47,6 +49,7 @@ public final class LargeGreenhouseGameTests {
             GreenhouseSettings.ENABLE_GREENHOUSES.set(true);
             GreenhouseSettings.MAX_ROOM_BLOCKS.set(262144);
             GreenhouseSettings.SCAN_BLOCKS_PER_TICK.set(1024);
+            GreenhouseSettings.MATERIAL_REFERENCE_VOLUME.set(512);
             GreenhouseSettings.MIN_ROOF_GLASS_RATIO.set(0.5D);
             GreenhouseSettings.MIN_WALL_GLASS_RATIO.set(0.1D);
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of(
@@ -93,7 +96,27 @@ public final class LargeGreenhouseGameTests {
             helper.runAfterDelay(240L, () -> {
                 try {
                     var complete = GreenhouseEnvironment.inspect(level, inside);
-                    helper.assertTrue(complete.valid(), "Large greenhouse did not finish bounded background scanning: " + complete);
+                    helper.assertTrue(complete.enclosed(), "Large greenhouse did not finish bounded background scanning: " + complete);
+                    helper.assertFalse(complete.valid(), "Four specimens validated a 131072-cell greenhouse without volume scaling");
+                    helper.assertTrue(complete.status().endsWith("missing_specimens"), "Large sparse room failed for the wrong reason: " + complete);
+                    helper.assertValueEqual(complete.roomVolume(), width * height * depth, "volume reported before material requirements are complete");
+                    // Put the proportional requirements into the existing floor.
+                    // Changing one full floor block to another leaves all 131072 air cells intact.
+                    int volume = width * height * depth;
+                    int diamond = GreenhouseRecipes.scaledCount(2, volume);
+                    int emerald = GreenhouseRecipes.scaledCount(1, volume);
+                    int lapis = GreenhouseRecipes.scaledCount(1, volume);
+                    helper.assertValueEqual(diamond, 512, "scaled diamond requirement");
+                    helper.assertValueEqual(emerald, 256, "scaled emerald requirement");
+                    for (int i = 0; i < diamond + emerald + lapis; i++) {
+                        Block material = i < diamond ? Blocks.DIAMOND_BLOCK
+                                : i < diamond + emerald ? Blocks.EMERALD_BLOCK : Blocks.LAPIS_BLOCK;
+                        level.setBlock(min.offset(i % width, -1, i / width), material.defaultBlockState(), flags);
+                    }
+                    var furnished = GreenhouseEnvironment.inspect(level, inside);
+                    helper.assertTrue(furnished.valid(), "Proportional floor materials did not validate large room: " + furnished);
+                    helper.assertValueEqual(furnished.requiredSpecimens(), diamond + emerald + lapis, "scaled total material count");
+                    helper.assertValueEqual(furnished.specimens(), furnished.requiredSpecimens(), "matched proportional material total");
                     var region = GreenhouseEnvironment.regionAt(level, inside);
                     helper.assertTrue(region != null && region.interior() instanceof LongSet, "Large interior was boxed or omitted");
                     helper.assertValueEqual(region.interior().size(), width * height * depth, "large greenhouse interior volume");

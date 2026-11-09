@@ -1,5 +1,7 @@
 package com.ourcreation.biomebasedcrops.client.viewer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import com.ourcreation.biomebasedcrops.BiomeBasedCrops;
@@ -16,9 +18,13 @@ import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.runtime.IClickableIngredient;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +52,8 @@ public final class GreenhouseJeiPlugin implements IModPlugin {
                     IClickableIngredientFactory factory, FieldGuideScreen screen, double mouseX, double mouseY) {
                 if (GreenhouseViewerBridge.initializedBounds(screen) == null) return Optional.empty();
                 return screen.viewerIngredientAt(mouseX, mouseY)
-                        .flatMap(ingredient -> factory.createBuilder(ingredient.stack()).buildWithArea(ingredient.bounds()));
+                        .flatMap(ingredient -> factory.createBuilder(GreenhouseViewerBridge.identity(ingredient.stack()))
+                                .buildWithArea(ingredient.bounds()));
             }
         });
     }
@@ -60,6 +67,19 @@ public final class GreenhouseJeiPlugin implements IModPlugin {
         runtime.getRecipesGui().show(focuses.createFocus(uses ? RecipeIngredientRole.INPUT : RecipeIngredientRole.OUTPUT,
                 VanillaTypes.ITEM_STACK, stack));
         return Minecraft.getInstance().screen != previous;
+    }
+
+    public static boolean renderTooltip(GuiGraphics graphics, ItemStack stack, List<Component> details, int x, int y) {
+        if (runtime == null) return false;
+        Minecraft minecraft = Minecraft.getInstance();
+        var renderer = runtime.getIngredientManager().getIngredientRenderer(VanillaTypes.ITEM_STACK);
+        List<Component> tooltip = new ArrayList<>(renderer.getTooltip(stack, Item.TooltipContext.of(minecraft.level),
+                minecraft.player, minecraft.options.advancedItemTooltips ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL));
+        tooltip.addAll(details);
+        runtime.getIngredientManager().createTypedIngredient(VanillaTypes.ITEM_STACK, stack, true)
+                .flatMap(runtime.getJeiHelpers().getModIdHelper()::getModNameForTooltip).ifPresent(tooltip::add);
+        graphics.renderTooltip(renderer.getFontRenderer(minecraft, stack), tooltip, stack.getTooltipImage(), stack, x, y);
+        return true;
     }
 
     private record Properties(Class<? extends Screen> screenClass, int guiLeft, int guiTop, int guiXSize,

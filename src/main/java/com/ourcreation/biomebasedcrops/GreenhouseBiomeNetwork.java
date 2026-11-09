@@ -30,24 +30,28 @@ public final class GreenhouseBiomeNetwork {
     private GreenhouseBiomeNetwork() { }
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        event.registrar("2").optional().playToClient(RoomPayload.TYPE, RoomPayload.CODEC,
+        event.registrar("3").optional().playToClient(RoomPayload.TYPE, RoomPayload.CODEC,
                 (payload, context) -> GreenhouseClientBiomes.accept(payload));
     }
 
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
                 || player.tickCount % 20 != 0 || !player.connection.hasChannel(RoomPayload.TYPE)) return;
-        var region = GreenhouseEnvironment.regionAt(player.level(), player.blockPosition());
+        var region = GreenhouseEnvironment.atmosphereRegionAt(player.level(), player.blockPosition());
         ResourceLocation dimension = player.level().dimension().location();
         ResourceLocation biome = region == null ? null : region.biome();
         Set<Long> geometry = region == null ? Set.of() : region.interior();
         long playerSection = sectionKey(player.blockPosition());
         SentRegion last = LAST_SENT.get(player);
-        if (last != null && last.dimension.equals(dimension) && Objects.equals(last.biome, biome)
-                && last.playerSection == playerSection && last.geometry == geometry) return;
-        RoomPayload payload = new RoomPayload(dimension, biome,
-                region == null ? List.of() : masksFor(geometry, player.blockPosition()));
-        LAST_SENT.put(player, new SentRegion(dimension, biome, playerSection, geometry));
+        float temperature = region == null ? 20 : Math.round(region.temperature() * 10) / 10.0F;
+        float oxygen = region == null ? 100 : (float) Math.floor(region.oxygenPercent() * 10) / 10.0F;
+        boolean sameGeometry = last != null && last.dimension.equals(dimension)
+                && last.playerSection == playerSection && last.geometry == geometry;
+        if (sameGeometry && Objects.equals(last.biome, biome) && last.temperature == temperature && last.oxygen == oxygen) return;
+        List<SectionMask> sections = sameGeometry ? last.sections
+                : region == null ? List.of() : masksFor(geometry, player.blockPosition());
+        RoomPayload payload = new RoomPayload(dimension, biome, sections, temperature, oxygen);
+        LAST_SENT.put(player, new SentRegion(dimension, biome, playerSection, geometry, sections, temperature, oxygen));
         PacketDistributor.sendToPlayer(player, payload);
     }
 
@@ -128,16 +132,19 @@ public final class GreenhouseBiomeNetwork {
     }
 
     public record RoomPayload(ResourceLocation dimension, @Nullable ResourceLocation biome,
-                              List<SectionMask> sections) implements CustomPacketPayload {
+                              List<SectionMask> sections, float temperature, float oxygenPercent) implements CustomPacketPayload {
         public static final Type<RoomPayload> TYPE = new Type<>(
                 ResourceLocation.fromNamespaceAndPath(BiomeBasedCrops.MODID, "greenhouse_biome"));
         public static final StreamCodec<FriendlyByteBuf, RoomPayload> CODEC = StreamCodec.of(RoomPayload::write, RoomPayload::read);
         public RoomPayload {
             Objects.requireNonNull(dimension, "dimension");
             sections = List.copyOf(sections);
-            if (sections.size() > MAX_SECTIONS || (biome == null) != sections.isEmpty()) {
+            if (sections.size() > MAX_SECTIONS || biome != null && sections.isEmpty()) {
                 throw new IllegalArgumentException("Invalid greenhouse biome section count");
             }
+            if (!Float.isFinite(temperature) || Math.abs(temperature) > 10_000
+                    || !Float.isFinite(oxygenPercent) || oxygenPercent < 0 || oxygenPercent > 100)
+                throw new IllegalArgumentException("Invalid room atmosphere");
             Set<Long> unique = new HashSet<>();
             int minX = Integer.MAX_VALUE, minY = minX, minZ = minX;
             int maxX = Integer.MIN_VALUE, maxY = maxX, maxZ = maxX;
@@ -151,6 +158,9 @@ public final class GreenhouseBiomeNetwork {
             if (!sections.isEmpty() && (maxX - minX > 2 || maxY - minY > 2 || maxZ - minZ > 2)) {
                 throw new IllegalArgumentException("Greenhouse sections exceed the local window");
             }
+        }
+        public RoomPayload(ResourceLocation dimension, @Nullable ResourceLocation biome, List<SectionMask> sections) {
+            this(dimension, biome, sections, 20, 100);
         }
         private static void write(FriendlyByteBuf buf, RoomPayload payload) {
             buf.writeResourceLocation(payload.dimension);
@@ -169,6 +179,8 @@ public final class GreenhouseBiomeNetwork {
                     buf.writeLong(section.bits[i]);
                 }
             }
+            buf.writeFloat(payload.temperature);
+            buf.writeFloat(payload.oxygenPercent);
         }
         private static RoomPayload read(FriendlyByteBuf buf) {
             ResourceLocation dimension = buf.readResourceLocation();
@@ -194,10 +206,11 @@ public final class GreenhouseBiomeNetwork {
                 }
                 sections.add(new SectionMask(key, words));
             }
-            return new RoomPayload(dimension, biome, sections);
+            return new RoomPayload(dimension, biome, sections, buf.readFloat(), buf.readFloat());
         }
         @Override public Type<RoomPayload> type() { return TYPE; }
     }
 
-    private record SentRegion(ResourceLocation dimension, ResourceLocation biome, long playerSection, Set<Long> geometry) { }
+    private record SentRegion(ResourceLocation dimension, ResourceLocation biome, long playerSection, Set<Long> geometry,
+                              List<SectionMask> sections, float temperature, float oxygen) { }
 }

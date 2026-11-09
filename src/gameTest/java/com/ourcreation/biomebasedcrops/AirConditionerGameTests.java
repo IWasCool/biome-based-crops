@@ -9,6 +9,8 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -51,86 +53,108 @@ public final class AirConditionerGameTests {
         helper.assertTrue(CropClimate.at(GreenhouseEnvironment.nativeBiome(helper.getLevel(), unit.getBlockPos()), unit.getBlockPos())
                 == CropClimate.NEUTRAL, "Plains fixture was not naturally neutral");
         assertCost(helper, unit, CropClimate.NEUTRAL, 0);
-        assertCost(helper, unit, CropClimate.WARM, 20);
-        assertCost(helper, unit, CropClimate.HOT, 40);
-        assertCost(helper, unit, CropClimate.COLD, 20);
-        assertCost(helper, unit, CropClimate.ICY, 40);
+        assertCost(helper, unit, CropClimate.WARM, 2500);
+        assertCost(helper, unit, CropClimate.HOT, 3250);
+        assertCost(helper, unit, CropClimate.COLD, 2750);
+        assertCost(helper, unit, CropClimate.ICY, 3500);
+        unit.setTargetTemperature(21);
+        helper.assertValueEqual(unit.currentEnergyCost(), 2050, "same-band single-degree power cost");
 
         helper.setBiome(Biomes.ICE_SPIKES);
         helper.assertTrue(CropClimate.at(GreenhouseEnvironment.nativeBiome(helper.getLevel(), unit.getBlockPos()), unit.getBlockPos())
                 == CropClimate.ICY, "Ice-spikes fixture was not naturally icy");
         assertCost(helper, unit, CropClimate.ICY, 0);
-        assertCost(helper, unit, CropClimate.COLD, 20);
-        assertCost(helper, unit, CropClimate.NEUTRAL, 40);
-        assertCost(helper, unit, CropClimate.HOT, 80);
+        assertCost(helper, unit, CropClimate.COLD, 2750);
+        assertCost(helper, unit, CropClimate.NEUTRAL, 3500);
+        assertCost(helper, unit, CropClimate.HOT, 4750);
 
         helper.setBiome(Biomes.DESERT);
         helper.assertTrue(CropClimate.at(GreenhouseEnvironment.nativeBiome(helper.getLevel(), unit.getBlockPos()), unit.getBlockPos())
                 == CropClimate.HOT, "Desert fixture was not naturally hot");
         assertCost(helper, unit, CropClimate.HOT, 0);
-        assertCost(helper, unit, CropClimate.WARM, 20);
-        assertCost(helper, unit, CropClimate.NEUTRAL, 40);
-        assertCost(helper, unit, CropClimate.ICY, 80);
+        assertCost(helper, unit, CropClimate.WARM, 2750);
+        assertCost(helper, unit, CropClimate.NEUTRAL, 3250);
+        assertCost(helper, unit, CropClimate.ICY, 4750);
         helper.succeed();
     }
 
     @GameTest(template = "empty", skyAccess = true, batch = "air_conditioners")
     public static void serverTicksConsumePowerAndStopWhenStarvedRedstoneOrNaturallyMatched(GameTestHelper helper) {
         boolean enabled = GreenhouseSettings.ENABLE_GREENHOUSES.get();
-        try {
-            GreenhouseSettings.ENABLE_GREENHOUSES.set(true);
-            AirConditionerBlockEntity unit = place(helper);
-            unit.setClimate(CropClimate.WARM);
-            helper.assertValueEqual(unit.currentEnergyCost(), 20, "test unit running cost");
-            unit.energyStorage().receiveEnergy(40, false);
-            tick(unit);
-            helper.assertValueEqual(unit.energyStored(), 20, "first paid tick");
-            helper.assertTrue(unit.getBlockState().getValue(AirConditionerBlock.ACTIVE), "Paid unit did not animate");
-            helper.assertTrue(unit.canProvideClimate(CropClimate.WARM), "Paid unit did not supply selected climate");
-            helper.assertFalse(unit.canProvideClimate(CropClimate.HOT), "Unit supplied an unselected climate");
-            tick(unit);
-            helper.assertValueEqual(unit.energyStored(), 0, "second paid tick");
-            tick(unit);
-            helper.assertFalse(unit.getBlockState().getValue(AirConditionerBlock.ACTIVE), "Starved unit kept animating");
-            helper.assertFalse(unit.canProvideClimate(CropClimate.WARM), "Starved unit kept supplying climate");
-
-            unit.energyStorage().receiveEnergy(100, false);
-            tick(unit);
-            helper.assertValueEqual(unit.energyStored(), 80, "refueled tick");
-            BlockPos signal = unit.getBlockPos().east();
-            helper.getLevel().setBlock(signal, Blocks.REDSTONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-            tick(unit);
-            helper.assertValueEqual(unit.energyStored(), 80, "redstone-disabled unit consumed FE");
-            helper.assertFalse(unit.getBlockState().getValue(AirConditionerBlock.ACTIVE), "Redstone-disabled unit kept animating");
-            helper.assertFalse(unit.canProvideClimate(CropClimate.WARM), "Redstone-disabled unit supplied climate");
-            helper.getLevel().setBlock(signal, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            tick(unit);
-            helper.assertValueEqual(unit.energyStored(), 60, "unit did not resume after redstone removal");
-
-            unit.setClimate(CropClimate.NEUTRAL);
-            tick(unit);
-            helper.assertValueEqual(unit.currentEnergyCost(), 0, "native matching target cost");
-            helper.assertValueEqual(unit.energyStored(), 60, "naturally matching target consumed FE");
-            helper.assertFalse(unit.getBlockState().getValue(AirConditionerBlock.ACTIVE), "Idle native target kept animating");
-            helper.succeed();
-        } finally {
-            GreenhouseSettings.ENABLE_GREENHOUSES.set(enabled);
-            GreenhouseEnvironment.invalidateClimate();
-        }
+        Runnable restore = () -> { GreenhouseSettings.ENABLE_GREENHOUSES.set(enabled); GreenhouseEnvironment.invalidateClimate(); };
+        GreenhouseSettings.ENABLE_GREENHOUSES.set(true);
+        AirConditionerBlockEntity unit = placeInRoom(helper);
+        unit.setClimate(CropClimate.WARM);
+        int cost = unit.currentEnergyCost();
+        unit.energyStorage().receiveEnergy(cost * 2, false);
+        BlockPos signal = unit.getBlockPos().east();
+        helper.startSequence()
+                .thenExecute(checked(() -> {
+                    helper.assertValueEqual(cost, 2500, "test unit running cost");
+                    tick(unit);
+                    helper.assertValueEqual(unit.energyStored(), cost, "first paid tick");
+                    tick(unit);
+                    helper.assertValueEqual(unit.energyStored(), cost, "duplicate same-game-tick call consumed extra FE");
+                    helper.assertTrue(unit.getBlockState().getValue(AirConditionerBlock.ACTIVE), "Paid unit did not animate");
+                    helper.assertFalse(unit.canProvideClimate(CropClimate.WARM), "Selected target instantly replaced physical air");
+                }, restore))
+                .thenIdle(1)
+                .thenExecute(checked(() -> {
+                    tick(unit);
+                    helper.assertValueEqual(unit.energyStored(), 0, "second real paid tick");
+                }, restore))
+                .thenIdle(1)
+                .thenExecute(checked(() -> {
+                    tick(unit);
+                    helper.assertFalse(unit.getBlockState().getValue(AirConditionerBlock.ACTIVE), "Starved unit kept animating");
+                    unit.energyStorage().receiveEnergy(cost * 5, false);
+                }, restore))
+                .thenIdle(1)
+                .thenExecute(checked(() -> {
+                    tick(unit);
+                    helper.assertValueEqual(unit.energyStored(), cost * 4, "refueled real tick");
+                    helper.getLevel().setBlock(signal, Blocks.LEVER.defaultBlockState()
+                            .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.FLOOR)
+                            .setValue(BlockStateProperties.POWERED, true), Block.UPDATE_ALL);
+                }, restore))
+                .thenIdle(1)
+                .thenExecute(checked(() -> {
+                    tick(unit);
+                    helper.assertValueEqual(unit.energyStored(), cost * 4, "redstone-disabled unit consumed FE");
+                    helper.assertFalse(unit.getBlockState().getValue(AirConditionerBlock.ACTIVE), "Redstone-disabled unit kept animating");
+                    helper.getLevel().setBlock(signal, helper.getLevel().getBlockState(signal)
+                            .setValue(BlockStateProperties.POWERED, false), Block.UPDATE_ALL);
+                }, restore))
+                .thenIdle(1)
+                .thenExecute(checked(() -> {
+                    tick(unit);
+                    helper.assertValueEqual(unit.energyStored(), cost * 3, "unit did not resume after lever switched off");
+                    unit.setTargetTemperature(20);
+                    helper.assertTrue(unit.currentTemperature() > 20.1F, "Paid room did not accumulate real warmth");
+                    helper.assertValueEqual(unit.currentEnergyCost(), AirConditionerBlockEntity.BASE_FE_PER_TICK,
+                            "Cooling stored heat back to the native setpoint must still cost FE");
+                    restore.run();
+                }, restore))
+                .thenSucceed();
     }
 
     @GameTest(template = "empty", skyAccess = true, batch = "air_conditioners")
     public static void targetAndStoredEnergySurviveNbtAndMalformedValuesStayBounded(GameTestHelper helper) {
         AirConditionerBlockEntity unit = place(helper);
-        unit.setClimate(CropClimate.COLD);
+        unit.setTargetTemperature(7);
         unit.energyStorage().receiveEnergy(432, false);
         var registries = helper.getLevel().registryAccess();
         var saved = unit.saveWithoutMetadata(registries);
         var restored = new AirConditionerBlockEntity(unit.getBlockPos(), unit.getBlockState());
         restored.loadWithComponents(saved, registries);
         helper.assertTrue(restored.selectedClimate() == CropClimate.COLD, "Saved climate target changed");
+        helper.assertValueEqual(restored.targetTemperature(), 7, "Numeric target was rounded to a climate preset");
         helper.assertValueEqual(restored.energyStored(), 432, "saved FE battery");
+        saved.putInt("TargetTemperature", 200);
+        restored.loadWithComponents(saved, registries);
+        helper.assertValueEqual(restored.targetTemperature(), 50, "Saved numeric temperature exceeded the dial range");
         saved.putInt("Energy", Integer.MAX_VALUE);
+        saved.remove("TargetTemperature");
         saved.putString("Climate", "unknown_temperature");
         restored.loadWithComponents(saved, registries);
         helper.assertValueEqual(restored.energyStored(), AirConditionerBlockEntity.CAPACITY, "malformed oversized battery");
@@ -150,18 +174,37 @@ public final class AirConditionerGameTests {
         var menu = new AirConditionerMenu(1, player.getInventory(), unit);
         helper.assertTrue(menu.stillValid(player), "Nearby menu was invalid");
         helper.assertFalse(menu.clickMenuButton(player, -1), "Menu accepted negative target");
-        helper.assertFalse(menu.clickMenuButton(player, CropClimate.values().length), "Menu accepted out-of-range target");
-        helper.assertTrue(menu.clickMenuButton(player, CropClimate.HOT.ordinal()), "Menu rejected a valid target");
+        helper.assertFalse(menu.clickMenuButton(player, 71), "Menu accepted out-of-range target");
+        helper.assertTrue(menu.clickMenuButton(player, 65), "Menu rejected a valid target");
         helper.assertTrue(unit.selectedClimate() == CropClimate.HOT && menu.targetClimate() == CropClimate.HOT, "Menu target did not reach machine");
-        helper.assertValueEqual(menu.energyCost(), 40, "menu dynamic power cost");
+        helper.assertValueEqual(menu.energyCost(), 3250, "menu dynamic power cost");
         helper.assertTrue(menu.localClimate() == CropClimate.NEUTRAL, "Menu showed a non-native local climate");
-        unit.energyStorage().receiveEnergy(100, false);
-        helper.assertValueEqual(menu.energyStored(), 100, "menu live energy count");
+        unit.energyStorage().receiveEnergy(123456, false);
+        helper.assertValueEqual(menu.energyStored(), 123456, "menu 32-bit live energy count");
         player.setPos(pos.getX() + 20, pos.getY(), pos.getZ());
         helper.assertFalse(menu.stillValid(player), "Distant player kept menu access");
-        helper.assertFalse(menu.clickMenuButton(player, CropClimate.ICY.ordinal()), "Distant player changed temperature");
+        helper.assertFalse(menu.clickMenuButton(player, 0), "Distant player changed temperature");
         helper.assertTrue(unit.selectedClimate() == CropClimate.HOT, "Rejected distant click changed machine");
         helper.succeed();
+    }
+
+    private static Runnable checked(Runnable action, Runnable restore) {
+        return () -> { try { action.run(); } catch (RuntimeException | Error exception) { restore.run(); throw exception; } };
+    }
+
+    private static AirConditionerBlockEntity placeInRoom(GameTestHelper helper) {
+        helper.setBiome(Biomes.PLAINS);
+        BlockPos center = helper.absolutePos(UNIT);
+        for (BlockPos at : BlockPos.betweenClosed(center.offset(-2, -1, -2), center.offset(2, 3, 2))) {
+            boolean floor = at.getY() == center.getY() - 1;
+            boolean wall = Math.abs(at.getX() - center.getX()) == 2 || Math.abs(at.getZ() - center.getZ()) == 2
+                    || at.getY() == center.getY() + 3;
+            helper.getLevel().setBlock(at, floor ? Blocks.STONE.defaultBlockState()
+                    : wall ? Blocks.GLASS.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        }
+        helper.getLevel().setBlock(center, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState(), Block.UPDATE_ALL);
+        GreenhouseEnvironment.clearCache();
+        return (AirConditionerBlockEntity) helper.getLevel().getBlockEntity(center);
     }
 
     private static AirConditionerBlockEntity place(GameTestHelper helper) {

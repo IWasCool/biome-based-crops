@@ -20,6 +20,10 @@ public final class GreenhouseSettings {
     public static final ModConfigSpec.IntValue SCAN_BLOCKS_PER_TICK = BUILDER
             .comment("Background room-scan work per level tick. Large rooms finish over several ticks without a large synchronous flood fill.")
             .defineInRange("scanBlocksPerTick", 1024, 256, 16384);
+    public static final ModConfigSpec.IntValue MATERIAL_REFERENCE_VOLUME = BUILDER
+            .comment("Interior volume covered by each biome's base material recipe. Larger rooms scale every material count proportionally.",
+                    "Rooms up to this volume keep the base counts; larger requirements round up for each distinct material.")
+            .defineInRange("materialReferenceVolume", GreenhouseRecipes.REFERENCE_VOLUME, 64, 1048576);
     public static final ModConfigSpec.DoubleValue MIN_ROOF_GLASS_RATIO = BUILDER
             .comment("Minimum fraction of exposed ceiling faces made from glass. Glass orientation and colour do not matter.")
             .defineInRange("minimumRoofGlassRatio", 0.5D, 0.0D, 1.0D);
@@ -47,6 +51,9 @@ public final class GreenhouseSettings {
 
     public static int maxRoomBlocks() { return SPEC.isLoaded() ? MAX_ROOM_BLOCKS.get() : MAX_ROOM_BLOCKS.getDefault(); }
     public static int scanBudget() { return SPEC.isLoaded() ? SCAN_BLOCKS_PER_TICK.get() : SCAN_BLOCKS_PER_TICK.getDefault(); }
+    public static int materialReferenceVolume() {
+        return SPEC.isLoaded() ? MATERIAL_REFERENCE_VOLUME.get() : MATERIAL_REFERENCE_VOLUME.getDefault();
+    }
     public static double roofGlassRatio() { return SPEC.isLoaded() ? MIN_ROOF_GLASS_RATIO.get() : MIN_ROOF_GLASS_RATIO.getDefault(); }
     public static double wallGlassRatio() { return SPEC.isLoaded() ? MIN_WALL_GLASS_RATIO.get() : MIN_WALL_GLASS_RATIO.getDefault(); }
 

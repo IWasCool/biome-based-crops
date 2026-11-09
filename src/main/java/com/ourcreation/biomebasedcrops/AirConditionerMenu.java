@@ -10,6 +10,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -20,7 +21,11 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
             net.minecraft.core.registries.Registries.MENU, BiomeBasedCrops.MODID);
     public static final DeferredHolder<MenuType<?>, MenuType<AirConditionerMenu>> TYPE = MENUS.register(
             "air_conditioner", () -> IMenuTypeExtension.create(AirConditionerMenu::new));
+    public static final int MIN_TARGET = -20;
+    public static final int MAX_TARGET = 50;
+    private static final int DATA_COUNT = 12;
     private final BlockPos position;
+    private final Level level;
     private final ContainerData data;
 
     public static void register(IEventBus bus) {
@@ -28,29 +33,37 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
     }
 
     public AirConditionerMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buffer) {
-        this(id, inventory, buffer.readBlockPos(), new SimpleContainerData(5));
+        this(id, inventory, buffer.readBlockPos(), clientData());
     }
 
     public AirConditionerMenu(int id, Inventory inventory, AirConditionerBlockEntity unit) {
         this(id, inventory, unit.getBlockPos(), new ContainerData() {
             @Override public int get(int index) {
                 return switch (index) {
-                    case 0 -> unit.selectedClimate().ordinal();
-                    case 1 -> unit.energyStored();
-                    case 2 -> unit.currentEnergyCost();
-                    case 3 -> unit.localClimate().ordinal();
-                    case 4 -> unit.getBlockState().getValue(AirConditionerBlock.ACTIVE) ? 1 : 0;
+                    case 0 -> unit.targetTemperature();
+                    case 1 -> unit.energyStored() & 0xFFFF;
+                    case 2 -> unit.energyStored() >>> 16;
+                    case 3 -> unit.currentEnergyCost() & 0xFFFF;
+                    case 4 -> unit.currentEnergyCost() >>> 16;
+                    case 5 -> Math.round(unit.currentTemperature() * 10.0F);
+                    case 6 -> Math.round(unit.oxygenPercent() * 100.0F);
+                    case 7 -> unit.getBlockState().getValue(AirConditionerBlock.ACTIVE) ? 1 : 0;
+                    case 8 -> unit.roomVolume() & 0xFFFF;
+                    case 9 -> unit.roomVolume() >>> 16;
+                    case 10 -> unit.selectedClimate().ordinal();
+                    case 11 -> unit.localClimate().ordinal();
                     default -> 0;
                 };
             }
             @Override public void set(int index, int value) { }
-            @Override public int getCount() { return 5; }
+            @Override public int getCount() { return DATA_COUNT; }
         });
     }
 
     private AirConditionerMenu(int id, Inventory inventory, BlockPos position, ContainerData data) {
         super(TYPE.get(), id);
         this.position = position.immutable();
+        this.level = inventory.player.level();
         this.data = data;
         addDataSlots(data);
         for (int row = 0; row < 3; row++) for (int column = 0; column < 9; column++) {
@@ -59,25 +72,43 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
         for (int column = 0; column < 9; column++) addSlot(new Slot(inventory, column, 8 + column * 18, 179));
     }
 
-    public CropClimate targetClimate() { return climate(data.get(0)); }
-    public int energyStored() { return data.get(1); }
-    public int energyCost() { return data.get(2); }
-    public CropClimate localClimate() { return climate(data.get(3)); }
-    public boolean active() { return data.get(4) != 0; }
+    private static ContainerData clientData() {
+        SimpleContainerData data = new SimpleContainerData(DATA_COUNT);
+        data.set(0, 20);
+        data.set(5, 200);
+        data.set(6, 10000);
+        data.set(10, CropClimate.NEUTRAL.ordinal());
+        data.set(11, CropClimate.NEUTRAL.ordinal());
+        return data;
+    }
+
+    public int targetTemperature() { return Math.clamp(data.get(0), MIN_TARGET, MAX_TARGET); }
+    public float currentTemperature() { return data.get(5) / 10.0F; }
+    public float oxygenPercent() { return Math.clamp(data.get(6) / 100.0F, 0.0F, 100.0F); }
+    public int energyStored() { return Math.max(0, combined(data.get(1), data.get(2))); }
+    public int energyCost() { return Math.max(0, combined(data.get(3), data.get(4))); }
+    public int roomVolume() { return Math.max(0, combined(data.get(8), data.get(9))); }
+    public boolean active() { return data.get(7) != 0; }
+    public CropClimate targetClimate() { return climate(data.get(10)); }
+    public CropClimate localClimate() { return climate(data.get(11)); }
+
+    private static int combined(int low, int high) {
+        return (low & 0xFFFF) | ((high & 0xFFFF) << 16);
+    }
 
     private static CropClimate climate(int ordinal) {
         return CropClimate.values()[Math.clamp(ordinal, 0, CropClimate.values().length - 1)];
     }
 
     @Override public boolean stillValid(Player player) {
-        return player.level().getBlockEntity(position) instanceof AirConditionerBlockEntity
+        return player.level() == level && player.level().getBlockEntity(position) instanceof AirConditionerBlockEntity
                 && player.distanceToSqr(position.getX() + 0.5, position.getY() + 0.5, position.getZ() + 0.5) <= 64;
     }
 
-    @Override public boolean clickMenuButton(Player player, int target) {
-        if (!stillValid(player) || target < 0 || target >= CropClimate.values().length) return false;
+    @Override public boolean clickMenuButton(Player player, int button) {
+        if (player.level().isClientSide || button < 0 || button > MAX_TARGET - MIN_TARGET || !stillValid(player)) return false;
         if (player.level().getBlockEntity(position) instanceof AirConditionerBlockEntity unit) {
-            unit.setClimate(CropClimate.values()[target]);
+            unit.setTargetTemperature(button + MIN_TARGET);
             broadcastChanges();
             return true;
         }

@@ -64,10 +64,15 @@
   "biome_based_crops.tooltip.local_climate": "Local crop climate: %s",
   "biome_based_crops.message.local_climate": "Local crop climate: %s",
   "biome_based_crops.greenhouse.status.unloaded": "Area is not loaded.",
-  "block.biome_based_crops.air_conditioner": "Air Conditioner",
+  "block.biome_based_crops.air_conditioner": "Thermoregulator",
   "biome_based_crops.configuration.maxRoomBlocks": "Maximum Greenhouse Interior Blocks",
   "biome_based_crops.configuration.scanBlocksPerTick": "Room Scan Work per Tick",
   "biome_based_crops.configuration.minimumRoofGlassRatio": "Minimum Roof Glass Ratio",
   "biome_based_crops.configuration.minimumWallGlassRatio": "Minimum Wall Glass Ratio",
-  "biome_based_crops.greenhouse.status.scanning": "Scanning greenhouse..."
+  "biome_based_crops.greenhouse.status.scanning": "Scanning greenhouse...",
+  "item.biome_based_crops.thermometer": "Thermometer",
+  "biome_based_crops.thermometer.tooltip": "Use to read the current temperature and air supply.",
+  "biome_based_crops.message.temperature_reading": "Temperature: %s°C | Oxygen: %s",
+  "biome_based_crops.configuration.materialReferenceVolume": "Interior Blocks per Material Recipe",
+  "biome_based_crops.greenhouse.status.filling_air": "Room air is filling"
 }

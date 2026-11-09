@@ -34,6 +34,16 @@ public final class EnglishGuideText {
         return Component.literal(titleCase(climate.name()));
     }
 
+    public static String targetTemperatures(CropClimate climate) {
+        return switch (climate) {
+            case ICY -> "0\u00B0C or colder";
+            case COLD -> "1-10\u00B0C";
+            case NEUTRAL -> "11-25\u00B0C";
+            case WARM -> "26-35\u00B0C";
+            case HOT -> "36\u00B0C or warmer";
+        };
+    }
+
     public static void clearCache() {
         LANGUAGES.clear();
     }

@@ -5,9 +5,9 @@
 - `config/biome_based_crops-server.toml`: gameplay rules, controlled by the server and synchronized to joining players.
 - `<world>/serverconfig/biome_based_crops-server.toml`: optional world-specific gameplay override.
 - `config/biome_based_crops-client.toml`: local tooltip preference.
-- `config/biome_based_crops-greenhouse.toml`: greenhouse and nearby temperature rules; the server controls these settings too.
+- `config/biome_based_crops-greenhouse.toml`: greenhouse construction, scanning, and material rules, controlled by the server.
 
-Stop the world/server before editing gameplay files, then restart to apply them and synchronize players. Singleplayer also supports the NeoForge config screen through **Mods Ã¢â€ â€™ Biome Based Crops Ã¢â€ â€™ Config** while a world is loaded. Multiplayer players use the server's rules.
+Stop the world/server before editing gameplay files, then restart to apply them and synchronize players. Singleplayer also supports the NeoForge config screen through **Mods > Biome Based Crops > Config** while a world is loaded. Multiplayer players use the server's rules.
 
 ## Choose biomes for each crop
 
@@ -25,7 +25,7 @@ cropBiomeRules = [
 
 - Biome IDs and biome tags need their full namespace. Prefix a tag with `#`.
 - A plant can grow in any listed biome or tag. `*` allows every biome.
-- An override replaces that plant's climate requirements for natural growth, bonemeal, and supported fertilizers. Thermoregulators cannot bypass explicit biome overrides.
+- An override replaces that plant's climate requirements for natural growth, bonemeal, and supported fertilizers. Temperature alone cannot bypass an explicit biome override; a valid greenhouse registering as a listed biome can satisfy it.
 - The crop token is a case-insensitive substring of the block or item path. A token containing `:` matches the full ID. `wheat` therefore covers wheat plants and seeds; `farmersdelight:tomato` targets that mod's tomatoes.
 - The longest matching crop token wins. The first entry wins equal-length ties.
 - Only detected crops and growable plants are affected. Adding a rule does not make decorative blocks grow.
@@ -35,38 +35,68 @@ The default is `cropBiomeRules = []`, preserving all climate defaults. Remove an
 
 ## Greenhouses
 
-Greenhouses identify their biome automatically from the room's native materials and climate. No core, biome sample, or binding step is required. The detected biome applies inside its connected interior for crop growth, biome queries, and natural mob spawn lists. Floor, wall, roof, and outdoor positions keep their native biome.
+Greenhouses identify their biome automatically from required native materials, actual room temperature, and breathable air. No core, biome sample, or binding step is required. The detected biome applies inside its connected interior for crop growth, biome queries, and natural mob spawn lists. Floor, wall, roof, and outdoor positions keep their native biome.
 
 The room's biome is a reversible overlay: it does not rewrite saved chunk biomes or generate new terrain. Opening the enclosure or disabling greenhouses restores the native biome after the normal refresh. Natural spawning still follows normal light, space, structure, dimension, and mob-cap rules.
 
 1. Craft a **Greenhouse Probe** with glass, copper ingots, redstone, and a stick. Craft a book with wheat for the **Farmer's Field Guide**.
-2. Select your intended biome in the guide. Each block icon has its own required quantity. **Every listed type must meet its count**: extra sand cannot replace missing cactus, logs, leaves, or other materials.
+2. Select your intended biome in the guide. **Every listed material must meet its count**: extra sand cannot replace missing cactus, logs, leaves, or other materials. Counts scale with the scanned room's volume.
 3. Build a closed room of any shape with a solid floor, walls, and roof. By default, at least 50% of its exposed ceiling area and 10% of its wall area must be glass, with at least four glass wall blocks. Glass blocks and panes count in every orientation, including coloured and tagged mod glass. Close doors and trapdoors.
 4. Place all required materials inside the connected room or in its enclosing floor and walls. Keep them exposed to the room: buried blocks behind a solid floor or wall do not count.
-5. Match the required climate. A naturally matching biome needs no machine. Otherwise, place a powered **Air Conditioner** inside the connected room and choose the target climate in its settings.
-6. Use the probe inside the room to check the detected biome, enclosure, temperature, and individual material progress.
+5. Match the required temperature and air conditions. A naturally suitable room needs no machine. Otherwise, place a powered **Thermoregulator** inside the connected room, choose a Celsius target, and wait for temperature and oxygen to settle.
+6. Use the probe inside the room to check the detected biome, enclosure, temperature, and individual material progress. In hostile atmospheres, room oxygen must reach 95% before it is breathable.
 
-For example, the default Desert recipe requires **8 sand + 4 sandstone + 2 cactus**, all together. With Biomes O' Plenty installed, Ominous Woods requires **8 umbran logs + 8 umbran leaves + 4 dead leaves + 4 umbran wood**.
+### Material scaling
 
-The guide keeps each biome's material recipe, required climate, and Air Conditioner note on one right-hand summary. Its **How to build** link opens a shared enclosure reference on that same page. Hover an item for its standard tooltip; left-click for recipes or right-click for uses in an installed JEI, EMI, or REI viewer. Vanilla biomes have distinct curated material recipes; installed mod biomes derive several required materials from their native vegetation and a terrain substrate. Custom recipes can replace these choices.
+Base recipes cover `materialReferenceVolume` interior blocks, **512** by default. Each material scales separately, rounding up:
 
-If several recipes fit a room, the most specific completed recipe takes priority. Remove unrelated material types when changing the intended greenhouse. Climate machines refresh within one second. Large rooms are scanned gradually; the probe shows a scanning status until the room is ready. Room geometry stays cached until relevant blocks change, so ordinary energy updates do not repeat a large flood fill. Existing greenhouse cores remain optional inspection stations.
+```text
+required count = max(base count, ceil(base count * room volume / reference volume))
+```
 
-### Air Conditioner
+Rooms below the reference volume keep the base counts. For example, Desert requires **8 sand + 4 sandstone + 2 cactus** up to 512 interior blocks, or **16 + 8 + 4** at 1,024 blocks. Biomes O' Plenty's Ominous Woods has base counts of **8 umbran logs + 8 umbran leaves + 4 dead leaves + 4 umbran wood**.
 
-Supply `biome_based_crops:air_conditioner` with Forge Energy (FE) from any side. Its buffer holds 20,000 FE and accepts up to 1,000 FE per transfer. Right-click it to open its settings and choose Icy, Cold, Neutral, Warm, or Hot. A redstone signal disables it.
+The English guide shows the selected biome's materials, required temperature, and short building instructions on one right-hand page. Before a room scan, it shows base counts; after scanning, all biome choices use the same room volume. Large count overlays are abbreviated, with exact counts and found progress in ingredient tooltips. Left-click for recipes or right-click for uses in an installed JEI, EMI, or REI viewer; without one, ordinary item tooltips remain available.
 
-Power use is **20 FE/t per climate step** between the connected room's native climate and the unit's selected target, from 0 to 80 FE/t. For example, Neutral to Hot costs 40 FE/t, while Icy to Hot costs 80 FE/t. A target already matching the room's natural climate costs nothing and needs no artificial conditioning. Before a room scan finishes, the unit uses its own position's native climate. Power loss or redstone shutdown removes the machine's climate support; the room must then match naturally or have another working machine.
+Vanilla biomes have distinct curated recipes; installed mod biomes derive several required materials from native vegetation and terrain. Custom recipes can replace them. If several recipes fit, the most specific completed recipe takes priority. Remove unrelated materials when changing the intended greenhouse. Existing greenhouse cores remain optional inspection stations.
 
-The Air Conditioner serves only its connected enclosed room. Fire, lava, magma, ice, and snow are scenery and no longer change crop climates. Placing more of those blocks cannot replace a powered machine.
+### Thermoregulator
 
-Tough As Nails thermoregulators remain compatible when enabled and actively heating or cooling. Heating supplies Neutral/Warm/Hot; cooling supplies Icy/Cold/Neutral; both active modes supply Neutral. Empty, inactive, and redstone-disabled units do not provide a climate. Northstar's Temperature Regulator must be kinetically powered, unstressed, and actively sealing the greenhouse position; unrelated fans, ice boxes, basin heaters, and reactor coolers are not treated as room conditioners.
+The **Thermoregulator** retains the registry ID `biome_based_crops:air_conditioner` for saved-world compatibility. Supply Forge Energy (FE) from any side. It stores **100,000,000 FE** and accepts up to **20,000,000 FE per transfer**. A redstone signal stops conditioning.
 
-Northstar targets map to Icy at or below 0 degrees, Cold through 10, Neutral through 25, Warm through 35, and Hot above 35.
+Right-click to set its Celsius dial from **-20 to 50 C**, default **20 C**. The screen shows actual current temperature, oxygen, and stored FE. Hover the energy meter for exact energy, power use, and room volume. The screen and book use Minecraft container, widget, and item assets, so resource packs can replace their artwork.
+
+While conditioning, each unit uses:
+
+```text
+FE/t = (2000 + ceil(50 * abs(target C - native C))) * ceil(room volume / 512)
+```
+
+Cost is capped at 100,000,000 FE/t. A 512-block room with native 20 C and target 30 C costs **2,500 FE/t**; a 1,024-block room costs **5,000 FE/t**. The power formula always uses 512 blocks, independently of the configurable material reference volume. A naturally breathable room idles at zero cost after it settles at its native temperature. A hostile atmosphere still needs powered air maintenance.
+
+Temperature and oxygen change gradually throughout the shared room; selecting a dial target does not instantly qualify a biome. Larger rooms take longer, and multiple powered units contribute to the same room air. Power loss or redstone shutdown stops conditioning; stored heat and oxygen then drift toward native conditions. Opening the room lets air escape.
+
+Actual Celsius temperatures map to crop climates as follows:
+
+| Climate | Room temperature |
+| --- | --- |
+| Icy | 0 C or below |
+| Cold | Above 0 through 10 C |
+| Neutral | Above 10 through 25 C |
+| Warm | Above 25 through 35 C |
+| Hot | Above 35 C |
+
+Craft a **Thermometer** with a vertical column of **glass, redstone, copper ingot**, from top to bottom. Use it to read current temperature and oxygen at your position, or at a clicked block face. Fire, lava, magma, ice, and snow do not condition rooms.
+
+### Optional climate and atmosphere compatibility
+
+Tough As Nails thermoregulators and Northstar's Temperature Regulator remain supported when genuinely active. Northstar regulators must be powered, unstressed, and sealing the queried position; unrelated fans, ice boxes, and reactor coolers are not room conditioners. The field guide displays this mod's Thermoregulator rather than listing optional machines.
+
+On Northstar planets, greenhouse conditioning uses the native Celsius temperature and atmosphere. Current temperature and breathable room oxygen apply only to the exact connected interior; oxygen drains consume that room's stored air. Northstar's own providers retain priority. Outside controlled rooms, native planetary temperature, oxygen, and other dimensions' environments remain unchanged.
 
 ### Large rooms and glass
 
-There are no fixed side-length or height limits. The default maximum is **262,144 connected interior blocks**, configurable up to **1,048,576**. All room chunks must already be loaded. Scans use a limited background budget instead of freezing a tick to inspect a huge room at once.
+There are no fixed side-length or height limits. The default maximum is **262,144 connected interior blocks**, configurable up to **1,048,576**. All room chunks must already be loaded. Large rooms scan gradually; the probe shows a scanning status until ready. Ordinary energy updates do not repeat a large flood fill. Small air snapshots preserve produced heat and oxygen when geometry is evicted from the bounded scan cache.
 
 Glass requirements scale with the actual room boundary: the default is 50% roof glass and 10% wall glass, with at least four glass wall blocks. A handful of windows cannot qualify a huge opaque barn. Supported glass is recognized through the common glass block/pane tags and `biome_based_crops:greenhouse_glass`; colour and orientation do not change whether it counts.
 
@@ -77,6 +107,7 @@ Glass requirements scale with the actual room boundary: the default is 50% roof 
 | `enableGreenhouses` | `true` | Recognize suitable enclosed greenhouse biomes. |
 | `maxRoomBlocks` | `262144` | Maximum interior volume, from 64 to 1,048,576 blocks. |
 | `scanBlocksPerTick` | `1024` | Background scan work per level tick, from 256 to 16,384. |
+| `materialReferenceVolume` | `512` | Interior volume covered by base material counts, from 64 to 1,048,576 blocks. |
 | `minimumRoofGlassRatio` | `0.5` | Minimum fraction of exposed ceiling faces made from glass. |
 | `minimumWallGlassRatio` | `0.1` | Minimum fraction of exposed wall faces made from glass; at least four glass wall blocks are required. |
 | `requiredSpecimens` | `4` | Default count for **each** material in generated mod recipes and bare-ID overrides. |
@@ -92,7 +123,7 @@ biomeMaterialRules = [
 ]
 ```
 
-Every listed material is mandatory; each count is a minimum. Counts run from 1 to 64 for up to 32 distinct block IDs; duplicate IDs are rejected. The last entry for a biome wins. Use installed block IDs. Stop and restart the world/server after editing these settings.
+Every listed material is mandatory. Base counts run from 1 to 64 for up to 32 distinct block IDs, then scale with room volume; duplicate IDs are rejected. The last entry for a biome wins. Use installed block IDs. Stop and restart the world/server after editing these settings.
 
 Older bare-ID rules still load, but now require `requiredSpecimens` blocks of **each** type rather than a combined total. The legacy setting does not change explicit `*count` entries or the curated vanilla recipes.
 

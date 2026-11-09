@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import com.ourcreation.biomebasedcrops.Config;
 import com.ourcreation.biomebasedcrops.GreenhouseContent;
 import com.ourcreation.biomebasedcrops.GreenhouseEnvironment;
 import com.ourcreation.biomebasedcrops.GreenhouseRecipes;
@@ -31,7 +30,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biome;
-import net.neoforged.fml.ModList;
 
 /** A visual English field index with one summary for each biome. */
 public final class FieldGuideScreen extends Screen {
@@ -39,21 +37,29 @@ public final class FieldGuideScreen extends Screen {
     private static final int FADED_INK = 0x6C5740;
     private static final ResourceLocation BOOK = ResourceLocation.withDefaultNamespace("textures/gui/book.png");
     private static GreenhouseEnvironment.Inspection lastSurvey;
-    private int biomeOffset, view, materialOffset;
+    private int biomeOffset, materialOffset, roomVolume;
     private int bookX, bookY, bookWidth, bookHeight, pageWidth, visibleBiomes;
     private EditBox search;
     private String query = "";
     private List<Holder.Reference<Biome>> biomes = List.of(), filtered = List.of();
     private ResourceLocation selectedBiome;
     private PageButton indexPrevious, indexNext;
-    private InkLink buildLink, backLink;
     private final List<IngredientHit> ingredients = new ArrayList<>();
     private final List<BiomeLink> biomeLinks = new ArrayList<>();
     private boolean surveyOpened;
 
     public FieldGuideScreen() { super(Component.literal("Biome field index")); }
-    public static void open() { Minecraft.getInstance().setScreen(new FieldGuideScreen()); }
+    public static void open() { open(0); }
+    public static void open(int roomVolume) {
+        FieldGuideScreen screen = new FieldGuideScreen();
+        screen.roomVolume = Math.max(0, roomVolume);
+        Minecraft.getInstance().setScreen(screen);
+    }
     public static void clearSurvey() { lastSurvey = null; }
+    public static void updateRoomVolumeIfOpen(int roomVolume) {
+        if (Minecraft.getInstance().screen instanceof FieldGuideScreen guide)
+            guide.roomVolume = Math.max(0, roomVolume);
+    }
     public static void updateSurveyIfOpen(GreenhouseEnvironment.Inspection inspection) {
         if (Minecraft.getInstance().screen instanceof FieldGuideScreen guide && guide.surveyOpened)
             openSurvey(inspection);
@@ -63,6 +69,7 @@ public final class FieldGuideScreen extends Screen {
         FieldGuideScreen screen = new FieldGuideScreen();
         screen.selectedBiome = inspection.targetBiome();
         screen.surveyOpened = true;
+        screen.roomVolume = Math.max(0, inspection.roomVolume());
         Minecraft.getInstance().setScreen(screen);
     }
 
@@ -89,10 +96,6 @@ public final class FieldGuideScreen extends Screen {
         }
         indexPrevious = corner(leftX(), false, "Previous biomes", () -> turnIndex(-1));
         indexNext = corner(leftX() + pageWidth - 23, true, "Next biomes", () -> turnIndex(1));
-        buildLink = addRenderableWidget(new InkLink(rightX(), bookY + bookHeight - 25,
-                "How to build", () -> showView(2)));
-        backLink = addRenderableWidget(new InkLink(rightX(), bookY + bookHeight - 25,
-                "< Biome", () -> showView(0)));
         search = new EditBox(font, leftX(), bookY + 37, pageWidth, 14, Component.literal("Find a biome"));
         search.setMaxLength(128);
         search.setBordered(false);
@@ -102,7 +105,7 @@ public final class FieldGuideScreen extends Screen {
         search.setValue(query);
         search.setResponder(value -> {
             query = value;
-            biomeOffset = view = materialOffset = 0;
+            biomeOffset = materialOffset = 0;
             filterBiomes();
             updateControls();
         });
@@ -134,16 +137,10 @@ public final class FieldGuideScreen extends Screen {
         }
         show(indexPrevious, biomeOffset > 0);
         show(indexNext, biomeOffset + visibleBiomes < filtered.size());
-        buildLink.visible = buildLink.active = view == 0;
-        backLink.visible = backLink.active = view != 0;
     }
     private static void show(PageButton button, boolean visible) { button.visible = button.active = visible; }
     private void turnIndex(int direction) {
         biomeOffset = Math.clamp(biomeOffset + direction * visibleBiomes, 0, Math.max(0, filtered.size() - visibleBiomes));
-        updateControls();
-    }
-    private void showView(int selected) {
-        view = selected;
         updateControls();
     }
     private boolean matchingSurvey() {
@@ -160,26 +157,25 @@ public final class FieldGuideScreen extends Screen {
         ingredients.clear();
         if (filtered.isEmpty()) wrap(g, "No matches", leftX(), bookY + 61, pageWidth, 2);
         GreenhouseRecipes.Recipe recipe = recipe();
-        if (recipe != null) {
-            Component heading = view == 0 ? EnglishGuideText.biomeName(selectedBiome) : Component.literal("How to build");
-            g.drawString(font, fit(heading.copy().withStyle(ChatFormatting.BOLD), pageWidth), rightX(), bookY + 18, INK, false);
-            String label = view == 0 ? "Required blocks" : "Example: Forest";
-            g.drawString(font, fit(bold(label), pageWidth), rightX(), bookY + 35, INK, false);
-            if (view == 0) drawMaterials(g, recipe);
-            else drawRoom(g);
-        }
+        if (recipe != null) drawSummary(g, recipe);
         updateControls();
         for (var child : children()) if (child instanceof net.minecraft.client.gui.components.Renderable renderable)
             renderable.render(g, mouseX, mouseY, partialTick);
         ingredientAt(mouseX, mouseY).ifPresent(hit -> {
-            List<Component> tooltip = new ArrayList<>(Screen.getTooltipFromItem(minecraft, hit.stack()));
+            List<Component> extraLines = new ArrayList<>();
+            if (hit.stack().getCount() > 1)
+                extraLines.add(Component.literal("Required: " + hit.stack().getCount()).withStyle(ChatFormatting.GRAY));
             if (matchingSurvey()) {
                 ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(hit.stack().getItem());
                 lastSurvey.requirements().stream().filter(progress -> progress.block().equals(itemId)).findFirst()
-                        .ifPresent(progress -> tooltip.add(Component.literal("Found: " + progress.found() + "/" + progress.required())
+                        .ifPresent(progress -> extraLines.add(Component.literal("Found: " + progress.found() + "/" + progress.required())
                                 .withStyle(ChatFormatting.GRAY)));
             }
-            g.renderTooltip(font, tooltip, hit.stack().getTooltipImage(), hit.stack(), mouseX, mouseY);
+            if (!GreenhouseViewerBridge.renderTooltip(g, hit.stack(), extraLines, mouseX, mouseY)) {
+                List<Component> tooltip = new ArrayList<>(Screen.getTooltipFromItem(minecraft, hit.stack()));
+                tooltip.addAll(extraLines);
+                g.renderTooltip(font, tooltip, hit.stack().getTooltipImage(), hit.stack(), mouseX, mouseY);
+            }
         });
     }
 
@@ -214,84 +210,81 @@ public final class FieldGuideScreen extends Screen {
                 mirrored ? -146 : 146, 180, 256, 256);
     }
 
-    private void drawMaterials(GuiGraphics g, GreenhouseRecipes.Recipe recipe) {
-        int x = rightX(), y = bookY + 53;
+    private void drawSummary(GuiGraphics g, GreenhouseRecipes.Recipe recipe) {
+        int x = rightX(), y = bookY + 18;
+        Component name = EnglishGuideText.biomeName(selectedBiome).copy().withStyle(ChatFormatting.BOLD);
+        List<FormattedCharSequence> nameLines = font.split(name, pageWidth);
+        for (int i = 0; i < Math.min(3, nameLines.size()); i++)
+            g.drawString(font, nameLines.get(i), x, y + i * 10, INK, false);
+        y += Math.min(3, nameLines.size()) * 10 + 2;
+        int reference = GreenhouseRecipes.referenceVolume();
+        String context = roomVolume > 0 ? "Room: " + roomVolume : "Per " + reference + " blocks";
+        y += drawLines(g, Component.literal(context), x, y, pageWidth, 2) + 2;
+
         var requirements = recipe.requirements();
-        if (surveyOpened && lastSurvey != null && lastSurvey.targetBiome() == null) {
-            line(g, surveyIssue(lastSurvey.status()), x, y);
-            y += 13;
-        }
-        int columns = Math.max(1, pageWidth / 18);
-        boolean scroll = scrollMaterials(recipe);
-        int rows = scroll ? 1 : Math.max(1, (requirements.size() + columns - 1) / columns);
-        materialOffset = scroll ? Math.clamp(materialOffset, 0, Math.max(0, requirements.size() - columns)) : 0;
-        int visible = Math.min(requirements.size() - materialOffset, columns * rows);
+        int columns = Math.max(1, pageWidth / 20);
+        materialOffset = Math.clamp(materialOffset, 0, Math.max(0, requirements.size() - columns));
+        int visible = Math.min(requirements.size() - materialOffset, columns);
         for (int i = 0; i < visible; i++) {
-            int at = materialOffset + i, ix = x + i % columns * 18, iy = y + i / columns * 18;
-            var requirement = requirements.get(at);
+            var requirement = requirements.get(materialOffset + i);
+            int required = GreenhouseRecipes.scaledCount(requirement.count(), roomVolume, reference);
             ItemStack stack = specimenStack(requirement.block());
-            stack.setCount(requirement.count());
-            drawIngredient(g, stack, ix, iy);
-            g.renderItemDecorations(font, stack, ix, iy, Integer.toString(requirement.count()));
+            stack.setCount(required);
+            int ix = x + i * 20;
+            drawIngredient(g, stack, ix, y);
+            drawQuantity(g, stack, ix, y, required);
         }
-        int temperatureY = y + rows * 18 + 12;
-        if (scroll) {
-            g.drawString(font, "<> scroll", x, temperatureY, FADED_INK, false);
-            temperatureY += 12;
+        materialRowY = y;
+        y += 18;
+        if (requirements.size() > columns) {
+            line(g, "<> scroll materials", x, y);
+            y += 10;
         }
-        Component temperature = Component.literal("Required temperature: "
-                + EnglishGuideText.climateName(recipe.climate()).getString());
-        List<FormattedCharSequence> temperatureLines = font.split(temperature, pageWidth - 2);
-        for (int i = 0; i < temperatureLines.size(); i++)
-            g.drawString(font, temperatureLines.get(i), x, temperatureY + i * 10, INK, false);
-        int afterTemperature = temperatureY + temperatureLines.size() * 10;
-        int statusHeight = 0;
-        if (matchingSurvey()) {
-            List<FormattedCharSequence> status = font.split(Component.literal(surveyIssue(lastSurvey.status())), pageWidth - 2);
-            statusHeight = Math.min(2, status.size()) * 10 + 5;
-            for (int i = 0; i < Math.min(2, status.size()); i++)
-                g.drawString(font, status.get(i), x, afterTemperature + 5 + i * 10, INK, false);
+        y += 6;
+        y += drawLines(g, Component.literal("Required temperature: "
+                + EnglishGuideText.targetTemperatures(recipe.climate())), x, y, pageWidth, 3);
+        y += 4;
+        line(g, "Seal + glass roof", x, y);
+        y += 10;
+        line(g, "Roof:" + percent(GreenhouseSettings.roofGlassRatio()) + " Walls:" + percent(GreenhouseSettings.wallGlassRatio()), x, y);
+        y += 10;
+        line(g, "Expose blocks; scan", x, y);
+        y += 10;
+        if (surveyOpened && lastSurvey != null) {
+            String status = matchingSurvey() || lastSurvey.targetBiome() == null ? surveyIssue(lastSurvey.status()) : "";
+            if (!status.isEmpty()) {
+                y += 3;
+                line(g, status, x, y);
+            }
         }
-        int machineY = afterTemperature + statusHeight + 12;
-        drawIngredient(g, new ItemStack(GreenhouseContent.AIR_CONDITIONER_ITEM.get()), x, machineY);
-        g.drawString(font, fit(Component.literal("Air Conditioner"), pageWidth - 22), x + 22, machineY + 4, INK, false);
-        wrap(g, "Power it; set target", x, machineY + 21, pageWidth, 2);
-        ResourceLocation tan = ResourceLocation.fromNamespaceAndPath("toughasnails", "thermoregulator");
-        if (tanOptional() && BuiltInRegistries.ITEM.containsKey(tan) && machineY + 63 < bookY + bookHeight - 32) {
-            drawIngredient(g, new ItemStack(BuiltInRegistries.ITEM.get(tan)), x, machineY + 45);
-            g.drawString(font, fit(Component.literal("Optional TAN"), pageWidth - 22), x + 22, machineY + 49, INK, false);
-        }
+
+        int machineY = bookY + bookHeight - 49;
+        g.drawString(font, "Thermoregulator", x, machineY, INK, false);
+        drawIngredient(g, new ItemStack(GreenhouseContent.AIR_CONDITIONER_ITEM.get()), x, machineY + 12);
+        drawLines(g, Component.literal("Power; set target"), x + 22, machineY + 12, pageWidth - 22, 2);
     }
 
-    private void drawRoom(GuiGraphics g) {
-        int x = rightX(), y = bookY + 53, start = x + (pageWidth - 80) / 2;
-        for (int col = 0; col < 5; col++) {
-            drawIngredient(g, new ItemStack(Items.GLASS), start + col * 16, y);
-            drawIngredient(g, new ItemStack(col == 1 || col == 3 ? Items.FARMLAND : Items.DIRT), start + col * 16, y + 48);
+    private int materialRowY;
+
+    private void drawQuantity(GuiGraphics g, ItemStack stack, int x, int y, int count) {
+        if (count < 1000) {
+            g.renderItemDecorations(font, stack, x, y, Integer.toString(count));
+            return;
         }
-        for (int row = 1; row < 3; row++) {
-            drawIngredient(g, new ItemStack(Items.GLASS), start, y + row * 16);
-            drawIngredient(g, new ItemStack(Items.GLASS), start + 64, y + row * 16);
-        }
-        ItemStack logs = new ItemStack(Items.OAK_LOG, 8);
-        ItemStack leaves = new ItemStack(Items.OAK_LEAVES, 4);
-        ItemStack birch = new ItemStack(Items.BIRCH_LOG, 2);
-        drawIngredient(g, logs, start + 16, y + 16);
-        g.renderItemDecorations(font, logs, start + 16, y + 16);
-        drawIngredient(g, leaves, start + 32, y + 16);
-        g.renderItemDecorations(font, leaves, start + 32, y + 16);
-        drawIngredient(g, birch, start + 48, y + 16);
-        g.renderItemDecorations(font, birch, start + 48, y + 16);
-        drawIngredient(g, new ItemStack(Items.WHEAT), start + 16, y + 32);
-        drawIngredient(g, new ItemStack(Items.WHEAT), start + 48, y + 32);
-        int labelY = y + 68;
-        line(g, "1. Seal all 6 sides", x, labelY);
-        line(g, percent(GreenhouseSettings.roofGlassRatio()) + " roof: glass", x, labelY + 11);
-        line(g, percent(GreenhouseSettings.wallGlassRatio()) + " walls: glass", x, labelY + 22);
-        line(g, "2. Expose each block", x, labelY + 33);
-        line(g, "3. Scan inside", x, labelY + 44);
-        drawIngredient(g, new ItemStack(GreenhouseContent.PROBE.get()), x + pageWidth - 18, labelY + 42);
-        line(g, "Blocks choose biome", x, labelY + 55);
+        String compact = String.format(Locale.ROOT, count < 10000 ? "%.1fk" : "%.0fk", count / 1000.0).replace(".0k", "k");
+        float scale = Math.min(1.0F, 17.0F / font.width(compact));
+        g.pose().pushPose();
+        g.pose().translate(x + 17, y + 17, 200);
+        g.pose().scale(scale, scale, 1);
+        g.drawString(font, compact, -font.width(compact), -font.lineHeight, 0xFFFFFF, true);
+        g.pose().popPose();
+    }
+
+    private int drawLines(GuiGraphics g, Component component, int x, int y, int width, int maxLines) {
+        List<FormattedCharSequence> lines = font.split(component, width);
+        int count = Math.min(maxLines, lines.size());
+        for (int i = 0; i < count; i++) g.drawString(font, lines.get(i), x, y + i * 10, INK, false);
+        return count * 10;
     }
 
     private static String surveyIssue(String status) {
@@ -302,16 +295,14 @@ public final class FieldGuideScreen extends Screen {
             case "ambiguous" -> "Mixed biome layouts";
             case "too_large", "open", "outside" -> "Open / too large";
             case "no_glass" -> "More roof / wall glass needed";
-            case "wrong_temperature" -> "Wrong climate";
+            case "wrong_temperature" -> "Climate not ready";
+            case "filling_air" -> "Air not ready";
             case "disabled" -> "Server disabled";
             case "unloaded" -> "Area not loaded";
             default -> "Scan inside";
         };
     }
 
-    private boolean tanOptional() {
-        return ModList.get().isLoaded("toughasnails") && Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get();
-    }
     private static Component bold(String value) { return Component.literal(value).withStyle(ChatFormatting.BOLD); }
     private static String percent(double ratio) {
         return java.math.BigDecimal.valueOf(ratio).multiply(java.math.BigDecimal.valueOf(100))
@@ -323,13 +314,14 @@ public final class FieldGuideScreen extends Screen {
         if (id.equals(ResourceLocation.withDefaultNamespace("lava"))) return new ItemStack(Items.LAVA_BUCKET);
         return new ItemStack(BuiltInRegistries.BLOCK.get(id).asItem());
     }
-    private boolean scrollMaterials(GreenhouseRecipes.Recipe recipe) {
-        int columns = Math.max(1, pageWidth / 18);
-        return recipe.specimens().size() > columns * (pageWidth < 140 ? 1 : 2);
+    @Override public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if ((search == null || !search.isFocused()) && GreenhouseViewerBridge.keyPressed(this, keyCode, scanCode)) return true;
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
     @Override public boolean mouseClicked(double mouseX, double mouseY, int button) {
         Optional<IngredientHit> hit = ingredientAt(mouseX, mouseY);
         if ((button == 0 || button == 1) && hit.isPresent()) {
+            blurSearch();
             if (GreenhouseViewerBridge.open(hit.get().stack(), button == 1)) return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -340,10 +332,10 @@ public final class FieldGuideScreen extends Screen {
             updateControls(); return true;
         }
         GreenhouseRecipes.Recipe recipe = recipe();
-        int columns = Math.max(1, pageWidth / 18);
-        if (view == 0 && recipe != null && scrollMaterials(recipe)
-                && inside(mouseX, mouseY, rightX(), bookY + 53, pageWidth, 38)) {
-            materialOffset = Math.clamp(materialOffset - (int)Math.signum(scrollY), 0, recipe.specimens().size() - columns);
+        int columns = Math.max(1, pageWidth / 20);
+        if (recipe != null && recipe.requirements().size() > columns
+                && inside(mouseX, mouseY, rightX(), materialRowY, pageWidth, 28)) {
+            materialOffset = Math.clamp(materialOffset - (int)Math.signum(scrollY), 0, recipe.requirements().size() - columns);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
@@ -354,7 +346,7 @@ public final class FieldGuideScreen extends Screen {
                 hit.bounds().getWidth(), hit.bounds().getHeight())).findFirst();
     }
     public Optional<IngredientHit> viewerIngredientAt(double mouseX, double mouseY) {
-        return search != null && search.isFocused() ? Optional.empty() : ingredientAt(mouseX, mouseY);
+        return ingredientAt(mouseX, mouseY);
     }
     private void drawIngredient(GuiGraphics g, ItemStack stack, int x, int y) {
         if (stack.isEmpty()) return;
@@ -362,6 +354,15 @@ public final class FieldGuideScreen extends Screen {
         ingredients.add(new IngredientHit(stack.copy(), new Rect2i(x, y, 16, 16)));
     }
     public record IngredientHit(ItemStack stack, Rect2i bounds) {}
+    @Override public void mouseMoved(double mouseX, double mouseY) {
+        if (ingredientAt(mouseX, mouseY).isPresent()) blurSearch();
+        super.mouseMoved(mouseX, mouseY);
+    }
+    private void blurSearch() {
+        if (search == null) return;
+        search.setFocused(false);
+        if (getFocused() == search) setFocused(null);
+    }
     @Override public boolean isPauseScreen() { return false; }
     private int leftX() { return bookX + 22; }
     private int rightX() { return bookX + bookWidth / 2 + 26; }
@@ -382,25 +383,13 @@ public final class FieldGuideScreen extends Screen {
     private static boolean inside(double mouseX, double mouseY, int x, int y, int width, int height) {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
-    private final class InkLink extends AbstractButton {
-        private final Runnable action;
-        private InkLink(int x, int y, String label, Runnable action) {
-            super(x, y, pageWidth, 12, Component.literal(label)); this.action = action;
-        }
-        @Override public void onPress() { action.run(); }
-        @Override protected void updateWidgetNarration(NarrationElementOutput output) { defaultButtonNarrationText(output); }
-        @Override protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-            g.drawString(font, fit(getMessage(), width), getX(), getY() + 1, INK, false);
-            if (isFocused()) g.fill(getX(), getY() + 10, getX() + font.width(getMessage()), getY() + 11, 0xAA3D2D20);
-        }
-    }
     private final class BiomeLink extends AbstractButton {
         private final int row;
         private BiomeLink(int row) { super(leftX(),bookY+56+row*22,pageWidth-2,21,Component.empty()); this.row=row; }
         @Override public void onPress() {
             int index=biomeOffset+row;
             if(index<filtered.size()) {
-                selectedBiome=filtered.get(index).key().location(); view=materialOffset=0; updateControls();
+                selectedBiome=filtered.get(index).key().location(); materialOffset=0; updateControls();
             }
         }
         @Override protected void updateWidgetNarration(NarrationElementOutput output) { defaultButtonNarrationText(output); }

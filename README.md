@@ -13,10 +13,11 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 ## Features
 
 - Assign crops and saplings to climates, specific biomes, or biome tags.
-- Set greenhouse climates with an FE-powered Air Conditioner, with optional Tough As Nails and Northstar machine support.
-- Build greenhouses that automatically identify their biome from native materials and local temperature.
+- Build greenhouses that automatically identify their biome from required native materials, actual temperature, and breathable air.
+- Condition room temperature and oxygen gradually with an FE-powered Thermoregulator and a Celsius target dial.
+- Scale each required material count and machine power use with room volume.
 - Apply the detected biome inside the room, including its natural mob spawn lists, while the surrounding world keeps its native biome.
-- Check conditions with a Greenhouse Probe and follow each biome's visual material recipe in the Farmer's Field Guide.
+- Check conditions with a Greenhouse Probe and Thermometer, and find material recipes in the Farmer's Field Guide.
 - Control natural growth and bonemeal restrictions independently.
 - Disable restrictions separately for crops and trees with config settings or operator commands.
 - Show growth requirements in item tooltips.
@@ -25,9 +26,16 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 
 ## Greenhouses
 
-Craft a **Greenhouse Probe** and **Farmer's Field Guide**. Build an enclosed room with enough glass for its size, place every required material and quantity, and match its climate using the natural biome or a powered climate machine. The greenhouse identifies its biome automatically; no core or sample is required.
+Craft a **Greenhouse Probe** and **Farmer's Field Guide**. The greenhouse identifies its biome automatically; no core, sample, or binding step is required.
 
-Use the probe inside the room to check its detected biome, climate, enclosure, and each material count. Select a biome in the guide's searchable index for its complete material recipe and climate. The shared **How to build** reference explains the enclosure; the biome summary shows its climate and Air Conditioner requirement. The guide covers installed mod biomes and uses English text. Large rooms scan gradually; there are no fixed width or height limits within the configured volume cap. See [the greenhouse configuration guide](CONFIGURATION.md#greenhouses) for building limits and climate control.
+1. Seal a room with a floor, walls, and roof. Defaults require 50% roof glass, 10% wall glass, and at least four glass wall blocks.
+2. Place every material shown for your chosen biome. Counts cover 512 interior blocks by default and increase for larger rooms.
+3. Match its required temperature. If needed, power a **Thermoregulator**, set its dial from **-20 to 50 C**, and wait for the room to reach its temperature and air requirements.
+4. Scan with the probe to check the detected biome and material progress.
+
+The guide keeps the selected biome's materials, temperature, and short building instructions on one page. Item icons support standard tooltips and optional JEI, EMI, or REI recipes and uses. The English guide and machine screen use Minecraft textures and widgets, including resource-pack replacements.
+
+Craft the **Thermometer** with glass, redstone, and a copper ingot in a vertical column, in that order. Use it to read actual temperature and oxygen. Large rooms scan and condition gradually; there are no fixed side-length or height limits within the configured volume cap. See [CONFIGURATION.md](CONFIGURATION.md#greenhouses) for material scaling, power costs, and optional machine support.
 
 ## Configuration
 

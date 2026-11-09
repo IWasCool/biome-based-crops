@@ -28,6 +28,8 @@ public final class GreenhouseContent {
             () -> new GreenhouseProbeItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, FarmersGuideItem> GUIDE = ITEMS.register("farmer_field_guide",
             () -> new FarmersGuideItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, ThermometerItem> THERMOMETER = ITEMS.register("thermometer",
+            () -> new ThermometerItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Block, AirConditionerBlock> AIR_CONDITIONER = BLOCKS.register("air_conditioner",
             () -> new AirConditionerBlock(BlockBehaviour.Properties.of().strength(3.5F).sound(SoundType.METAL)));
     public static final DeferredHolder<Item, BlockItem> AIR_CONDITIONER_ITEM = ITEMS.register("air_conditioner",
@@ -59,6 +61,7 @@ public final class GreenhouseContent {
             event.accept(CORE_ITEM.get());
             event.accept(PROBE.get());
             event.accept(GUIDE.get());
+            event.accept(THERMOMETER.get());
             event.accept(AIR_CONDITIONER_ITEM.get());
         }
     }

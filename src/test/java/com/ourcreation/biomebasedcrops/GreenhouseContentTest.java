@@ -89,9 +89,9 @@ class GreenhouseContentTest {
     void largeRoomSurveyCountsAndDeferredUpdateFlagSurviveNetworkRoundTrip() {
         var sand = id("minecraft:sand");
         var report = new GreenhouseEnvironment.Inspection(true, id("minecraft:desert"), CropClimate.HOT,
-                0, 0, 250_000, 8, 8, "biome_based_crops.greenhouse.status.valid", List.of(sand),
-                List.of(new GreenhouseEnvironment.RequirementProgress(sand, 200_000, 8)), CropClimate.NEUTRAL);
-        var payload = new GreenhouseNetwork.ViewPayload(Map.of(), report, true);
+                0, 0, 250_000, 1_048_576, 1_048_576, "biome_based_crops.greenhouse.status.valid", List.of(sand),
+                List.of(new GreenhouseEnvironment.RequirementProgress(sand, 1_048_576, 1_048_576)), CropClimate.NEUTRAL, 1_048_576);
+        var payload = new GreenhouseNetwork.ViewPayload(Map.of(), report, true, 64, 1_048_576);
         assertEquals(payload, roundTrip(payload));
     }
 
@@ -128,7 +128,12 @@ class GreenhouseContentTest {
                 new ItemStack(Items.COPPER_INGOT), new ItemStack(Items.PISTON), new ItemStack(Items.COPPER_INGOT),
                 new ItemStack(Items.IRON_INGOT), new ItemStack(Items.REDSTONE), new ItemStack(Items.IRON_INGOT)),
                 new ItemStack(GreenhouseContent.AIR_CONDITIONER_ITEM.get()));
-        for (String recipe : List.of("greenhouse_core", "greenhouse_probe", "farmer_field_guide", "air_conditioner")) {
+        assertCrafts(server, "thermometer", List.of(
+                new ItemStack(Items.GLASS), ItemStack.EMPTY, ItemStack.EMPTY,
+                new ItemStack(Items.REDSTONE), ItemStack.EMPTY, ItemStack.EMPTY,
+                new ItemStack(Items.COPPER_INGOT), ItemStack.EMPTY, ItemStack.EMPTY),
+                new ItemStack(GreenhouseContent.THERMOMETER.get()));
+        for (String recipe : List.of("greenhouse_core", "greenhouse_probe", "farmer_field_guide", "air_conditioner", "thermometer")) {
             assertNotNull(server.getAdvancements().get(id("biome_based_crops:recipes/" + recipe)), "Missing recipe unlock " + recipe);
         }
     }

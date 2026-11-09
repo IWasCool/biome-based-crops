@@ -31,7 +31,8 @@ public class BiomeBasedCrops {
         NeoForge.EVENT_BUS.addListener(GreenhouseBiomeNetwork::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(GreenhouseNetwork::onPlayerTick);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.TagsUpdatedEvent event) -> {
-            GreenhouseEnvironment.clearCache();
+            if (event.getUpdateCause() == net.neoforged.neoforge.event.TagsUpdatedEvent.UpdateCause.SERVER_DATA_LOAD)
+                GreenhouseEnvironment.clearCache();
             GreenhouseRecipes.clearCache();
         });
     }

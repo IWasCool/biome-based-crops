@@ -24,9 +24,11 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public final class GreenhouseRecipes {
+    public static final int REFERENCE_VOLUME = 512;
     private static final Map<Holder<Biome>, Recipe> RECIPES = Collections.synchronizedMap(new WeakHashMap<>());
     private static final Map<String, List<MaterialRequirement>> VANILLA = vanillaRecipes();
     private static volatile Map<ResourceLocation, Recipe> clientRecipes = Map.of();
+    private static volatile Integer clientReferenceVolume;
 
     private GreenhouseRecipes() {
     }
@@ -42,15 +44,46 @@ public final class GreenhouseRecipes {
     }
 
     public static void acceptServerRecipes(Map<ResourceLocation, Recipe> recipes) {
+        acceptServerRecipes(recipes, GreenhouseSettings.materialReferenceVolume());
+    }
+
+    public static void acceptServerRecipes(Map<ResourceLocation, Recipe> recipes, int referenceVolume) {
+        validateScale(1, 0, referenceVolume);
         clientRecipes = Map.copyOf(recipes);
+        clientReferenceVolume = referenceVolume;
     }
 
     public static void clearClientRecipes() {
         clientRecipes = Map.of();
+        clientReferenceVolume = null;
     }
 
     public static void clearCache() {
         RECIPES.clear();
+    }
+
+    /** Reference volume advertised by the guide's authoritative recipe catalog. */
+    public static int referenceVolume() {
+        Integer synced = clientReferenceVolume;
+        return synced == null ? GreenhouseSettings.materialReferenceVolume() : synced;
+    }
+
+    /** Server-side scaling always uses the active server config, never the client guide snapshot. */
+    public static int scaledCount(int baseCount, int roomVolume) {
+        return scaledCount(baseCount, roomVolume, GreenhouseSettings.materialReferenceVolume());
+    }
+
+    public static int scaledCount(int baseCount, int roomVolume, int referenceVolume) {
+        validateScale(baseCount, roomVolume, referenceVolume);
+        long proportional = ((long) baseCount * roomVolume + referenceVolume - 1) / referenceVolume;
+        return Math.toIntExact(Math.max(baseCount, proportional));
+    }
+
+    private static void validateScale(int baseCount, int roomVolume, int referenceVolume) {
+        if (baseCount < 1 || baseCount > 64 || roomVolume < 0 || roomVolume > 1048576
+                || referenceVolume < 64 || referenceVolume > 1048576) {
+            throw new IllegalArgumentException("Invalid greenhouse material scaling input");
+        }
     }
 
     private static Recipe derive(Holder<Biome> biome) {

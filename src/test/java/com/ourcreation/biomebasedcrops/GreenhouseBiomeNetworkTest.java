@@ -107,6 +107,28 @@ class GreenhouseBiomeNetworkTest {
     }
 
     @Test
+    void physicalAirSyncIsExactBeforeAnyBiomePaletteIsComplete() {
+        BlockPos inside = new BlockPos(4, 70, -2);
+        var masks = GreenhouseBiomeNetwork.masksFor(Set.of(inside.asLong()), inside);
+        var payload = new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, -25.5F, 96.4F);
+        assertEquals(payload, roundTrip(payload));
+        try {
+            GreenhouseClientBiomes.accept(roundTrip(payload));
+            assertNull(GreenhouseClientBiomes.biomeIdAt(OVERWORLD, inside));
+            assertEquals(-25.5F, GreenhouseClientBiomes.temperatureAt(OVERWORLD, inside, 20));
+            assertEquals(96.4F, GreenhouseClientBiomes.oxygenAt(OVERWORLD, inside, 0));
+            assertTrue(GreenhouseClientBiomes.hasOxygen(OVERWORLD, inside));
+            assertFalse(GreenhouseClientBiomes.hasOxygen(OVERWORLD, inside.east()));
+            assertEquals(-100F, GreenhouseClientBiomes.temperatureAt(OVERWORLD, inside.east(), -100));
+            assertFalse(GreenhouseClientBiomes.hasOxygen(id("northstar:moon"), inside));
+            GreenhouseClientBiomes.accept(new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, 20, 94.9F));
+            assertFalse(GreenhouseClientBiomes.hasOxygen(OVERWORLD, inside));
+        } finally { GreenhouseClientBiomes.clear(); }
+        assertThrows(IllegalArgumentException.class, () -> new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, Float.NaN, 100));
+        assertThrows(IllegalArgumentException.class, () -> new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, 20, 101));
+    }
+
+    @Test
     void decoderRejectsOversizedDuplicateAndMalformedSectionsBeforeUse() {
         reject(buffer -> header(buffer, 28));
         reject(buffer -> {
@@ -139,12 +161,6 @@ class GreenhouseBiomeNetworkTest {
             full(buffer, SectionPos.asLong(0, 0, 0));
             full(buffer, SectionPos.asLong(3, 0, 0));
         });
-        reject(buffer -> {
-            buffer.writeResourceLocation(OVERWORLD);
-            buffer.writeNullable(null, FriendlyByteBuf::writeResourceLocation);
-            buffer.writeVarInt(1);
-            full(buffer, 0);
-        });
         reject(buffer -> header(buffer, 0));
     }
 
@@ -169,6 +185,8 @@ class GreenhouseBiomeNetworkTest {
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
             writer.accept(buffer);
+            buffer.writeFloat(20);
+            buffer.writeFloat(100);
             assertThrows(IllegalArgumentException.class, () -> GreenhouseBiomeNetwork.RoomPayload.CODEC.decode(buffer));
         } finally { buffer.release(); }
     }

@@ -80,12 +80,14 @@ public final class CommonEvents {
     }
 
     public static boolean canGrow(Level level, BlockPos pos, CropProfile profile) {
-        if (GreenhouseEnvironment.inspect(level, pos).valid()) {
+        if (!GreenhouseEnvironment.isBreathable(level, pos)) return false;
+        var inspection = GreenhouseEnvironment.inspect(level, pos);
+        if (inspection.valid()) {
             return GreenhouseEnvironment.canSupport(level, pos, profile);
         }
         return (profile.hasBiomeRule() ? profile.allows(level.getBiome(pos), pos)
-                    : profile.allows(GreenhouseEnvironment.effectiveClimate(level, pos)))
-                || ThermoregulatorDetector.canSupportProfile(level, pos, profile);
+                    : profile.allows(inspection.climate()))
+                || (!inspection.enclosed() && ThermoregulatorDetector.canSupportProfile(level, pos, profile));
     }
 
     private static void showThermometerClimate(Player player, InteractionHand hand) {

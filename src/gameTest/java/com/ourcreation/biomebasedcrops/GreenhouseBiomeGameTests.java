@@ -55,8 +55,8 @@ public final class GreenhouseBiomeGameTests {
             // Repeated emulated queries must not turn the emulated biome into the next
             // native baseline, or apply the heaters to the already heated desert again.
             for (int query = 0; query < 20; query++) {
-                GreenhouseEnvironment.clearCache();
-                helper.assertTrue(level.getBiome(center).is(Biomes.DESERT), "Overlay became unstable after a fresh scan");
+                GreenhouseEnvironment.invalidateClimate();
+                helper.assertTrue(level.getBiome(center).is(Biomes.DESERT), "Overlay became unstable after a climate refresh");
                 helper.assertTrue(GreenhouseEnvironment.inspect(level, center).baseClimate() == nativeClimate,
                         "Greenhouse fed its emulated biome back into the native temperature baseline");
             }
@@ -100,13 +100,14 @@ public final class GreenhouseBiomeGameTests {
             helper.assertTrue(level.getBiome(center).is(Biomes.DESERT), "Initial greenhouse overlay was missing");
             BlockPos roof = center.above(5);
             level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            // No manual cache clear: prove that the normal expiry notices the hole.
+            helper.assertTrue(level.getBiome(center).is(Biomes.PLAINS), "Opening the roof did not revoke the biome immediately");
+            // No manual topology clear: the normal block-change hook must notice the hole.
             helper.runAfterDelay(GreenhouseSettings.CACHE_TICKS.get() + 2L, () -> {
                 try {
                     helper.assertTrue(level.getBiome(center).is(Biomes.PLAINS), "Broken roof kept an emulated biome after cache expiry");
                     helper.assertFalse(hasHuskSpawn(level, center), "Broken roof kept desert natural-spawn entries");
                     level.setBlock(roof, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
-                    GreenhouseEnvironment.clearCache();
+                    AutoGreenhouseGameTests.conditionFixtureAir(level, center.north(2), CropClimate.HOT);
                     helper.assertTrue(level.getBiome(center).is(Biomes.DESERT), "Repaired greenhouse failed to restore its biome");
 
                     GreenhouseSettings.ENABLE_GREENHOUSES.set(false);
@@ -158,9 +159,13 @@ public final class GreenhouseBiomeGameTests {
         level.setBlock(center.north(2), GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState(), Block.UPDATE_ALL);
         AirConditionerBlockEntity machine = (AirConditionerBlockEntity) level.getBlockEntity(center.north(2));
         machine.setClimate(CropClimate.at(desert, center));
-        for (int i = 0; i < 20; i++) machine.energyStorage().receiveEnergy(1000, false);
+        while (machine.energyStored() < AirConditionerBlockEntity.CAPACITY) {
+            if (machine.energyStorage().receiveEnergy(Integer.MAX_VALUE, false) <= 0) {
+                throw new IllegalStateException("Fixture could not charge the real FE buffer");
+            }
+        }
         AirConditionerBlockEntity.serverTick(level, machine.getBlockPos(), machine.getBlockState(), machine);
-        GreenhouseEnvironment.clearCache();
+        AutoGreenhouseGameTests.conditionFixtureAir(level, machine.getBlockPos(), CropClimate.HOT);
         return center;
     }
 
