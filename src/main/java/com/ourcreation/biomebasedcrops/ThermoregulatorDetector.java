@@ -1,8 +1,12 @@
 package com.ourcreation.biomebasedcrops;
 
 import java.util.Set;
+import java.util.Optional;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -17,7 +21,27 @@ import net.neoforged.fml.ModList;
 
 public final class ThermoregulatorDetector {
     private static final ResourceLocation THERMOREGULATOR_ID = ResourceLocation.fromNamespaceAndPath("toughasnails", "thermoregulator");
+    private static final ResourceLocation NORTHSTAR_REGULATOR_ID = ResourceLocation.parse("northstar:temperature_regulator");
     private static final Set<CropClimate> ALL_CLIMATES = Set.of(CropClimate.values());
+    private static final AtomicBoolean NORTHSTAR_FAILURE_LOGGED = new AtomicBoolean();
+    private static final ClassValue<Optional<NorthstarAccess>> NORTHSTAR_ACCESS = new ClassValue<>() {
+        @Override protected Optional<NorthstarAccess> computeValue(Class<?> type) {
+            for (Class<?> parent = type; parent != null; parent = parent.getSuperclass()) {
+                if (parent.getName().equals("com.lightning.northstar.block.tech.temperature_regulator.TemperatureRegulatorBlockEntity")) {
+                    try {
+                        Method sealed = type.getMethod("isSealed", Vec3i.class);
+                        Method temperature = type.getMethod("getTemperature");
+                        return sealed.getReturnType() == boolean.class && temperature.getReturnType() == float.class
+                                ? Optional.of(new NorthstarAccess(sealed, temperature)) : Optional.empty();
+                    } catch (ReflectiveOperationException exception) {
+                        logNorthstarFailure(exception);
+                        return Optional.empty();
+                    }
+                }
+            }
+            return Optional.empty();
+        }
+    };
 
     private ThermoregulatorDetector() {
     }
@@ -31,7 +55,7 @@ public final class ThermoregulatorDetector {
     }
 
     private static boolean hasMatchingThermoregulator(Level level, BlockPos cropPos, Set<CropClimate> climates) {
-        if (!Config.SPEC.isLoaded() || !ModList.get().isLoaded("toughasnails") || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
+        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
                 || climates.isEmpty()) {
             return false;
         }
@@ -43,7 +67,6 @@ public final class ThermoregulatorDetector {
         int maxY = cropPos.getY() + 3;
         int minZ = cropPos.getZ() - radius;
         int maxZ = cropPos.getZ() + radius;
-        Block thermoregulator = BuiltInRegistries.BLOCK.get(THERMOREGULATOR_ID);
 
         // Regulators are block entities. Inspect only loaded chunks instead of reading
         // every block in the volume, which would synchronously load neighboring chunks.
@@ -63,8 +86,8 @@ public final class ThermoregulatorDetector {
                     }
 
                     BlockState state = blockEntity.getBlockState();
-                    if (state.is(thermoregulator) && supportsClimates(state, climates)) {
-                        return true;
+                    for (CropClimate climate : climates) {
+                        if (supportsClimateAt(level, pos, state, cropPos, climate)) return true;
                     }
                 }
             }
@@ -72,6 +95,43 @@ public final class ThermoregulatorDetector {
 
         return false;
     }
+
+    /** Only the verified active machine contract may provide a greenhouse climate. */
+    public static boolean supportsClimateAt(Level level, BlockPos machinePos, BlockState state, BlockPos query, CropClimate climate) {
+        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()) return false;
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        if (id.equals(THERMOREGULATOR_ID)) return supportsClimates(state, Set.of(climate));
+        if (!id.equals(NORTHSTAR_REGULATOR_ID)) return false;
+        BlockEntity entity = level.getBlockEntity(machinePos);
+        if (entity == null || entity.isRemoved()) return false;
+        Optional<NorthstarAccess> access = NORTHSTAR_ACCESS.get(entity.getClass());
+        if (access.isEmpty()) return false;
+        try {
+            // Northstar's isSealed includes active kinetic power, no leak, and
+            // membership of this exact position in its sealed volume.
+            if (!(Boolean) access.get().sealed.invoke(entity, query)) return false;
+            float temperature = (Float) access.get().temperature.invoke(entity);
+            return Float.isFinite(temperature) && northstarClimate(temperature) == climate;
+        } catch (ReflectiveOperationException exception) {
+            logNorthstarFailure(exception);
+            return false;
+        }
+    }
+
+    public static CropClimate northstarClimate(float celsius) {
+        if (celsius <= 0) return CropClimate.ICY;
+        if (celsius <= 10) return CropClimate.COLD;
+        if (celsius <= 25) return CropClimate.NEUTRAL;
+        return celsius <= 35 ? CropClimate.WARM : CropClimate.HOT;
+    }
+
+    private static void logNorthstarFailure(ReflectiveOperationException exception) {
+        if (NORTHSTAR_FAILURE_LOGGED.compareAndSet(false, true)) {
+            BiomeBasedCrops.LOGGER.warn("Could not read Northstar's sealed temperature regulator", exception);
+        }
+    }
+
+    private record NorthstarAccess(Method sealed, Method temperature) { }
 
     static boolean supportsClimates(BlockState state, Set<CropClimate> climates) {
         return supportsClimates(state.getOptionalValue(BlockStateProperties.ENABLED).orElse(false),

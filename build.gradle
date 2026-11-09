@@ -38,6 +38,10 @@ sourceSets {
 
 repositories {
     mavenCentral()
+    maven { url = 'https://maven.blamejared.com' }
+    maven { url = 'https://maven.terraformersmc.com/releases' }
+    maven { url = 'https://maven.shedaniel.me' }
+    maven { url = 'https://maven.architectury.dev' }
 }
 
 base {
@@ -118,6 +122,10 @@ configurations {
 }
 
 dependencies {
+    compileOnly 'mezz.jei:jei-1.21.1-common-api:19.53.0.425'
+    compileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1:api'
+    compileOnly 'me.shedaniel:RoughlyEnoughItems-api-neoforge:16.0.799'
+
     if (providers.gradleProperty('compatModsDir').isPresent()) {
         localRuntime fileTree(dir: providers.gradleProperty('compatModsDir').get(), include: ['*.jar'],
                 exclude: ['biome_based_crops-*.jar'])

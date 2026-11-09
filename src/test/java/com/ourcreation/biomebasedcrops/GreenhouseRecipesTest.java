@@ -56,12 +56,6 @@ class GreenhouseRecipesTest {
             ResourceLocation previous = palettes.put(Set.copyOf(recipe.specimens()), biome.key().location());
             assertEquals(null, previous, "Identical vanilla material palettes: " + previous + " and " + biome.key().location());
             assertTrue(recipe.requirements().stream().allMatch(material -> material.count() >= 1 && material.count() <= 64));
-            if (recipe.climate() == CropClimate.COLD) {
-                for (var material : recipe.requirements()) {
-                    assertEquals(0, GreenhouseEnvironment.coolingStrength(BuiltInRegistries.BLOCK.get(material.block()).defaultBlockState()),
-                            "A naturally Cold target must not require ice that cools it farther: " + biome.key().location());
-                }
-            }
             count++;
         }
         assertEquals(64, count);

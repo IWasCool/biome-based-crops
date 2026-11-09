@@ -10,6 +10,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -26,6 +28,12 @@ public final class GreenhouseContent {
             () -> new GreenhouseProbeItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, FarmersGuideItem> GUIDE = ITEMS.register("farmer_field_guide",
             () -> new FarmersGuideItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Block, AirConditionerBlock> AIR_CONDITIONER = BLOCKS.register("air_conditioner",
+            () -> new AirConditionerBlock(BlockBehaviour.Properties.of().strength(3.5F).sound(SoundType.METAL)));
+    public static final DeferredHolder<Item, BlockItem> AIR_CONDITIONER_ITEM = ITEMS.register("air_conditioner",
+            () -> new BlockItem(AIR_CONDITIONER.get(), new Item.Properties()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirConditionerBlockEntity>> AIR_CONDITIONER_ENTITY =
+            BLOCK_ENTITIES.register("air_conditioner", () -> BlockEntityType.Builder.of(AirConditionerBlockEntity::new, AIR_CONDITIONER.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GreenhouseCoreBlockEntity>> CORE_ENTITY =
             BLOCK_ENTITIES.register("greenhouse_core", () -> BlockEntityType.Builder.of(GreenhouseCoreBlockEntity::new, CORE.get()).build(null));
 
@@ -38,6 +46,12 @@ public final class GreenhouseContent {
         BLOCK_ENTITIES.register(bus);
         bus.addListener(GreenhouseContent::creativeTab);
         bus.addListener(GreenhouseNetwork::register);
+        bus.addListener(GreenhouseContent::capabilities);
+    }
+
+    private static void capabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, AIR_CONDITIONER_ENTITY.get(),
+                (unit, side) -> unit.energyStorage());
     }
 
     private static void creativeTab(BuildCreativeModeTabContentsEvent event) {
@@ -45,6 +59,7 @@ public final class GreenhouseContent {
             event.accept(CORE_ITEM.get());
             event.accept(PROBE.get());
             event.accept(GUIDE.get());
+            event.accept(AIR_CONDITIONER_ITEM.get());
         }
     }
 }

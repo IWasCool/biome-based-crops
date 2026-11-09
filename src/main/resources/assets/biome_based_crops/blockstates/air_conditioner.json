@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "biome_based_crops:block/air_conditioner" },
+    "facing=east": { "model": "biome_based_crops:block/air_conditioner", "y": 90 },
+    "facing=south": { "model": "biome_based_crops:block/air_conditioner", "y": 180 },
+    "facing=west": { "model": "biome_based_crops:block/air_conditioner", "y": 270 }
+  }
+}

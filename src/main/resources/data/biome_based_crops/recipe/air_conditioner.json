@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": ["IRI", "CPC", "IRI"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "R": { "item": "minecraft:redstone" },
+    "C": { "item": "minecraft:copper_ingot" },
+    "P": { "item": "minecraft:piston" }
+  },
+  "result": { "id": "biome_based_crops:air_conditioner", "count": 1 }
+}

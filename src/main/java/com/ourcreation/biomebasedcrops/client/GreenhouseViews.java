@@ -9,6 +9,10 @@ public final class GreenhouseViews {
 
     public static void open(GreenhouseNetwork.ViewPayload payload) {
         GreenhouseRecipes.acceptServerRecipes(payload.recipes());
+        if (payload.updateOnly()) {
+            if (payload.inspection() != null) FieldGuideScreen.updateSurveyIfOpen(payload.inspection());
+            return;
+        }
         if (payload.inspection() != null) {
             FieldGuideScreen.openSurvey(payload.inspection());
         } else {

@@ -17,8 +17,10 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 @Mod(value = BiomeBasedCrops.MODID, dist = Dist.CLIENT)
 public class BiomeBasedCropsClient {
-    public BiomeBasedCropsClient(ModContainer container) {
+    public BiomeBasedCropsClient(ModContainer container, net.neoforged.bus.api.IEventBus modBus) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) ->
+                event.register(AirConditionerMenu.TYPE.get(), com.ourcreation.biomebasedcrops.client.AirConditionerScreen::new));
         NeoForge.EVENT_BUS.addListener(BiomeBasedCropsClient::onTooltip);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> {
             GreenhouseClientBiomes.clear();

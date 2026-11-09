@@ -7,7 +7,7 @@
 - `config/biome_based_crops-client.toml`: local tooltip preference.
 - `config/biome_based_crops-greenhouse.toml`: greenhouse and nearby temperature rules; the server controls these settings too.
 
-Stop the world/server before editing gameplay files, then restart to apply them and synchronize players. Singleplayer also supports the NeoForge config screen through **Mods → Biome Based Crops → Config** while a world is loaded. Multiplayer players use the server's rules.
+Stop the world/server before editing gameplay files, then restart to apply them and synchronize players. Singleplayer also supports the NeoForge config screen through **Mods Ã¢â€ â€™ Biome Based Crops Ã¢â€ â€™ Config** while a world is loaded. Multiplayer players use the server's rules.
 
 ## Choose biomes for each crop
 
@@ -41,44 +41,44 @@ The room's biome is a reversible overlay: it does not rewrite saved chunk biomes
 
 1. Craft a **Greenhouse Probe** with glass, copper ingots, redstone, and a stick. Craft a book with wheat for the **Farmer's Field Guide**.
 2. Select your intended biome in the guide. Each block icon has its own required quantity. **Every listed type must meet its count**: extra sand cannot replace missing cactus, logs, leaves, or other materials.
-3. Build a closed room with a solid floor, walls, and roof. Include at least four glass blocks or panes, with glass in the roof. Close doors and trapdoors. At the default radius, the interior can be up to 9 by 9 blocks and five blocks tall; the complete floor, walls, and roof fit within 11 by 11 by 7 blocks.
+3. Build a closed room of any shape with a solid floor, walls, and roof. By default, at least 50% of its exposed ceiling area and 10% of its wall area must be glass, with at least four glass wall blocks. Glass blocks and panes count in every orientation, including coloured and tagged mod glass. Close doors and trapdoors.
 4. Place all required materials inside the connected room or in its enclosing floor and walls. Keep them exposed to the room: buried blocks behind a solid floor or wall do not count.
-5. Match the required climate. Your actual biome is the starting climate, so a naturally Cold room already suits a Cold recipe without adding ice.
+5. Match the required climate. A naturally matching biome needs no machine. Otherwise, place a powered **Air Conditioner** inside the connected room and choose the target climate in its settings.
 6. Use the probe inside the room to check the detected biome, enclosure, temperature, and individual material progress.
 
 For example, the default Desert recipe requires **8 sand + 4 sandstone + 2 cactus**, all together. With Biomes O' Plenty installed, Ominous Woods requires **8 umbran logs + 8 umbran leaves + 4 dead leaves + 4 umbran wood**.
 
-The guide keeps each biome's material recipe and required climate on one right-hand summary. Its small **Temperature** and **How to build** links open shared references on that same page. Labels and counts appear directly on the English pages, without hover popups. Vanilla biomes have distinct curated material recipes; installed mod biomes derive several required materials from their native vegetation and a terrain substrate. Custom recipes can replace these choices.
+The guide keeps each biome's material recipe, required climate, and Air Conditioner note on one right-hand summary. Its **How to build** link opens a shared enclosure reference on that same page. Hover an item for its standard tooltip; left-click for recipes or right-click for uses in an installed JEI, EMI, or REI viewer. Vanilla biomes have distinct curated material recipes; installed mod biomes derive several required materials from their native vegetation and a terrain substrate. Custom recipes can replace these choices.
 
-If several recipes fit a room, the most specific completed recipe takes priority. Remove unrelated material types when changing the intended greenhouse. Changes normally refresh within one second; the probe requests a fresh reading. Existing greenhouse cores remain optional inspection stations.
+If several recipes fit a room, the most specific completed recipe takes priority. Remove unrelated material types when changing the intended greenhouse. Climate machines refresh within one second. Large rooms are scanned gradually; the probe shows a scanning status until the room is ready. Room geometry stays cached until relevant blocks change, so ordinary energy updates do not repeat a large flood fill. Existing greenhouse cores remain optional inspection stations.
 
-### Heating and cooling
+### Air Conditioner
 
-The strongest nearby heat source and strongest cooling source determine the temperature change. Repeated sources do not stack: two campfires have the same effect as one. Opposing strengths cancel.
+Supply `biome_based_crops:air_conditioner` with Forge Energy (FE) from any side. Its buffer holds 20,000 FE and accepts up to 1,000 FE per transfer. Right-click it to open its settings and choose Icy, Cold, Neutral, Warm, or Hot. A redstone signal disables it.
 
-| Source | Strength | Climate change by itself |
-| --- | --- | --- |
-| Fire, soul fire, lit campfire, lit soul campfire | 8 heat | +1 step |
-| Magma block | 16 heat | +2 steps |
-| Lava | 32 heat | +4 steps |
-| Snow block or snow layer | 8 cooling | -1 step |
-| Ice | 16 cooling | -2 steps |
-| Packed ice | 24 cooling | -3 steps |
-| Blue ice | 32 cooling | -4 steps |
+Power use is **20 FE/t per climate step** between the connected room's native climate and the unit's selected target, from 0 to 80 FE/t. For example, Neutral to Hot costs 40 FE/t, while Icy to Hot costs 80 FE/t. A target already matching the room's natural climate costs nothing and needs no artificial conditioning. Before a room scan finishes, the unit uses its own position's native climate. Power loss or redstone shutdown removes the machine's climate support; the room must then match naturally or have another working machine.
 
-The climate order is `icy -> cold -> neutral -> warm -> hot`. Subtract the strongest cooling strength from the strongest heat strength, then divide by eight to find the shift. For example, lava and packed ice give `32 - 24 = 8`, or one warming step. Outdoor plants are limited to two steps; enclosed greenhouses can span all four. Unlit campfires provide no heat.
+The Air Conditioner serves only its connected enclosed room. Fire, lava, magma, ice, and snow are scenery and no longer change crop climates. Placing more of those blocks cannot replace a powered machine.
 
-The default source radius is four blocks horizontally from the room's centre, from its physical floor blocks to three blocks above them. Outdoors, the radius is centred on the plant and reaches one block below to two above it. Greenhouse sources must be inside its connected room or in its enclosing shell. Outside sources cannot heat a greenhouse through its walls. A suitable active Tough As Nails thermoregulator remains an alternative climate source; the room and all materials are still required.
+Tough As Nails thermoregulators remain compatible when enabled and actively heating or cooling. Heating supplies Neutral/Warm/Hot; cooling supplies Icy/Cold/Neutral; both active modes supply Neutral. Empty, inactive, and redstone-disabled units do not provide a climate. Northstar's Temperature Regulator must be kinetically powered, unstressed, and actively sealing the greenhouse position; unrelated fans, ice boxes, basin heaters, and reactor coolers are not treated as room conditioners.
 
-Datapacks can extend `biome_based_crops:heat_sources`, `biome_based_crops:cooling_sources`, and `biome_based_crops:greenhouse_glass`. Additional tagged temperature sources have strength 8. A heat source with a `lit` state must be lit.
+Northstar targets map to Icy at or below 0 degrees, Cold through 10, Neutral through 25, Warm through 35, and Hot above 35.
+
+### Large rooms and glass
+
+There are no fixed side-length or height limits. The default maximum is **262,144 connected interior blocks**, configurable up to **1,048,576**. All room chunks must already be loaded. Scans use a limited background budget instead of freezing a tick to inspect a huge room at once.
+
+Glass requirements scale with the actual room boundary: the default is 50% roof glass and 10% wall glass, with at least four glass wall blocks. A handful of windows cannot qualify a huge opaque barn. Supported glass is recognized through the common glass block/pane tags and `biome_based_crops:greenhouse_glass`; colour and orientation do not change whether it counts.
 
 ### Greenhouse settings
 
 | Setting | Default | Effect |
 | --- | --- | --- |
 | `enableGreenhouses` | `true` | Recognize suitable enclosed greenhouse biomes. |
-| `enableAmbientTemperature` | `true` | Apply nearby heat and cooling sources. |
-| `radius` | `4` | Interior and temperature search radius, from 1 to 6 blocks. |
+| `maxRoomBlocks` | `262144` | Maximum interior volume, from 64 to 1,048,576 blocks. |
+| `scanBlocksPerTick` | `1024` | Background scan work per level tick, from 256 to 16,384. |
+| `minimumRoofGlassRatio` | `0.5` | Minimum fraction of exposed ceiling faces made from glass. |
+| `minimumWallGlassRatio` | `0.1` | Minimum fraction of exposed wall faces made from glass; at least four glass wall blocks are required. |
 | `requiredSpecimens` | `4` | Default count for **each** material in generated mod recipes and bare-ID overrides. |
 | `cacheTicks` | `20` | Maximum refresh delay in ticks, from 1 to 20. |
 | `biomeMaterialRules` | `[]` | Replace complete material recipes for individual biomes. |

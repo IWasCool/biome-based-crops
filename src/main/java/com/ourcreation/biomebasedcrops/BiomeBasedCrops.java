@@ -15,6 +15,7 @@ public class BiomeBasedCrops {
 
     public BiomeBasedCrops(IEventBus modEventBus, ModContainer modContainer) {
         GreenhouseContent.register(modEventBus);
+        AirConditionerMenu.register(modEventBus);
         modEventBus.addListener(ConfigEvents::onConfigChanged);
         modEventBus.addListener(GrowthSettingsPayload::onRegisterPayloadHandlers);
         modEventBus.addListener(GreenhouseBiomeNetwork::register);
@@ -28,6 +29,7 @@ public class BiomeBasedCrops {
         NeoForge.EVENT_BUS.addListener(CommonEvents::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(GrowthCommands::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(GreenhouseBiomeNetwork::onPlayerTick);
+        NeoForge.EVENT_BUS.addListener(GreenhouseNetwork::onPlayerTick);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.TagsUpdatedEvent event) -> {
             GreenhouseEnvironment.clearCache();
             GreenhouseRecipes.clearCache();

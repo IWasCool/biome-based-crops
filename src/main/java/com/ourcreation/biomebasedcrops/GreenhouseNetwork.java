@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -13,40 +14,77 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 public final class GreenhouseNetwork {
+    private static final Map<ServerPlayer, PendingSurvey> PENDING_SURVEYS = new WeakHashMap<>();
+
     private GreenhouseNetwork() {
     }
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        event.registrar("2").playToClient(ViewPayload.TYPE, ViewPayload.CODEC,
+        event.registrar("3").playToClient(ViewPayload.TYPE, ViewPayload.CODEC,
                 (payload, context) -> com.ourcreation.biomebasedcrops.client.GreenhouseViews.open(payload));
     }
 
     public static void showGuide(ServerPlayer player) {
+        PENDING_SURVEYS.remove(player);
         send(player, null);
     }
 
     public static void showSurvey(ServerPlayer player, BlockPos pos) {
-        GreenhouseEnvironment.clearCache();
-        send(player, GreenhouseEnvironment.inspect(player.level(), pos));
+        GreenhouseRoomScanner.prioritize(player.level(), pos);
+        GreenhouseEnvironment.invalidateClimate();
+        var inspection = GreenhouseEnvironment.inspect(player.level(), pos);
+        if (inspection.status().endsWith(".scanning")) {
+            PENDING_SURVEYS.put(player, new PendingSurvey(pos.immutable(), player.level().dimension().location(),
+                    player.level().getGameTime() + 6000));
+        } else PENDING_SURVEYS.remove(player);
+        send(player, inspection);
+    }
+
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || player.tickCount % 10 != 0) return;
+        var pending = PENDING_SURVEYS.get(player);
+        if (pending == null) return;
+        if (player.level().getGameTime() > pending.expires()
+                || !player.level().dimension().location().equals(pending.dimension())) {
+            PENDING_SURVEYS.remove(player);
+            return;
+        }
+        var inspection = GreenhouseEnvironment.inspect(player.level(), pending.position());
+        if (!inspection.status().endsWith(".scanning")) {
+            PENDING_SURVEYS.remove(player);
+            send(player, inspection, true);
+        }
     }
 
     private static void send(ServerPlayer player, @Nullable GreenhouseEnvironment.Inspection inspection) {
+        send(player, inspection, false);
+    }
+
+    private static void send(ServerPlayer player, @Nullable GreenhouseEnvironment.Inspection inspection, boolean updateOnly) {
         Map<ResourceLocation, GreenhouseRecipes.Recipe> recipes = new LinkedHashMap<>();
         player.registryAccess().registryOrThrow(Registries.BIOME).holders().forEach(biome ->
                 recipes.put(biome.key().location(), GreenhouseRecipes.forServerBiome(biome)));
-        PacketDistributor.sendToPlayer(player, new ViewPayload(recipes, inspection));
+        PacketDistributor.sendToPlayer(player, new ViewPayload(recipes, inspection, updateOnly));
     }
 
+    private record PendingSurvey(BlockPos position, ResourceLocation dimension, long expires) {}
+
     public record ViewPayload(Map<ResourceLocation, GreenhouseRecipes.Recipe> recipes,
-                              @Nullable GreenhouseEnvironment.Inspection inspection) implements CustomPacketPayload {
+                              @Nullable GreenhouseEnvironment.Inspection inspection, boolean updateOnly) implements CustomPacketPayload {
         public static final Type<ViewPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(BiomeBasedCrops.MODID, "greenhouse_view"));
         public static final StreamCodec<FriendlyByteBuf, ViewPayload> CODEC = StreamCodec.of(ViewPayload::write, ViewPayload::read);
 
         public ViewPayload {
             recipes = Map.copyOf(recipes);
+        }
+
+        public ViewPayload(Map<ResourceLocation, GreenhouseRecipes.Recipe> recipes,
+                           @Nullable GreenhouseEnvironment.Inspection inspection) {
+            this(recipes, inspection, false);
         }
 
         private static void write(FriendlyByteBuf buf, ViewPayload payload) {
@@ -81,6 +119,7 @@ public final class GreenhouseNetwork {
                 });
                 buf.writeEnum(report.baseClimate());
             }
+            buf.writeBoolean(payload.updateOnly);
         }
 
         private static ViewPayload read(FriendlyByteBuf buf) {
@@ -105,7 +144,7 @@ public final class GreenhouseNetwork {
                 CropClimate climate = buf.readEnum(CropClimate.class);
                 int heat = bounded(buf.readVarInt(), 16384);
                 int cooling = bounded(buf.readVarInt(), 16384);
-                int glass = bounded(buf.readVarInt(), 16384);
+                int glass = bounded(buf.readVarInt(), 8_000_000);
                 int specimens = bounded(buf.readVarInt(), 2048);
                 int required = bounded(buf.readVarInt(), 2048);
                 String status = buf.readUtf(128);
@@ -114,12 +153,12 @@ public final class GreenhouseNetwork {
                 List<GreenhouseEnvironment.RequirementProgress> progress = new ArrayList<>();
                 for (int j = 0; j < progressCount; j++) {
                     progress.add(new GreenhouseEnvironment.RequirementProgress(buf.readResourceLocation(),
-                            bounded(buf.readVarInt(), 16384), bounded(buf.readVarInt(), 64)));
+                            bounded(buf.readVarInt(), 8_000_000), bounded(buf.readVarInt(), 64)));
                 }
                 inspection = new GreenhouseEnvironment.Inspection(enclosed, target, climate, heat, cooling,
                         glass, specimens, required, status, blocks, progress, buf.readEnum(CropClimate.class));
             }
-            return new ViewPayload(recipes, inspection);
+            return new ViewPayload(recipes, inspection, buf.readBoolean());
         }
 
         private static void writeBlocks(FriendlyByteBuf buf, List<ResourceLocation> blocks) {

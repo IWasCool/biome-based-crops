@@ -135,8 +135,6 @@ public final class GreenhouseBiomeGameTests {
 
     private static BlockPos prepareDesertRoom(GameTestHelper helper) {
         GreenhouseSettings.ENABLE_GREENHOUSES.set(true);
-        GreenhouseSettings.ENABLE_AMBIENT_TEMPERATURE.set(true);
-        GreenhouseSettings.RADIUS.set(4);
         GreenhouseSettings.CACHE_TICKS.set(20);
         GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of(
                 "minecraft:desert=minecraft:diamond_block*2,minecraft:emerald_block*1,minecraft:lapis_block*1"));
@@ -156,40 +154,24 @@ public final class GreenhouseBiomeGameTests {
         level.setBlock(center.offset(-1, -1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(center.offset(1, -1, 0), Blocks.EMERALD_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(center.offset(2, -1, 0), Blocks.LAPIS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-        CropClimate base = CropClimate.at(GreenhouseEnvironment.nativeBiome(level, center), center);
         var desert = level.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.DESERT);
-        int delta = CropClimate.at(desert, center).ordinal() - base.ordinal();
-        Block heat = switch (delta) {
-            case 1 -> Blocks.CAMPFIRE;
-            case 2 -> Blocks.MAGMA_BLOCK;
-            case 3, 4 -> Blocks.LAVA;
-            default -> Blocks.AIR;
-        };
-        Block cooling = switch (delta) {
-            case -1, 3 -> Blocks.SNOW_BLOCK;
-            case -2 -> Blocks.ICE;
-            case -3 -> Blocks.PACKED_ICE;
-            case -4 -> Blocks.BLUE_ICE;
-            default -> Blocks.AIR;
-        };
-        level.setBlock(center.north(2), heat.defaultBlockState(), Block.UPDATE_ALL);
-        level.setBlock(center.south(2), cooling.defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(center.north(2), GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState(), Block.UPDATE_ALL);
+        AirConditionerBlockEntity machine = (AirConditionerBlockEntity) level.getBlockEntity(center.north(2));
+        machine.setClimate(CropClimate.at(desert, center));
+        for (int i = 0; i < 20; i++) machine.energyStorage().receiveEnergy(1000, false);
+        AirConditionerBlockEntity.serverTick(level, machine.getBlockPos(), machine.getBlockState(), machine);
         GreenhouseEnvironment.clearCache();
         return center;
     }
 
     private static final class Settings {
         private final boolean greenhouses = GreenhouseSettings.ENABLE_GREENHOUSES.get();
-        private final boolean ambient = GreenhouseSettings.ENABLE_AMBIENT_TEMPERATURE.get();
         private final boolean thermostats = Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get();
-        private final int radius = GreenhouseSettings.RADIUS.get();
         private final int cacheTicks = GreenhouseSettings.CACHE_TICKS.get();
         private final List<? extends String> rules = List.copyOf(GreenhouseSettings.BIOME_MATERIAL_RULES.get());
 
         private void restore() {
             GreenhouseSettings.ENABLE_GREENHOUSES.set(greenhouses);
-            GreenhouseSettings.ENABLE_AMBIENT_TEMPERATURE.set(ambient);
-            GreenhouseSettings.RADIUS.set(radius);
             GreenhouseSettings.CACHE_TICKS.set(cacheTicks);
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(rules);
             Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.set(thermostats);

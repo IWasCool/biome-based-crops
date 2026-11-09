@@ -12,7 +12,8 @@ logoFile="assets/icon.png"
 authors="Izcool"
 description='''
 Configurable crop and sapling growth using climates, biome IDs, and biome tags.
-Includes optional support for Farmer's Delight crop add-ons, Biomes O' Plenty climate tags and saplings, and active Tough As Nails thermoregulators and thermometers.
+Build biome greenhouses with an electric Air Conditioner and an illustrated field guide.
+Includes optional support for Farmer's Delight, Biomes O' Plenty, Tough As Nails, Northstar, JEI, EMI, and REI.
 '''
 
 [[mixins]]
@@ -49,3 +50,27 @@ config="${mod_id}.mixins.json"
     type="optional"
     ordering="AFTER"
     side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="northstar"
+    type="optional"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="jei"
+    type="optional"
+    ordering="AFTER"
+    side="CLIENT"
+
+[[dependencies.${mod_id}]]
+    modId="emi"
+    type="optional"
+    ordering="AFTER"
+    side="CLIENT"
+
+[[dependencies.${mod_id}]]
+    modId="roughlyenoughitems"
+    type="optional"
+    ordering="AFTER"
+    side="CLIENT"

@@ -1,9 +1,7 @@
 package com.ourcreation.biomebasedcrops;
 
-import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +13,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
@@ -29,11 +26,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public final class GreenhouseEnvironment {
-    private static final TagKey<Block> HEAT = tag("heat_sources");
-    private static final TagKey<Block> COOLING = tag("cooling_sources");
     private static final TagKey<Block> GLASS = tag("greenhouse_glass");
     private static final Map<Level, Cache> CACHES = Collections.synchronizedMap(new WeakHashMap<>());
-    private static final CropClimate[] CLIMATES = CropClimate.values();
+    private static final java.util.concurrent.atomic.AtomicLong CLIMATE_REVISION = new java.util.concurrent.atomic.AtomicLong();
     private static final ThreadLocal<Integer> NATIVE_QUERY_DEPTH = ThreadLocal.withInitial(() -> 0);
 
     private GreenhouseEnvironment() {
@@ -44,7 +39,14 @@ public final class GreenhouseEnvironment {
         return withoutOverlay(() -> level.getBiome(pos));
     }
 
-    private static <T> T withoutOverlay(java.util.function.Supplier<T> action) {
+    /** Controller pricing uses the room's common native baseline without starting a scan. */
+    public static CropClimate naturalClimateForController(Level level, BlockPos pos) {
+        var geometry = GreenhouseRoomScanner.completedAroundController(level, pos);
+        BlockPos at = geometry == null ? pos : geometry.anchor;
+        return CropClimate.at(nativeBiome(level, at), at);
+    }
+
+    public static <T> T withoutOverlay(java.util.function.Supplier<T> action) {
         int previous = NATIVE_QUERY_DEPTH.get();
         NATIVE_QUERY_DEPTH.set(previous + 1);
         try {
@@ -69,31 +71,11 @@ public final class GreenhouseEnvironment {
     public static BiomeRegion regionAt(Level level, BlockPos pos) {
         if (level.isClientSide || NATIVE_QUERY_DEPTH.get() != 0 || !GreenhouseSettings.enabled() || !loaded(level, pos)) return null;
         if (level.getServer() != null && !level.getServer().isSameThread()) return null;
-        Cache cache = cache(level);
-        Room room = cache.rooms.get(pos.asLong());
-        if (!fresh(room, level.getGameTime())) {
-            // Most biome queries are outdoors. A bounded room has a ceiling at
-            // most five cells overhead; reject those queries before flood fill.
-            return withoutOverlay(() -> {
-                if (sealed(level, pos) || !hasNearbyCeiling(level, pos)) return null;
-                return regionOf(roomAt(level, pos), pos);
-            });
-        }
-        return regionOf(room, pos);
+        return withoutOverlay(() -> regionOf(roomAt(level, pos), pos));
     }
 
     private static BiomeRegion regionOf(Room room, BlockPos pos) {
-        if (!room.inspection.valid() || !room.interior.contains(pos.asLong())) return null;
-        return new BiomeRegion(room.inspection.targetBiome(), room.interior);
-    }
-
-    private static boolean hasNearbyCeiling(Level level, BlockPos pos) {
-        for (int height = 1; height <= 5; height++) {
-            BlockPos above = pos.above(height);
-            if (!loaded(level, above)) return false;
-            if (sealed(level, above)) return true;
-        }
-        return false;
+        return room.inspection.valid() && room.interior.contains(pos.asLong()) ? room.region : null;
     }
 
     public static Inspection inspect(Level level, BlockPos pos) {
@@ -101,9 +83,8 @@ public final class GreenhouseEnvironment {
             return result(false, null, CropClimate.NEUTRAL, new Temperature(0, 0), 0, 0, List.of(), "unloaded");
         }
         if (!GreenhouseSettings.enabled()) {
-            Temperature temperature = temperature(level, pos);
-            return result(false, null, shifted(CropClimate.at(nativeBiome(level, pos), pos), temperature, 2),
-                    temperature, 0, 0, List.of(), "disabled", CropClimate.at(nativeBiome(level, pos), pos));
+            CropClimate natural = CropClimate.at(nativeBiome(level, pos), pos);
+            return result(false, null, natural, new Temperature(0, 0), 0, 0, List.of(), "disabled", natural);
         }
         return roomAt(level, pos).inspection;
     }
@@ -119,11 +100,20 @@ public final class GreenhouseEnvironment {
 
     public static CropClimate effectiveClimate(Level level, BlockPos pos) {
         if (!loaded(level, pos)) return CropClimate.NEUTRAL;
+        if (level.isClientSide) return CropClimate.at(level.getBiome(pos), pos);
         return inspect(level, pos).climate();
     }
 
     public static void clearCache() {
+        CLIMATE_REVISION.incrementAndGet();
         CACHES.clear();
+        GreenhouseRecipes.clearCache();
+        GreenhouseRoomScanner.clear();
+    }
+
+    /** Energy, setpoint, and active-mode changes keep the already scanned room geometry. */
+    public static void invalidateClimate() {
+        CLIMATE_REVISION.incrementAndGet();
     }
 
     private static Room roomAt(Level level, BlockPos pos) {
@@ -131,113 +121,54 @@ public final class GreenhouseEnvironment {
     }
 
     private static Room findRoomAt(Level level, BlockPos pos) {
-        Cache cache = cache(level);
-        long now = level.getGameTime();
-        Room existing = cache.rooms.get(pos.asLong());
-        if (fresh(existing, now)) {
-            if (existing.inspection.enclosed()) return existing;
-            // Room geometry and source scans may be cached, but a biome/datapack
-            // change must take effect immediately for plants in the open air.
-            String status = existing.inspection.status().substring(key("").length());
-            return outdoorRoom(level, pos, existing.tick, status);
-        }
         java.util.ArrayList<BlockPos> starts = new java.util.ArrayList<>();
-        if (!sealed(level, pos)) {
-            starts.add(pos);
-        } else {
-            // A probe aimed at soil, glass, or an old core can inspect its adjacent room.
-            // A failed outdoor start must not prevent trying the indoor side of that wall.
-            for (Direction direction : new Direction[]{Direction.UP, Direction.NORTH, Direction.SOUTH,
-                    Direction.WEST, Direction.EAST, Direction.DOWN}) {
-                BlockPos next = pos.relative(direction);
-                if (loaded(level, next) && !sealed(level, next)) starts.add(next);
-            }
+        if (!sealed(level, pos)) starts.add(pos);
+        else for (Direction direction : new Direction[]{Direction.UP, Direction.NORTH, Direction.SOUTH,
+                Direction.WEST, Direction.EAST, Direction.DOWN}) {
+            BlockPos next = pos.relative(direction);
+            if (loaded(level, next) && !sealed(level, next)) starts.add(next);
         }
         Room selected = null;
         for (BlockPos start : starts) {
-            Room candidate = cache.rooms.get(start.asLong());
-            if (!fresh(candidate, now)) {
-                candidate = scanRoom(level, start, now, cache);
-                if (candidate.inspection.enclosed()) {
-                    for (long member : candidate.interior) cache.rooms.put(member, candidate);
-                } else {
-                    cache.rooms.put(start.asLong(), candidate);
+            var geometry = GreenhouseRoomScanner.find(level, start);
+            Room candidate;
+            if (!geometry.status.equals("closed") || !geometry.live) {
+                candidate = outdoorRoom(level, start, level.getGameTime(), geometry.status);
+            } else {
+                Cache cache = cache(level);
+                candidate = cache.rooms.get(geometry);
+                if (candidate == null || !fresh(candidate, level.getGameTime())) {
+                    candidate = evaluate(level, geometry, cache, level.getGameTime());
+                    cache.rooms.put(geometry, candidate);
                 }
             }
             if (selected == null || candidate.inspection.valid() && !selected.inspection.valid()
-                    || candidate.inspection.enclosed() && !selected.inspection.enclosed()) {
-                selected = candidate;
-            }
+                    || candidate.inspection.enclosed() && !selected.inspection.enclosed()) selected = candidate;
             if (candidate.inspection.valid()) break;
         }
-        if (selected == null) selected = outdoorRoom(level, pos, now, "open");
-        cache.rooms.put(pos.asLong(), selected);
-        return selected;
+        return selected != null ? selected : outdoorRoom(level, pos, level.getGameTime(), "open");
     }
 
     private static boolean fresh(Room room, long now) {
         return room != null && now >= room.tick && now - room.tick < GreenhouseSettings.cacheTicks();
     }
 
-    private static Room scanRoom(Level level, BlockPos start, long tick, Cache cache) {
-        int maxSide = GreenhouseSettings.radius() * 2 + 1;
-        Set<Long> interior = new HashSet<>();
-        Set<Long> shell = new HashSet<>();
-        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
-        interior.add(start.asLong());
-        queue.add(start);
-        int minX = start.getX(), maxX = minX;
-        int minY = start.getY(), maxY = minY;
-        int minZ = start.getZ(), maxZ = minZ;
-        while (!queue.isEmpty()) {
-            BlockPos current = queue.removeFirst();
-            for (Direction direction : Direction.values()) {
-                BlockPos next = current.relative(direction);
-                if (!loaded(level, next)) return outdoorRoom(level, start, tick, "unloaded");
-                long packed = next.asLong();
-                if (shell.contains(packed) || interior.contains(packed)) continue;
-                if (sealed(level, next)) {
-                    shell.add(packed);
-                    continue;
-                }
-                minX = Math.min(minX, next.getX()); maxX = Math.max(maxX, next.getX());
-                minY = Math.min(minY, next.getY()); maxY = Math.max(maxY, next.getY());
-                minZ = Math.min(minZ, next.getZ()); maxZ = Math.max(maxZ, next.getZ());
-                if (maxX - minX + 1 > maxSide || maxZ - minZ + 1 > maxSide || maxY - minY + 1 > 5) {
-                    return outdoorRoom(level, start, tick, "open");
-                }
-                interior.add(packed);
-                queue.addLast(next);
-            }
-        }
-        // Bounds come from the room itself, so crops at opposite edges use the same climate.
-        BlockPos anchor = new BlockPos((minX + maxX) >> 1, minY, (minZ + maxZ) >> 1);
-        Set<Long> observed = new HashSet<>(interior);
-        observed.addAll(shell);
-        Map<ResourceLocation, Integer> counts = new java.util.HashMap<>();
-        int glass = 0, heat = 0, cooling = 0;
-        boolean glassRoof = false;
-        int radius = GreenhouseSettings.radius();
-        for (long packed : observed) {
+    private static Room evaluate(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache, long tick) {
+        BlockPos anchor = geometry.anchor;
+        Map<ResourceLocation, Integer> counts = geometry.counts;
+        Set<CropClimate> conditionedClimates = java.util.EnumSet.noneOf(CropClimate.class);
+        java.util.ArrayList<BlockPos> compatibleMachines = new java.util.ArrayList<>();
+        for (long packed : geometry.machines) {
             BlockPos at = BlockPos.of(packed);
-            BlockState state = level.getBlockState(at);
-            ResourceLocation block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());
-            counts.merge(block, 1, Integer::sum);
-            if (isGlass(state)) {
-                glass++;
-                if (shell.contains(packed) && interior.contains(at.below().asLong()) && !interior.contains(at.above().asLong())) {
-                    glassRoof = true;
-                }
-            }
-            if (Math.abs(at.getX() - anchor.getX()) <= radius && Math.abs(at.getZ() - anchor.getZ()) <= radius
-                    && at.getY() >= minY - 1 && at.getY() <= minY + 2) {
-                heat = Math.max(heat, heatStrength(state));
-                cooling = Math.max(cooling, coolingStrength(state));
-            }
+            if (!loaded(level, at)) continue;
+            if (level.getBlockEntity(at) instanceof AirConditionerBlockEntity unit
+                    && unit.canProvideClimate(unit.selectedClimate())) conditionedClimates.add(unit.selectedClimate());
+            ResourceLocation machine = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(level.getBlockState(at).getBlock());
+            if (machine.equals(ResourceLocation.parse("toughasnails:thermoregulator"))
+                    || machine.equals(ResourceLocation.parse("northstar:temperature_regulator"))) compatibleMachines.add(at);
         }
-        Temperature temperature = GreenhouseSettings.ambientEnabled() ? new Temperature(heat, cooling) : new Temperature(0, 0);
         CropClimate baseClimate = CropClimate.at(nativeBiome(level, anchor), anchor);
-        CropClimate actual = shifted(baseClimate, temperature, 4);
+        CropClimate actual = baseClimate;
         Map<CropClimate, Boolean> thermostat = new java.util.EnumMap<>(CropClimate.class);
         List<Match> complete = new java.util.ArrayList<>();
         List<Match> warmEnough = new java.util.ArrayList<>();
@@ -247,8 +178,9 @@ public final class GreenhouseEnvironment {
             if (closest == null || compareProgress(match, closest) < 0) closest = match;
             if (!match.complete()) continue;
             complete.add(match);
-            if (actual == definition.recipe.climate() || thermostat.computeIfAbsent(definition.recipe.climate(), climate ->
-                    ThermoregulatorDetector.canSupportProfile(level, anchor, new CropProfile(Set.of(climate))))) {
+            if (actual == definition.recipe.climate() || conditionedClimates.contains(definition.recipe.climate())
+                    || thermostat.computeIfAbsent(definition.recipe.climate(), climate -> compatibleMachines.stream().anyMatch(machine ->
+                            ThermoregulatorDetector.supportsClimateAt(level, machine, level.getBlockState(machine), anchor, climate)))) {
                 warmEnough.add(match);
             }
         }
@@ -269,7 +201,7 @@ public final class GreenhouseEnvironment {
             }
         }
         String status;
-        if (glass < 4 || !glassRoof) status = "no_glass";
+        if (!geometry.glassValid()) status = "no_glass";
         else if (!warmEnough.isEmpty()) status = "valid";
         else if (!complete.isEmpty()) status = "wrong_temperature";
         else status = "missing_specimens";
@@ -279,9 +211,9 @@ public final class GreenhouseEnvironment {
         List<RequirementProgress> progress = chosen == null ? List.of() : chosen.progress;
         List<ResourceLocation> specimens = chosen == null ? List.of() : chosen.definition.recipe.specimens();
         Inspection inspection = new Inspection(true, target,
-                status.equals("valid") ? chosen.definition.recipe.climate() : actual, temperature.heat, temperature.cooling,
-                glass, chosen == null ? 0 : chosen.matched, chosen == null ? 0 : chosen.definition.recipe.count(), key(status), specimens, progress, baseClimate);
-        return new Room(tick, inspection, Set.copyOf(interior), Set.copyOf(aliases));
+                status.equals("valid") ? chosen.definition.recipe.climate() : actual, 0, 0,
+                geometry.glass, chosen == null ? 0 : chosen.matched, chosen == null ? 0 : chosen.definition.recipe.count(), key(status), specimens, progress, baseClimate);
+        return new Room(tick, inspection, geometry.interior, Set.copyOf(aliases));
     }
 
     private static List<Definition> definitions(Level level, Cache cache) {
@@ -321,60 +253,16 @@ public final class GreenhouseEnvironment {
     }
 
     private static Room outdoorRoom(Level level, BlockPos pos, long tick, String status) {
-        Temperature temperature = temperature(level, pos);
-        return new Room(tick, result(false, null, shifted(CropClimate.at(nativeBiome(level, pos), pos), temperature, 2),
-                temperature, 0, 0, List.of(), status, CropClimate.at(nativeBiome(level, pos), pos)), Set.of(), Set.of());
+        CropClimate natural = CropClimate.at(nativeBiome(level, pos), pos);
+        return new Room(tick, result(false, null, natural, new Temperature(0, 0),
+                0, 0, List.of(), status, natural), Set.of(), Set.of());
     }
 
-    private static Temperature temperature(Level level, BlockPos pos) {
-        if (!GreenhouseSettings.ambientEnabled()) return new Temperature(0, 0);
-        Cache cache = cache(level);
-        long now = level.getGameTime();
-        long key = pos.asLong();
-        TimedTemperature cached = cache.temperatures.get(key);
-        if (cached != null && now >= cached.tick && now - cached.tick < GreenhouseSettings.cacheTicks()) return cached.temperature;
-        int radius = GreenhouseSettings.radius();
-        int heat = 0;
-        int cooling = 0;
-        for (BlockPos at : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 2, radius))) {
-            if (loaded(level, at)) {
-                BlockState state = level.getBlockState(at);
-                heat = Math.max(heat, heatStrength(state));
-                cooling = Math.max(cooling, coolingStrength(state));
-            }
-        }
-        Temperature result = new Temperature(heat, cooling);
-        cache.temperatures.put(key, new TimedTemperature(now, result));
-        return result;
+    static boolean sealed(Level level, BlockPos pos) {
+        return sealedState(level, pos, level.getBlockState(pos));
     }
 
-    static CropClimate shifted(CropClimate original, int heat, int cooling, int cap) {
-        int steps = Mth.clamp((heat - cooling) / 8, -cap, cap);
-        return CLIMATES[Mth.clamp(original.ordinal() + steps, 0, CLIMATES.length - 1)];
-    }
-
-    private static CropClimate shifted(CropClimate original, Temperature temperature, int cap) {
-        return shifted(original, temperature.heat, temperature.cooling, cap);
-    }
-
-    public static int heatStrength(BlockState state) {
-        if (state.hasProperty(BlockStateProperties.LIT) && !state.getValue(BlockStateProperties.LIT)) return 0;
-        if (state.is(Blocks.FIRE) || state.is(Blocks.SOUL_FIRE) || state.is(Blocks.CAMPFIRE)
-                || state.is(Blocks.SOUL_CAMPFIRE)) return 8;
-        if (state.is(Blocks.LAVA)) return 32;
-        if (state.is(Blocks.MAGMA_BLOCK)) return 16;
-        return state.is(HEAT) ? 8 : 0;
-    }
-
-    public static int coolingStrength(BlockState state) {
-        if (state.is(Blocks.BLUE_ICE)) return 32;
-        if (state.is(Blocks.PACKED_ICE)) return 24;
-        if (state.is(Blocks.ICE)) return 16;
-        return state.is(Blocks.SNOW) || state.is(Blocks.SNOW_BLOCK) || state.is(COOLING) ? 8 : 0;
-    }
-
-    private static boolean sealed(Level level, BlockPos pos) {
-        BlockState state = level.getBlockState(pos);
+    static boolean sealedState(Level level, BlockPos pos, BlockState state) {
         if (state.getBlock() instanceof DoorBlock || state.getBlock() instanceof TrapDoorBlock) {
             return !state.getValue(BlockStateProperties.OPEN);
         }
@@ -382,16 +270,23 @@ public final class GreenhouseEnvironment {
                 || state.getBlock() instanceof SoulSandBlock || state.isCollisionShapeFullBlock(level, pos);
     }
 
-    private static boolean isGlass(BlockState state) {
-        return state.is(GLASS) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE) || state.is(Blocks.TINTED_GLASS);
+    static boolean isGlass(BlockState state) {
+        return state.is(GLASS) || state.is(net.neoforged.neoforge.common.Tags.Blocks.GLASS_BLOCKS)
+                || state.is(net.neoforged.neoforge.common.Tags.Blocks.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE) || state.is(Blocks.TINTED_GLASS);
     }
 
-    private static boolean loaded(Level level, BlockPos pos) {
+    static boolean loaded(Level level, BlockPos pos) {
         return !level.isOutsideBuildHeight(pos) && level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
     }
 
     private static Cache cache(Level level) {
-        return CACHES.computeIfAbsent(level, unused -> new Cache());
+        Cache cache = CACHES.computeIfAbsent(level, unused -> new Cache());
+        long revision = CLIMATE_REVISION.get();
+        if (cache.revision != revision) {
+            cache.rooms.clear();
+            cache.revision = revision;
+        }
+        return cache;
     }
 
     private static Inspection result(boolean enclosed, ResourceLocation target, CropClimate climate, Temperature temperature,
@@ -442,7 +337,9 @@ public final class GreenhouseEnvironment {
 
     public record BiomeRegion(ResourceLocation biome, Set<Long> interior) {
         public BiomeRegion {
-            interior = Set.copyOf(interior);
+            // Completed geometry already supplies one stable, immutable primitive
+            // view. Preserve its identity for local client-region synchronization.
+            if (!(interior instanceof it.unimi.dsi.fastutil.longs.LongSet)) interior = Set.copyOf(interior);
         }
     }
 
@@ -455,24 +352,15 @@ public final class GreenhouseEnvironment {
     private record Temperature(int heat, int cooling) {
     }
 
-    private record TimedTemperature(long tick, Temperature temperature) {
-    }
-
-    private record Room(long tick, Inspection inspection, Set<Long> interior, Set<ResourceLocation> aliases) {
+    private record Room(long tick, Inspection inspection, Set<Long> interior, Set<ResourceLocation> aliases, BiomeRegion region) {
+        Room(long tick, Inspection inspection, Set<Long> interior, Set<ResourceLocation> aliases) {
+            this(tick, inspection, interior, aliases, inspection.valid() ? new BiomeRegion(inspection.targetBiome(), interior) : null);
+        }
     }
 
     private static final class Cache {
-        final Map<Long, Room> rooms = boundedMap(4096);
-        final Map<Long, TimedTemperature> temperatures = boundedMap(4096);
+        long revision = Long.MIN_VALUE;
+        final Map<GreenhouseRoomScanner.Geometry, Room> rooms = new java.util.WeakHashMap<>();
         List<Definition> definitions;
-    }
-
-    private static <V> Map<Long, V> boundedMap(int limit) {
-        return Collections.synchronizedMap(new LinkedHashMap<>(64, 0.75F, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<Long, V> eldest) {
-                return size() > limit;
-            }
-        });
     }
 }

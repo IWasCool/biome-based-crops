@@ -56,8 +56,6 @@
   "biome_based_crops.greenhouse.status.unsampled": "Sample a biome and apply it to this core",
   "biome_based_crops.greenhouse.status.outside": "This spot is outside the greenhouse room",
   "biome_based_crops.configuration.enableGreenhouses": "Enable Greenhouses",
-  "biome_based_crops.configuration.enableAmbientTemperature": "Enable Nearby Heating and Cooling",
-  "biome_based_crops.configuration.radius": "Greenhouse and Temperature Radius",
   "biome_based_crops.configuration.requiredSpecimens": "Required Native Specimen Blocks",
   "biome_based_crops.configuration.cacheTicks": "Greenhouse Refresh Delay (Ticks)",
   "biome_based_crops.configuration.biomeMaterialRules": "Biome Specimen Block Overrides",
@@ -65,5 +63,11 @@
   "biome_based_crops.configuration.section.biome_based_crops.greenhouse.toml.title": "Greenhouses and Temperature",
   "biome_based_crops.tooltip.local_climate": "Local crop climate: %s",
   "biome_based_crops.message.local_climate": "Local crop climate: %s",
-  "biome_based_crops.greenhouse.status.unloaded": "Area is not loaded."
+  "biome_based_crops.greenhouse.status.unloaded": "Area is not loaded.",
+  "block.biome_based_crops.air_conditioner": "Air Conditioner",
+  "biome_based_crops.configuration.maxRoomBlocks": "Maximum Greenhouse Interior Blocks",
+  "biome_based_crops.configuration.scanBlocksPerTick": "Room Scan Work per Tick",
+  "biome_based_crops.configuration.minimumRoofGlassRatio": "Minimum Roof Glass Ratio",
+  "biome_based_crops.configuration.minimumWallGlassRatio": "Minimum Wall Glass Ratio",
+  "biome_based_crops.greenhouse.status.scanning": "Scanning greenhouse..."
 }
