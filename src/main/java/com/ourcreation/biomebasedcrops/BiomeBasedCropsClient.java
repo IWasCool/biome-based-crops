@@ -2,6 +2,7 @@ package com.ourcreation.biomebasedcrops;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Player;
@@ -36,11 +37,12 @@ public class BiomeBasedCropsClient {
     }
 
     private static void onTooltip(ItemTooltipEvent event) {
+        ItemStack stack = event.getItemStack();
+        if (TemperatureInstrumentCompatibility.updateTooltip(BuiltInRegistries.ITEM.getKey(stack.getItem()), event.getToolTip())) return;
         if (!ClientConfig.SPEC.isLoaded() || !Config.ENABLE_TOOLTIPS.get()) {
             return;
         }
 
-        ItemStack stack = event.getItemStack();
         // SERVER rules are synced when joining a world; no authoritative rules exist in menus.
         if (Config.SPEC.isLoaded()) {
             CropMatcher.profileForItem(stack).ifPresent(profile -> {

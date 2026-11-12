@@ -16,7 +16,6 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -64,7 +63,6 @@ public final class GreenhouseContent {
         ITEMS.register(bus);
         CREATIVE_TABS.register(bus);
         BLOCK_ENTITIES.register(bus);
-        bus.addListener(GreenhouseContent::creativeTab);
         bus.addListener(GreenhouseNetwork::register);
         bus.addListener(GreenhouseContent::capabilities);
     }
@@ -72,13 +70,5 @@ public final class GreenhouseContent {
     private static void capabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, AIR_CONDITIONER_ENTITY.get(),
                 (unit, side) -> unit.energyStorage());
-    }
-
-    private static void creativeTab(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            event.accept(GUIDE.get());
-            event.accept(THERMOMETER.get());
-            event.accept(AIR_CONDITIONER_ITEM.get());
-        }
     }
 }

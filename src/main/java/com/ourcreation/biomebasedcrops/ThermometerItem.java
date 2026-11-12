@@ -49,6 +49,10 @@ public final class ThermometerItem extends Item {
     }
 
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
-        lines.add(Component.translatable("biome_based_crops.thermometer.tooltip").withStyle(ChatFormatting.GRAY));
+        lines.add(usageTooltip());
+    }
+
+    static Component usageTooltip() {
+        return Component.translatable("biome_based_crops.thermometer.tooltip").withStyle(ChatFormatting.GRAY);
     }
 }

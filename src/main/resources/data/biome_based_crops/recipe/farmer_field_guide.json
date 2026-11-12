@@ -6,7 +6,7 @@
       "item": "minecraft:book"
     },
     {
-      "tag": "biome_based_crops:field_guide_plants"
+      "tag": "c:crops"
     }
   ],
   "result": {

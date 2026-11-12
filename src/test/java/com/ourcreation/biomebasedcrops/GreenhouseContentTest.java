@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -26,6 +28,8 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.neoforged.fml.ModList;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import org.junit.jupiter.api.Test;
@@ -50,6 +54,10 @@ class GreenhouseContentTest {
         assertEquals(expected, new java.util.HashSet<>(displayed));
         assertEquals(expected.size(), displayed.size(), "Creative tab contains duplicate mod items");
         assertTrue(tab.getDisplayItems().stream().allMatch(tab::contains), "Mod items are missing from creative search");
+        var tools = BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.TOOLS_AND_UTILITIES);
+        tools.buildContents(new CreativeModeTab.ItemDisplayParameters(FeatureFlags.VANILLA_SET, false, server.registryAccess()));
+        assertTrue(tools.getDisplayItems().stream().noneMatch(stack -> expected.contains(stack.getItem())),
+                "Mod items should belong to Biomes Notebook without a duplicate Tools & Utilities category");
         var orderedTabs = CreativeModeTabRegistry.getSortedCreativeModeTabs();
         int tabIndex = orderedTabs.indexOf(tab);
         int spawnEggIndex = orderedTabs.indexOf(BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.SPAWN_EGGS));
@@ -108,9 +116,12 @@ class GreenhouseContentTest {
 
     @Test
     void survivalRecipesLoadAndCraftTheirRegisteredItems(MinecraftServer server) {
-        for (var plant : List.of(Items.WHEAT, Items.CARROT, Items.WHEAT_SEEDS, Items.OAK_SAPLING)) {
+        var cropsTag = TagKey.create(Registries.ITEM, id("c:crops"));
+        var crops = BuiltInRegistries.ITEM.getTag(cropsTag).orElseThrow();
+        assertTrue(crops.size() > 0, "Common crops tag must contain crafting ingredients");
+        for (var crop : crops) {
             assertCrafts(server, "farmer_field_guide", List.of(
-                    new ItemStack(plant), ItemStack.EMPTY, ItemStack.EMPTY,
+                    new ItemStack(crop.value()), ItemStack.EMPTY, ItemStack.EMPTY,
                     ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY,
                     ItemStack.EMPTY, ItemStack.EMPTY, new ItemStack(Items.BOOK)),
                     new ItemStack(GreenhouseContent.GUIDE.get()));
@@ -120,12 +131,18 @@ class GreenhouseContentTest {
         for (var invalid : List.of(List.of(new ItemStack(Items.BOOK)), List.of(new ItemStack(Items.CARROT)),
                 List.of(new ItemStack(Items.BOOK), new ItemStack(Items.STONE)))) {
             assertFalse(guideRecipe.matches(CraftingInput.of(invalid.size(), 1, invalid), server.overworld()),
-                    "Guide crafting must require a book and a crop, seed, or sapling");
+                    "Guide crafting must require a book and a common-tag crop");
+        }
+        for (var plant : List.of(Items.WHEAT_SEEDS, Items.OAK_SAPLING)) {
+            if (new ItemStack(plant).is(cropsTag)) continue;
+            assertFalse(guideRecipe.matches(CraftingInput.of(2, 1,
+                    List.of(new ItemStack(Items.BOOK), new ItemStack(plant))), server.overworld()),
+                    "Seeds or saplings outside c:crops must not craft the notebook");
         }
         assertCrafts(server, "air_conditioner", List.of(
-                new ItemStack(Items.IRON_INGOT), new ItemStack(Items.REDSTONE), new ItemStack(Items.IRON_INGOT),
-                new ItemStack(Items.COPPER_INGOT), new ItemStack(Items.PISTON), new ItemStack(Items.COPPER_INGOT),
-                new ItemStack(Items.IRON_INGOT), new ItemStack(Items.REDSTONE), new ItemStack(Items.IRON_INGOT)),
+                new ItemStack(Items.SMOOTH_STONE), new ItemStack(Items.IRON_INGOT), new ItemStack(Items.SMOOTH_STONE),
+                new ItemStack(Items.IRON_INGOT), new ItemStack(GreenhouseContent.THERMOMETER.get()), new ItemStack(Items.IRON_INGOT),
+                new ItemStack(Items.SMOOTH_STONE), new ItemStack(Items.IRON_INGOT), new ItemStack(Items.SMOOTH_STONE)),
                 new ItemStack(GreenhouseContent.AIR_CONDITIONER_ITEM.get()));
         assertCrafts(server, "thermometer", List.of(
                 new ItemStack(Items.GLASS), ItemStack.EMPTY, ItemStack.EMPTY,
@@ -134,6 +151,29 @@ class GreenhouseContentTest {
                 new ItemStack(GreenhouseContent.THERMOMETER.get()));
         for (String recipe : List.of("farmer_field_guide", "air_conditioner", "thermometer")) {
             assertNotNull(server.getAdvancements().get(id("biome_based_crops:recipes/" + recipe)), "Missing recipe unlock " + recipe);
+        }
+    }
+
+    @Test
+    void electricalRecipeMatchesInstalledTanExceptForItsOwnThermometer(MinecraftServer server) {
+        assumeTrue(ModList.get().isLoaded("toughasnails"), "Optional TAN recipe is not installed");
+        var recipes = server.getRecipeManager();
+        var original = assertInstanceOf(ShapedRecipe.class,
+                recipes.byKey(id("toughasnails:thermoregulator")).orElseThrow().value());
+        var electrical = assertInstanceOf(ShapedRecipe.class,
+                recipes.byKey(id("biome_based_crops:air_conditioner")).orElseThrow().value());
+        assertEquals(original.getWidth(), electrical.getWidth());
+        assertEquals(original.getHeight(), electrical.getHeight());
+        assertEquals(original.category(), electrical.category());
+        var originalThermometer = BuiltInRegistries.ITEM.get(id("toughasnails:thermometer"));
+        for (int slot = 0; slot < original.getIngredients().size(); slot++) {
+            Set<?> expected = java.util.Arrays.stream(original.getIngredients().get(slot).getItems())
+                    .map(ItemStack::getItem)
+                    .map(item -> item == originalThermometer ? GreenhouseContent.THERMOMETER.get() : item)
+                    .collect(Collectors.toSet());
+            Set<?> actual = java.util.Arrays.stream(electrical.getIngredients().get(slot).getItems())
+                    .map(ItemStack::getItem).collect(Collectors.toSet());
+            assertEquals(expected, actual, "Electrical ingredient differs from TAN at slot " + slot);
         }
     }
 

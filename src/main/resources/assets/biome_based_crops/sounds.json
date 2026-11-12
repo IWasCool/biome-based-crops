@@ -2,7 +2,7 @@
   "compressor": {
     "subtitle": "subtitles.biome_based_crops.compressor",
     "sounds": [
-      {"name": "minecraft:block.beacon.ambient", "type": "event"}
+      {"name": "biome_based_crops:compressor"}
     ]
   }
 }

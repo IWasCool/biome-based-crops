@@ -1,15 +1,15 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_material": {
+    "has_thermometer": {
       "trigger": "minecraft:inventory_changed",
-      "conditions": { "items": [{ "items": ["minecraft:iron_ingot"] }] }
+      "conditions": { "items": [{ "items": ["biome_based_crops:thermometer"] }] }
     },
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": { "recipe": "biome_based_crops:air_conditioner" }
     }
   },
-  "requirements": [["has_material", "has_the_recipe"]],
+  "requirements": [["has_thermometer", "has_the_recipe"]],
   "rewards": { "recipes": ["biome_based_crops:air_conditioner"] }
 }

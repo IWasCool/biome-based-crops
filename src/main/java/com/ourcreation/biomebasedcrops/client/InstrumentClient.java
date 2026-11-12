@@ -75,7 +75,7 @@ public final class InstrumentClient {
             looping = true;
             delay = 0;
             volume = 0.12F;
-            pitch = 0.55F;
+            pitch = 1.0F;
             x = unit.getBlockPos().getX() + 0.5;
             y = unit.getBlockPos().getY() + 0.5;
             z = unit.getBlockPos().getZ() + 0.5;
