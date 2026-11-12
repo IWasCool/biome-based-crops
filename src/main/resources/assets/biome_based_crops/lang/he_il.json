@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "ביומה של חממה לא תקפה",
   "biome_based_crops.ac.room_climate": "אקלים בחדר: %s",
   "biome_based_crops.ac.unit_capacity": "מזגנים: %s מותקנים, נדרש %s",
-  "biome_based_crops.ac.capacity_hint": "כל מזגן תומך ב-256 בלוקים פנימיים בעת שינוי אקלים. רישום ביומה תמיד מצריך מווסת חום חשמלי או Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "השקע הקדמי חסום",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "החדר זקוק ליותר מזגנים לנפח הפנימי שלו",
   "biome_based_crops.greenhouse.status.too_large": "החדר חורג מהנפח הפנימי המרבי",

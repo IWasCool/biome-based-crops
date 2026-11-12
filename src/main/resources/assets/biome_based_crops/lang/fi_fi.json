@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Kasvihuonebiomi ei kelpaa",
   "biome_based_crops.ac.room_climate": "Huoneilmasto: %s",
   "biome_based_crops.ac.unit_capacity": "ilmastointilaitteet: %s asennettu, %s tarvitaan",
-  "biome_based_crops.ac.capacity_hint": "Jokainen ilmastointilaite tukee 256 sisälohkoa ilmaston muuttuessa. Biomin rekisteröinti vaatii aina sähköisen tai Tough As Nails lämmönsäätimen.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Etuliitäntä on tukossa",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Huone tarvitsee lisää ilmastointilaitteita sisätilavuuteensa nähden",
   "biome_based_crops.greenhouse.status.too_large": "Huone ylittää suurimman sallitun sisätilavuuden",

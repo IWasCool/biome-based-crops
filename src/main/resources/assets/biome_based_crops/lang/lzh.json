@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "溫室生物群落無效",
   "biome_based_crops.ac.room_climate": "室內氣候：%s",
   "biome_based_crops.ac.unit_capacity": "空調：已安裝%s，需要%s",
-  "biome_based_crops.ac.capacity_hint": "每台空調在氣候變遷時支援 256 個室內模組。生物群系註冊始終需要電氣或 Tough As Nails 溫度調節器。",
   "biome_based_crops.greenhouse.status.blocked_outlet": "前出口被堵塞",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "房間內部空間需要更多空調",
   "biome_based_crops.greenhouse.status.too_large": "房間超出最大內部容積",

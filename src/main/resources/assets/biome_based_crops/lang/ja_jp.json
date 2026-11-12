@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "温室バイオームが無効です",
   "biome_based_crops.ac.room_climate": "部屋の気候: %s",
   "biome_based_crops.ac.unit_capacity": "エアコン: %s が設置されています、%s が必要です",
-  "biome_based_crops.ac.capacity_hint": "各エアコンは、気候の変化時に 256 個の内部ブロックをサポートします。バイオームの登録には常に電気または Tough As Nails 温度調節器が必要です。",
   "biome_based_crops.greenhouse.status.blocked_outlet": "前面のコンセントが詰まっている",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "部屋の内容積に対して、より多くのエアコンが必要になる",
   "biome_based_crops.greenhouse.status.too_large": "部屋が最大室内容積を超えている",

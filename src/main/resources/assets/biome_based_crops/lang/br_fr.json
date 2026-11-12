@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biom an ti-gwer n'eo ket reizh",
   "biome_based_crops.ac.room_climate": "Hin ar sal : %s",
   "biome_based_crops.ac.unit_capacity": "aergelc'hioù : %s staliet, %s ezhomm",
-  "biome_based_crops.ac.capacity_hint": "Pep aergelc'h a zalc'h 256 bloc'h diabarzh pa cheñch an hin. Evit enrollañ ar biom e ranker bepred kaout un termoreoler tredanel pe Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Stanket eo ar prenestr a-raok",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ezhomm en deus ar sal eus muioc'h a aergelc'hioù evit he volum diabarzh",
   "biome_based_crops.greenhouse.status.too_large": "Tremen a ra ar sal ar volum diabarzh uhelañ",

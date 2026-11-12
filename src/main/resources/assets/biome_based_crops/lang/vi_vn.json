@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Quần xã nhà kính không hợp lệ",
   "biome_based_crops.ac.room_climate": "Khí hậu trong phòng: %s",
   "biome_based_crops.ac.unit_capacity": "máy điều hòa không khí: đã lắp đặt %s, cần có %s",
-  "biome_based_crops.ac.capacity_hint": "Mỗi máy điều hòa hỗ trợ 256 khối bên trong khi khí hậu thay đổi. Đăng ký quần xã luôn cần bộ điều chỉnh nhiệt điện hoặc Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ổ cắm phía trước bị chặn",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Căn phòng cần nhiều máy điều hòa hơn cho thể tích bên trong của nó",
   "biome_based_crops.greenhouse.status.too_large": "Căn phòng vượt quá thể tích bên trong tối đa",

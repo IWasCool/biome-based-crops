@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Тепличный биом недействителен.",
   "biome_based_crops.ac.room_climate": "Климат в помещении: %s",
   "biome_based_crops.ac.unit_capacity": "кондиционеры: %s установлены, требуется %s",
-  "biome_based_crops.ac.capacity_hint": "Каждый кондиционер поддерживает 256 внутренних блоков при изменении климата. Для регистрации биома всегда требуется электрический терморегулятор или Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Передний выпуск заблокирован.",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "В помещении требуется больше кондиционеров для его внутреннего объема.",
   "biome_based_crops.greenhouse.status.too_large": "Помещение превышает максимальный внутренний объем.",

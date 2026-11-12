@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Skleníkový bióm nie je platný",
   "biome_based_crops.ac.room_climate": "Izbová klíma: %s",
   "biome_based_crops.ac.unit_capacity": "klimatizácie: %s nainštalované, %s potrebné",
-  "biome_based_crops.ac.capacity_hint": "Každá klimatizácia podporuje 256 vnútorných blokov pri zmene klímy. Registrácia Biome vždy vyžaduje elektrický alebo Tough As Nails termoregulátor.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Predný výstup je zablokovaný",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Miestnosť potrebuje pre svoj vnútorný objem viac klimatizácií",
   "biome_based_crops.greenhouse.status.too_large": "Miestnosť presahuje maximálny vnútorný objem",

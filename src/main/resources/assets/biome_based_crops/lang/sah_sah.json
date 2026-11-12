@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Теплица биома сөп түбэспэт",
   "biome_based_crops.ac.room_climate": "Хос климата: %s",
   "biome_based_crops.ac.unit_capacity": "кондиционердар: %s туруоруллубут, %s наада",
-  "biome_based_crops.ac.capacity_hint": "Хас биирдии кондиционер климат уларыйар кэмигэр 256 ис блоктары өйүүр. Биом регистрациятыгар хайаан да электрическэй эбэтэр Tough As Nails терморегулятор наада.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Инники розетка сабыллыбыт",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Хоско ис кээмэйин иһин элбэх кондиционер наада",
   "biome_based_crops.greenhouse.status.too_large": "Хос ис улахан кээмэйин аһарар",

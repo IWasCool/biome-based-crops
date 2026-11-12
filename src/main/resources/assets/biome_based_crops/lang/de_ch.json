@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Gewächshausbiom nicht gültig",
   "biome_based_crops.ac.room_climate": "Raumklima: %s",
   "biome_based_crops.ac.unit_capacity": "Klimaanlagen: %s installiert, %s erforderlich",
-  "biome_based_crops.ac.capacity_hint": "Jede Klimaanlage unterstützt 256 Innenblöcke bei Klimaänderungen. Für die Biomregistrierung ist immer ein elektrischer oder Tough As Nails Thermoregulator erforderlich.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Der vordere Auslass ist blockiert",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Der Raum benötigt für sein Innenvolumen mehr Klimaanlagen",
   "biome_based_crops.greenhouse.status.too_large": "Der Raum überschreitet das maximale Innenvolumen",

@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biom staklene bašte nije validan",
   "biome_based_crops.ac.room_climate": "Klima u prostoriji: %s",
   "biome_based_crops.ac.unit_capacity": "klima uređaji: %s instalirani, %s potrebni",
-  "biome_based_crops.ac.capacity_hint": "Svaki klima uređaj podržava 256 unutrašnjih blokova prilikom promene klime. Za registraciju bioma uvek je potreban električni ili Tough As Nails termoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Prednji izlaz je blokiran",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Prostoriji je potrebno više klima uređaja za njenu unutrašnju zapreminu",
   "biome_based_crops.greenhouse.status.too_large": "Prostorija premašuje maksimalnu unutrašnju zapreminu",

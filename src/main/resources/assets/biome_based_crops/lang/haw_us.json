@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "ʻAʻole kūpono ka biome hale ʻaina",
   "biome_based_crops.ac.room_climate": "Ke ea lumi: %s",
   "biome_based_crops.ac.unit_capacity": "nā ea: %s hoʻokomo ʻia, %s pono",
-  "biome_based_crops.ac.capacity_hint": "Kākoʻo kēlā me kēia ea ea i 256 mau poloka i loko i ka wā e hoʻololi ai ke aniau. Pono mau ka ho'opa'a inoa Biome i ka mea ho'oponopono uila a i 'ole Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ua ālai ʻia ka puka mua",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Pono ka lumi i nā ea hau no kona leo o loko",
   "biome_based_crops.greenhouse.status.too_large": "Ua ʻoi aku ka nui o ka lumi i ka nui o loko",

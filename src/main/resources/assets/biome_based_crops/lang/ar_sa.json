@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "المنطقة الأحيائية المسببة للاحتباس الحراري غير صالحة",
   "biome_based_crops.ac.room_climate": "مناخ الغرفة: %s",
   "biome_based_crops.ac.unit_capacity": "مكيفات الهواء: تم تركيب %s، مطلوب %s.",
-  "biome_based_crops.ac.capacity_hint": "يدعم كل مكيف هواء 256 كتلة داخلية عند تغيير المناخ. يحتاج تسجيل المناطق الأحيائية دائمًا إلى منظم كهربائي أو منظم حراري Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "المنفذ الأمامي مسدود",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "تحتاج الغرفة إلى المزيد من مكيفات الهواء لحجمها الداخلي",
   "biome_based_crops.greenhouse.status.too_large": "تتجاوز الغرفة الحد الأقصى للحجم الداخلي",

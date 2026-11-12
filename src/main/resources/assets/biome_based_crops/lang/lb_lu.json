@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Treibhausebiome net valabel",
   "biome_based_crops.ac.room_climate": "Raumklima: %s",
   "biome_based_crops.ac.unit_capacity": "Klimaanlagen: %s installéiert, %s néideg",
-  "biome_based_crops.ac.capacity_hint": "All Klimaanlag ënnerstëtzt 256 Interieurblocken beim Klimawandel. Biome Registréierung brauch ëmmer en elektreschen oder Tough As Nails Thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Déi viischt Outlet ass blockéiert",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "De Raum brauch méi Klimaanlagen fir säin Interieurvolumen",
   "biome_based_crops.greenhouse.status.too_large": "De Raum iwwerschreift de maximalen Interieurvolumen",

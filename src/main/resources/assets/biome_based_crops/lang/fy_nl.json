@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Greenhouse biome net jildich",
   "biome_based_crops.ac.room_climate": "Keamerklimaat: %s",
   "biome_based_crops.ac.unit_capacity": "air conditioners: %s ynstallearre, %s nedich",
-  "biome_based_crops.ac.capacity_hint": "Elke airconditioning stipet 256 ynterieurblokken by it feroarjen fan klimaat. Biome registraasje hat altyd in elektryske as Tough As Nails thermoregulator nedich.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "De foarkant outlet is blokkearre",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "De keamer hat mear airconditioning nedich foar syn ynterieurvolumint",
   "biome_based_crops.greenhouse.status.too_large": "De keamer is grutter as it maksimum ynterieur folume",

@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Níl an bithóim cheaptha teasa bailí",
   "biome_based_crops.ac.room_climate": "Aeráid an tseomra: %s",
   "biome_based_crops.ac.unit_capacity": "oiriúntóir aer: %s suiteáilte, %s ag teastáil",
-  "biome_based_crops.ac.capacity_hint": "Tacaíonn gach oiriúntóir aer le 256 bloc istigh nuair a bhíonn aeráid á athrú. Teastaíonn teirmerialtóir Leictreach nó Tough As Nails i gcónaí le clárú bithóim.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Tá bac ar an asraon tosaigh",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Tá níos mó oiriúntóirí aer de dhíth ar an seomra le haghaidh toirt an taobh istigh",
   "biome_based_crops.greenhouse.status.too_large": "Sáraíonn an seomra an toirt istigh uasta",

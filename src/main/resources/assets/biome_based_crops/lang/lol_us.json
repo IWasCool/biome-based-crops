@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Growy Haus biome not valid",
   "biome_based_crops.ac.room_climate": "Room wether: %s",
   "biome_based_crops.ac.unit_capacity": "AC units: %s installed, %s needed",
-  "biome_based_crops.ac.capacity_hint": "Each AC supports 256 interior blokz when changing wether. Biome registration always needs an Electrical or Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Da front outlet iz blocked",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Da room needs more AC units for its interior volume",
   "biome_based_crops.greenhouse.status.too_large": "Da room exceeds da maximum interior volume",

@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Broeikasbioom neet geldig",
   "biome_based_crops.ac.room_climate": "Kamerklimaat: %s",
   "biome_based_crops.ac.unit_capacity": "airconditioners: %s geïnstalleerd, %s nuudig",
-  "biome_based_crops.ac.capacity_hint": "Iedere airconditioner ondersteunt 256 binneblokke bij ‘t verandere vaan ‘t klimaat. Bioomregistratie heet altied un elektrische of Tough As Nails thermoregulator nuudig.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "De veurste stopcontact is geblokkeerd",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "De kamer heet mie airconditioners nuudig veur ‘t volume binne",
   "biome_based_crops.greenhouse.status.too_large": "De kamer euvertref ‘t maximale binnenvolume",

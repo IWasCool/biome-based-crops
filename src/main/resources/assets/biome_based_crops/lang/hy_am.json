@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Ջերմոցային բիոմը վավեր չէ",
   "biome_based_crops.ac.room_climate": "Սենյակի կլիման՝ %s",
   "biome_based_crops.ac.unit_capacity": "օդորակիչներ՝ %s տեղադրված, %s անհրաժեշտ է",
-  "biome_based_crops.ac.capacity_hint": "Յուրաքանչյուր օդորակիչ ապահովում է 256 ինտերիերի բլոկներ կլիմայի փոփոխության ժամանակ: Biome գրանցման համար միշտ անհրաժեշտ է էլեկտրական կամ Tough As Nails ջերմակարգավորիչ:",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Առջևի վարդակն արգելափակված է",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Սենյակին անհրաժեշտ են ավելի շատ օդորակիչներ իր ներքին ծավալի համար",
   "biome_based_crops.greenhouse.status.too_large": "Սենյակը գերազանցում է ներքին առավելագույն ծավալը",

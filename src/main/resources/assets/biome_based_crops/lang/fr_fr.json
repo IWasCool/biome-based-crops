@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biome de serre non valide",
   "biome_based_crops.ac.room_climate": "Climat ambiant : %s",
   "biome_based_crops.ac.unit_capacity": "climatiseurs : %s installés, %s nécessaires",
-  "biome_based_crops.ac.capacity_hint": "Chaque climatiseur prend en charge 256 blocs intérieurs lors du changement de climat. L'enregistrement du biome nécessite toujours un thermorégulateur électrique ou Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La sortie avant est bloquée",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La pièce a besoin de plus de climatiseurs pour son volume intérieur",
   "biome_based_crops.greenhouse.status.too_large": "La pièce dépasse le volume intérieur maximum",

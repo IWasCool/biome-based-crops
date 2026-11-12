@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Siltumnīcas bioms nav derīgs",
   "biome_based_crops.ac.room_climate": "Telpas klimats: %s",
   "biome_based_crops.ac.unit_capacity": "gaisa kondicionieri: %s uzstādīts, %s nepieciešams",
-  "biome_based_crops.ac.capacity_hint": "Katrs gaisa kondicionieris atbalsta 256 iekšējos blokus, mainot klimatu. Bioma reģistrācijai vienmēr ir nepieciešams elektriskais vai Tough As Nails termoregulators.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Priekšējā izeja ir bloķēta",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Telpā ir nepieciešams vairāk gaisa kondicionētāju tās iekšējam apjomam",
   "biome_based_crops.greenhouse.status.too_large": "Telpa pārsniedz maksimālo iekšējo tilpumu",

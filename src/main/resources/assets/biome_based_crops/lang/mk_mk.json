@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Биомот на стаклена градина не е валиден",
   "biome_based_crops.ac.room_climate": "Клима во собата: %s",
   "biome_based_crops.ac.unit_capacity": "клима уреди: %s инсталирани, %s потребни",
-  "biome_based_crops.ac.capacity_hint": "Секој клима уред поддржува 256 внатрешни блокови при промена на климата. Регистрацијата на Biome секогаш има потреба од електричен или Tough As Nails терморегулатор.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Предниот штекер е блокиран",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Собата има потреба од повеќе клима уреди за нејзиниот внатрешен волумен",
   "biome_based_crops.greenhouse.status.too_large": "Собата го надминува максималниот внатрешен волумен",

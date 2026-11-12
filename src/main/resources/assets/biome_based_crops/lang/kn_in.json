@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "ಹಸಿರುಮನೆ ಬಯೋಮ್ ಮಾನ್ಯವಾಗಿಲ್ಲ",
   "biome_based_crops.ac.room_climate": "ಕೋಣೆಯ ಹವಾಮಾನ: %s",
   "biome_based_crops.ac.unit_capacity": "ಹವಾನಿಯಂತ್ರಣಗಳು: %s ಸ್ಥಾಪಿಸಲಾಗಿದೆ, %s ಅಗತ್ಯವಿದೆ",
-  "biome_based_crops.ac.capacity_hint": "ಹವಾಮಾನವನ್ನು ಬದಲಾಯಿಸುವಾಗ ಪ್ರತಿ ಹವಾನಿಯಂತ್ರಣವು 256 ಆಂತರಿಕ ಬ್ಲಾಕ್ಗಳನ್ನು ಬೆಂಬಲಿಸುತ್ತದೆ. ಬಯೋಮ್ ನೋಂದಣಿಗೆ ಯಾವಾಗಲೂ ಎಲೆಕ್ಟ್ರಿಕಲ್ ಅಥವಾ Tough As Nails ಥರ್ಮೋರ್ಗ್ಯುಲೇಟರ್ ಅಗತ್ಯವಿದೆ.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "ಮುಂಭಾಗದ ಔಟ್ಲೆಟ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "ಕೋಣೆಗೆ ಅದರ ಆಂತರಿಕ ಪರಿಮಾಣಕ್ಕೆ ಹೆಚ್ಚಿನ ಹವಾನಿಯಂತ್ರಣಗಳ ಅಗತ್ಯವಿದೆ",
   "biome_based_crops.greenhouse.status.too_large": "ಕೊಠಡಿಯು ಗರಿಷ್ಠ ಆಂತರಿಕ ಪರಿಮಾಣವನ್ನು ಮೀರಿದೆ",

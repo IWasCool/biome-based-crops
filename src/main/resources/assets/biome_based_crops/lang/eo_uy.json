@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Forceja biomo ne valida",
   "biome_based_crops.ac.room_climate": "Ĉambra klimato: %s",
   "biome_based_crops.ac.unit_capacity": "klimatiziloj: %s instalita, %s bezonata",
-  "biome_based_crops.ac.capacity_hint": "Ĉiu klimatizilo apogas 256 internajn blokojn dum ŝanĝado de klimato. Biomregistrado ĉiam bezonas Elektran aŭ Tough As Nails termoregulilon.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La antaŭa ellasejo estas blokita",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La ĉambro bezonas pli da klimatiziloj por sia interna volumeno",
   "biome_based_crops.greenhouse.status.too_large": "La ĉambro superas la maksimuman internan volumenon",

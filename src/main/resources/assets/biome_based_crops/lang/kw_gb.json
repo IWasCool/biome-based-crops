@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biom tŷ gwydr ddim yn ddilys",
   "biome_based_crops.ac.room_climate": "Hinsawdd ystafell: %s",
   "biome_based_crops.ac.unit_capacity": "cyflyrwyr aer: %s wedi'u gosod, %s angen",
-  "biome_based_crops.ac.capacity_hint": "Mae pob cyflyrydd aer yn cefnogi 256 o flociau mewnol wrth newid hinsawdd. Mae angen thermoreolydd Trydanol neu Tough As Nails ar gyfer cofrestru biome bob amser.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Mae'r allfa flaen wedi'i rhwystro",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Mae angen mwy o gyflyrwyr aer ar yr ystafell ar gyfer ei gyfaint mewnol",
   "biome_based_crops.greenhouse.status.too_large": "Mae'r ystafell yn fwy na'r cyfaint mewnol mwyaf",

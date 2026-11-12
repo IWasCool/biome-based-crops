@@ -184,7 +184,6 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
                     number(menu.roomInteriorBlocks()), number(menu.roomInteriorCapacity())));
             lines.add(Component.translatable("biome_based_crops.ac.unit_capacity",
                     number(menu.installedUnits()), number(menu.requiredUnits())));
-            lines.add(Component.translatable("biome_based_crops.ac.capacity_hint").withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable("biome_based_crops.ac.sky_requirement").withStyle(ChatFormatting.GRAY));
         }
         return lines;

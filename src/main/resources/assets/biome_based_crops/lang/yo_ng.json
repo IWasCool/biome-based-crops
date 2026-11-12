@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Eefin biome ko wulo",
   "biome_based_crops.ac.room_climate": "Oju-ọjọ yara: %s",
   "biome_based_crops.ac.unit_capacity": "amúlétutù: %s ti fi sori ẹrọ, %s nilo",
-  "biome_based_crops.ac.capacity_hint": "Kondisona afẹfẹ kọọkan ṣe atilẹyin awọn bulọọki inu ilohunsoke 256 nigba iyipada afefe. Iforukọsilẹ Biome nigbagbogbo nilo Itanna tabi thermoregulator Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Oju-ọna iwaju ti dina",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Yara naa nilo awọn amúlétutù diẹ sii fun iwọn inu inu rẹ",
   "biome_based_crops.greenhouse.status.too_large": "Yara naa ti kọja iwọn didun inu ti o pọju",

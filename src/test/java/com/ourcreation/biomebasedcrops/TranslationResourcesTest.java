@@ -84,7 +84,7 @@ class TranslationResourcesTest {
                 "ja_jp", "ko_kr", "zh_cn", "ar_sa", "hi_in", "tr_tr")) {
             JsonObject language = read(locale);
             for (String key : List.of("biome_based_crops.guide.setup_text", "biome_based_crops.ac.selector_usage",
-                    "biome_based_crops.ac.capacity_hint", "biome_based_crops.message.blocked",
+                    "biome_based_crops.message.blocked",
                     "biome_based_crops.ac.sky_requirement", "biome_based_crops.greenhouse.status.no_glass")) {
                 assertNotEquals(english.get(key).getAsString(), language.get(key).getAsString(),
                         locale + ": " + key + " should not fall back to English");

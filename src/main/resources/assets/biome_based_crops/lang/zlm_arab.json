@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma rumah hijau tidak sah",
   "biome_based_crops.ac.room_climate": "Iklim bilik: %s",
   "biome_based_crops.ac.unit_capacity": "penghawa dingin: %s dipasang, %s diperlukan",
-  "biome_based_crops.ac.capacity_hint": "Setiap penghawa dingin menyokong 256 blok dalaman apabila perubahan iklim. Pendaftaran biome sentiasa memerlukan termoregulator Elektrik atau Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Saluran keluar hadapan disekat",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Bilik itu memerlukan lebih banyak penghawa dingin untuk isipadu dalamannya",
   "biome_based_crops.greenhouse.status.too_large": "Bilik melebihi volum dalaman maksimum",

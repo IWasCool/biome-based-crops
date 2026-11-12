@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Парник биомасы жараксыз",
   "biome_based_crops.ac.room_climate": "Бөлмөнүн климаты: %s",
   "biome_based_crops.ac.unit_capacity": "кондиционерлер: %s орнотулган, %s керек",
-  "biome_based_crops.ac.capacity_hint": "Ар бир кондиционер климатты өзгөртүүдө 256 ички блокту колдойт. Биоманы каттоо дайыма Электрдик же Tough As Nails терморегуляторду талап кылат.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Алдыңкы розетка бөгөттөлгөн",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Бөлмөнүн ички көлөмү үчүн көбүрөөк кондиционер керек",
   "biome_based_crops.greenhouse.status.too_large": "Бөлмө максималдуу ички көлөмдөн ашат",

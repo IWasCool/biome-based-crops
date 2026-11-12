@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma de invernadoiro non válido",
   "biome_based_crops.ac.room_climate": "Clima da habitación: %s",
   "biome_based_crops.ac.unit_capacity": "aire acondicionado: %s instalado, %s necesario",
-  "biome_based_crops.ac.capacity_hint": "Cada aire acondicionado admite 256 bloques interiores cando cambia o clima. O rexistro do bioma sempre precisa dun termorregulador eléctrico ou Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "A saída frontal está bloqueada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "A sala necesita máis aire acondicionado para o seu volume interior",
   "biome_based_crops.greenhouse.status.too_large": "A sala supera o volume interior máximo",

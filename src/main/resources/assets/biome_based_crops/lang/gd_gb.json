@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Chan eil biome taigh-glainne dligheach",
   "biome_based_crops.ac.room_climate": "Gnàth-shìde an t-seòmair: %s",
   "biome_based_crops.ac.unit_capacity": "inneal-adhair: %s air a stàladh, %s a dhìth",
-  "biome_based_crops.ac.capacity_hint": "Bidh gach inneal-adhair a’ toirt taic do 256 blocaichean a-staigh nuair a bhios iad ag atharrachadh gnàth-shìde. Feumaidh clàradh biome an-còmhnaidh inneal-riaghlaidh Dealain no Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Tha an t-ionad aghaidh air a bhacadh",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Feumaidh an seòmar barrachd innealan-adhair airson an tomhas a-staigh aige",
   "biome_based_crops.greenhouse.status.too_large": "Tha an seòmar nas àirde na an ìre as àirde a-staigh",

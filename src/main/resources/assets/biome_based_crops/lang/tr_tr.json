@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Sera biyomu geçerli değil",
   "biome_based_crops.ac.room_climate": "Oda iklimi: %s",
   "biome_based_crops.ac.unit_capacity": "klimalar: %s kurulu, %s gerekli",
-  "biome_based_crops.ac.capacity_hint": "Her klima, iklimi değiştirirken 256 iç bloğu destekler. Biyom kaydı her zaman bir Elektrikli veya Tough As Nails termoregülatöre ihtiyaç duyar.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ön çıkış tıkalı",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Odanın iç hacmi için daha fazla klimaya ihtiyaç var",
   "biome_based_crops.greenhouse.status.too_large": "Oda maksimum iç hacmi aşıyor",

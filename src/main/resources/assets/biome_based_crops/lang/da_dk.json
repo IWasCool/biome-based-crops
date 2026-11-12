@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Drivhusbiomet er ikke gyldigt",
   "biome_based_crops.ac.room_climate": "Værelsesklima: %s",
   "biome_based_crops.ac.unit_capacity": "klimaanlæg: %s installeret, %s påkrævet",
-  "biome_based_crops.ac.capacity_hint": "Hvert klimaanlæg understøtter 256 indvendige blokke ved klimaændringer. Biomeregistrering kræver altid en elektrisk eller Tough As Nails termoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Frontudgangen er blokeret",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Rummet har brug for flere klimaanlæg til dets indre volumen",
   "biome_based_crops.greenhouse.status.too_large": "Rummet overskrider den maksimale indvendige volumen",

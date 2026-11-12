@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Il-bijoma tas-serra mhux validu",
   "biome_based_crops.ac.room_climate": "Klima tal-kamra: %s",
   "biome_based_crops.ac.unit_capacity": "air conditioners: %s installati, %s meħtieġa",
-  "biome_based_crops.ac.capacity_hint": "Kull arja kondizzjonata tappoġġja 256 blokka ta 'ġewwa meta tbiddel il-klima. Ir-reġistrazzjoni tal-bijoma dejjem teħtieġ termoregolatur Elettriku jew Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "L-iżbokk ta’ quddiem huwa mblukkat",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Il-kamra teħtieġ aktar arja kondizzjonata għall-volum ta 'ġewwa tagħha",
   "biome_based_crops.greenhouse.status.too_large": "Il-kamra taqbeż il-volum massimu intern",

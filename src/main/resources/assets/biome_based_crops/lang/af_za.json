@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Kweekhuisbioom nie geldig nie",
   "biome_based_crops.ac.room_climate": "Kamerklimaat: %s",
   "biome_based_crops.ac.unit_capacity": "lugversorgers: %s geïnstalleer, %s benodig",
-  "biome_based_crops.ac.capacity_hint": "Elke lugversorger ondersteun 256 binneblokke wanneer klimaat verander. Bioomregistrasie benodig altyd 'n Elektriese of Tough As Nails termoreguleerder.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Die voorste uitlaat is geblokkeer",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Die kamer benodig meer lugversorgers vir sy binnevolume",
   "biome_based_crops.greenhouse.status.too_large": "Die kamer oorskry die maksimum binnevolume",

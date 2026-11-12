@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "אָראַנזשעריי ביאָמע ניט גילטיק",
   "biome_based_crops.ac.room_climate": "צימער קלימאַט: %s",
   "biome_based_crops.ac.unit_capacity": "לופט קאַנדישאַנערז: %s אינסטאַלירן, %s דארף",
-  "biome_based_crops.ac.capacity_hint": "יעדער לופט קאַנדישאַנער שטיצט 256 ינלענדיש בלאַקס ווען טשאַנגינג קלימאַט. ביאָמע רעגיסטראַציע שטענדיק דאַרף אַן עלעקטריקאַל אָדער Tough As Nails טערמאַרעגולאַטאָר.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "די פראָנט ווענטיל איז אפגעשטעלט",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "די צימער דאַרף מער לופט קאַנדישאַנערז פֿאַר זיין ינלענדיש באַנד",
   "biome_based_crops.greenhouse.status.too_large": "די צימער יקסידז די מאַקסימום ינלענדיש באַנד",

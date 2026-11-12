@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biōm cieplarni niy ważny",
   "biome_based_crops.ac.room_climate": "Klimat w pokoju: %s",
   "biome_based_crops.ac.unit_capacity": "klimatyzatory: %s zainstalowane, %s potrzebne",
-  "biome_based_crops.ac.capacity_hint": "Kożdo klimatyzacyjo ôbsługuje 256 blokōw wnyntrznych przi zmianie klimatu. Registracyjo biōmu dycki wymogo termoregulatora elektrycznego abo Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Gniazdo przednie je zablokowane",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Pokōj potrzebuje wiyncyj klimatyzatorōw do jego ôbjyntości wnyntrznyj",
   "biome_based_crops.greenhouse.status.too_large": "Pokōj przekroczo maksymalno ôbjyntość wnyntrzno",

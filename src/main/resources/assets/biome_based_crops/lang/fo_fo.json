@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Vakstrarhúsbiome ikki galdandi",
   "biome_based_crops.ac.room_climate": "Stovuveðurlag: %s",
   "biome_based_crops.ac.unit_capacity": "klimaanlegg: %s sett upp, %s tørvur er á",
-  "biome_based_crops.ac.capacity_hint": "Hvør klimaanlegg stuðlar 256 innrættingarblokkum, tá veðurlagið broytist. Biome skráseting hevur altíð brúk fyri einum El- ella Tough As Nails hitaregulatori.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Fremra úttakið er sperrað .",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Kamarið hevur brúk fyri fleiri klimaanleggum til sítt innandura rúmd .",
   "biome_based_crops.greenhouse.status.too_large": "Rúmið fer upp um hámarksrúmdina innandura .",

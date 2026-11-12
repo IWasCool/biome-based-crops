@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma della serra non valido",
   "biome_based_crops.ac.room_climate": "Clima ambiente: %s",
   "biome_based_crops.ac.unit_capacity": "condizionatori: %s installati, %s necessari",
-  "biome_based_crops.ac.capacity_hint": "Ogni condizionatore d'aria supporta 256 blocchi interni quando si cambia clima. La registrazione del bioma necessita sempre di un termoregolatore elettrico o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "L'uscita anteriore è bloccata",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La stanza necessita di più condizionatori per il suo volume interno",
   "biome_based_crops.greenhouse.status.too_large": "La stanza supera il volume interno massimo",

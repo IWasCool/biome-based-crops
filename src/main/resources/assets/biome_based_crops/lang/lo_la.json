@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "ຊີວະພາບເຮືອນແກ້ວບໍ່ຖືກຕ້ອງ",
   "biome_based_crops.ac.room_climate": "ສະພາບອາກາດໃນຫ້ອງ: %s",
   "biome_based_crops.ac.unit_capacity": "ເຄື່ອງປັບອາກາດ: ຕິດຕັ້ງ %s, ຕ້ອງການ %s",
-  "biome_based_crops.ac.capacity_hint": "ແຕ່ລະເຄື່ອງປັບອາກາດສະຫນັບສະຫນູນ 256 ຕັນພາຍໃນໃນເວລາທີ່ມີການປ່ຽນແປງສະພາບອາກາດ. ການລົງທະບຽນ Biome ຕ້ອງການເຄື່ອງຄວບຄຸມອຸນຫະພູມໄຟຟ້າ ຫຼື Tough As Nails ສະເໝີ.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "ປະຕູທາງຫນ້າຖືກບລັອກ",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "ຫ້ອງຕ້ອງການເຄື່ອງປັບອາກາດເພີ່ມເຕີມສໍາລັບປະລິມານພາຍໃນຂອງມັນ",
   "biome_based_crops.greenhouse.status.too_large": "ຫ້ອງເກີນປະລິມານພາຍໃນສູງສຸດ",

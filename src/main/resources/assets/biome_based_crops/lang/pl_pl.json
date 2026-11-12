@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biom szklarniowy jest nieprawidłowy",
   "biome_based_crops.ac.room_climate": "Klimat pomieszczenia: %s",
   "biome_based_crops.ac.unit_capacity": "klimatyzatory: zainstalowano %s, potrzebne było %s",
-  "biome_based_crops.ac.capacity_hint": "Każdy klimatyzator obsługuje 256 bloków wewnętrznych podczas zmiany klimatu. Rejestracja biomu zawsze wymaga termoregulatora elektrycznego lub Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Wylot przedni jest zablokowany",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Pomieszczenie potrzebuje więcej klimatyzatorów ze względu na objętość wnętrza",
   "biome_based_crops.greenhouse.status.too_large": "Pomieszczenie przekracza maksymalną objętość wnętrza",

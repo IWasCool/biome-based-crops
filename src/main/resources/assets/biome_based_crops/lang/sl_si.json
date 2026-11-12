@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biom rastlinjaka ni veljaven",
   "biome_based_crops.ac.room_climate": "Klima v prostoru: %s",
   "biome_based_crops.ac.unit_capacity": "klimatske naprave: %s nameščene, %s potrebne",
-  "biome_based_crops.ac.capacity_hint": "Vsaka klimatska naprava podpira 256 notranjih blokov pri spreminjanju klime. Za registracijo bioma je vedno potreben električni ali Tough As Nails termoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Sprednja odprtina je blokirana",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Prostor potrebuje več klimatskih naprav za svojo notranjo prostornino",
   "biome_based_crops.greenhouse.status.too_large": "Prostor presega največjo notranjo prostornino",

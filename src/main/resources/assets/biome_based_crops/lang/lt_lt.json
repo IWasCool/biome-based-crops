@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Šiltnamio biomas negalioja",
   "biome_based_crops.ac.room_climate": "Kambario klimatas: %s",
   "biome_based_crops.ac.unit_capacity": "oro kondicionieriai: sumontuoti %s, reikalingi %s",
-  "biome_based_crops.ac.capacity_hint": "Keičiant klimatą, kiekvienas oro kondicionierius palaiko 256 vidinius blokus. Registruojantis biomą visada reikia elektrinio arba Tough As Nails termoreguliatoriaus.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Priekinė išleidimo anga užblokuota",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Patalpoje reikia daugiau oro kondicionierių, kad būtų patenkintas jo vidinis tūris",
   "biome_based_crops.greenhouse.status.too_large": "Patalpa viršija didžiausią vidinį tūrį",

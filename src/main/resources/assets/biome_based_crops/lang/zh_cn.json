@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "温室生物群落无效",
   "biome_based_crops.ac.room_climate": "室内气候：%s",
   "biome_based_crops.ac.unit_capacity": "空调：已安装%s，需要%s",
-  "biome_based_crops.ac.capacity_hint": "每台空调在气候变化时支持 256 个室内模块。生物群系注册始终需要电气或 Tough As Nails 温度调节器。",
   "biome_based_crops.greenhouse.status.blocked_outlet": "前出口被堵塞",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "房间内部空间需要更多空调",
   "biome_based_crops.greenhouse.status.too_large": "房间超出最大内部容积",

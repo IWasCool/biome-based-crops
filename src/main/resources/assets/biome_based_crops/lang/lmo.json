@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "El bioma del serra minga valid",
   "biome_based_crops.ac.room_climate": "Clima de la stanza: %s",
   "biome_based_crops.ac.unit_capacity": "climatizatur: %s installà, %s necessari",
-  "biome_based_crops.ac.capacity_hint": "Ogni condizionador d’aria suporta 256 blocch interni quand cambia el clima. La registraziun del bioma g’ha semper bisogn de un termoregolatur eletrich o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La presa frontal l’è blocada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La stanza g’ha bisogn de püsee aria condizionada per el sò volum interno",
   "biome_based_crops.greenhouse.status.too_large": "La stanza la supera el volum massim interno",

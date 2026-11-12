@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Оранжерийният биом не е валиден",
   "biome_based_crops.ac.room_climate": "Стаен климат: %s",
   "biome_based_crops.ac.unit_capacity": "климатици: %s инсталирани, %s необходими",
-  "biome_based_crops.ac.capacity_hint": "Всеки климатик поддържа 256 вътрешни блока при промяна на климата. Регистрацията на биома винаги изисква електрически или Tough As Nails терморегулатор.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Предният изход е блокиран",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Стаята се нуждае от повече климатици за вътрешния си обем",
   "biome_based_crops.greenhouse.status.too_large": "Стаята надвишава максималния вътрешен обем",

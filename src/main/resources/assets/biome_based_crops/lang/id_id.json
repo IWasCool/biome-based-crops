@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma rumah kaca tidak valid",
   "biome_based_crops.ac.room_climate": "Iklim ruangan: %s",
   "biome_based_crops.ac.unit_capacity": "AC: %s terpasang, %s diperlukan",
-  "biome_based_crops.ac.capacity_hint": "Setiap AC mendukung 256 blok interior saat perubahan iklim. Pendaftaran bioma selalu memerlukan termoregulasi Listrik atau Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Stopkontak depan diblokir",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ruangan memerlukan lebih banyak AC untuk volume interiornya",
   "biome_based_crops.greenhouse.status.too_large": "Ruangan melebihi volume interior maksimum",

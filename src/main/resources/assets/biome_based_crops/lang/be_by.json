@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Парніковы біём несапраўдны",
   "biome_based_crops.ac.room_climate": "Пакаёвы клімат: %s",
   "biome_based_crops.ac.unit_capacity": "кандыцыянеры: %s усталяваны, %s патрэбны",
-  "biome_based_crops.ac.capacity_hint": "Кожны кандыцыянер падтрымлівае 256 ўнутраных блокаў пры змене клімату. Для рэгістрацыі біяма заўсёды патрэбны электрычны або Tough As Nails тэрмарэгулятар.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Пярэдні выхад заблакаваны",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Пакой мае патрэбу ў большай колькасці кандыцыянераў для ўнутранага аб'ёму",
   "biome_based_crops.greenhouse.status.too_large": "Пакой перавышае максімальны ўнутраны аб'ём",

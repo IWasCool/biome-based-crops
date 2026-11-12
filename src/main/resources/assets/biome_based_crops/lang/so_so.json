@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biome-ga aqalka cagaaran ma shaqeynayo",
   "biome_based_crops.ac.room_climate": "Cimilada qolka: %s",
   "biome_based_crops.ac.unit_capacity": "qaboojiyeyaasha: %s la rakibay, %s loo baahan yahay",
-  "biome_based_crops.ac.capacity_hint": "Qaboojiyaha kastaa wuxuu taageeraa 256 baloogyada gudaha ah marka cimilada la beddelo. Diiwaangelinta biome waxay had iyo jeer u baahan tahay koronto ama Tough As Nails heerkulbeeye.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Meesha hore waa la xannibay",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Qolku wuxuu u baahan yahay qaboojiyayaal badan oo mugga gudaha ah",
   "biome_based_crops.greenhouse.status.too_large": "Qolku wuxuu ka sarreeyaa mugga gudaha ugu sarreeya",

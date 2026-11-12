@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Тепличний біом недійсний",
   "biome_based_crops.ac.room_climate": "Клімат кімнати: %s",
   "biome_based_crops.ac.unit_capacity": "кондиціонерів: %s встановлено, %s потрібно",
-  "biome_based_crops.ac.capacity_hint": "Кожен кондиціонер підтримує 256 внутрішніх блоків при зміні клімату. Для реєстрації біома завжди потрібен електричний або Tough As Nails терморегулятор.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Передній випускний отвір заблоковано",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Для внутрішнього об’єму приміщення потрібно більше кондиціонерів",
   "biome_based_crops.greenhouse.status.too_large": "Кімната перевищує максимальний внутрішній об’єм",

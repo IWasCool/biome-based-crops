@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Greenhouse biome adịghị mma",
   "biome_based_crops.ac.room_climate": "Ihu igwe ime ụlọ: %s",
   "biome_based_crops.ac.unit_capacity": "ntụ oyi: %s arụnyere, %s chọrọ",
-  "biome_based_crops.ac.capacity_hint": "Igwe ntụ oyi ọ bụla na-akwado ihe mgbochi ime ụlọ 256 mgbe ọ na-agbanwe ihu igwe. Ndebanye aha biome mgbe niile na-achọ ọkụ eletrik ma ọ bụ Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "E gbochiri ụzọ ọpụpụ n'ihu",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ime ụlọ ahụ chọrọ ikuku ntụ oyi maka olu ime ya",
   "biome_based_crops.greenhouse.status.too_large": "Ime ụlọ ahụ karịrị oke ime",

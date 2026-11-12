@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biomul de seră nu este valid",
   "biome_based_crops.ac.room_climate": "Clima camerei: %s",
   "biome_based_crops.ac.unit_capacity": "aparate de aer condiționat: %s instalate, %s necesar",
-  "biome_based_crops.ac.capacity_hint": "Fiecare aparat de aer condiționat acceptă 256 de blocuri interioare atunci când se schimbă climatul. Înregistrarea biomului necesită întotdeauna un termoregulator electric sau Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Priza frontală este blocată",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Camera are nevoie de mai multe aparate de aer condiționat pentru volumul interior",
   "biome_based_crops.greenhouse.status.too_large": "Camera depășește volumul interior maxim",

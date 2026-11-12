@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma de estufa não válido",
   "biome_based_crops.ac.room_climate": "Clima da sala: %s",
   "biome_based_crops.ac.unit_capacity": "aparelhos de ar condicionado: %s instalados, %s necessários",
-  "biome_based_crops.ac.capacity_hint": "Cada ar condicionado suporta 256 blocos interiores em caso de mudança climática. O registro do bioma sempre precisa de um termorregulador elétrico ou Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "A saída frontal está bloqueada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "A sala precisa de mais aparelhos de ar condicionado para o seu volume interior",
   "biome_based_crops.greenhouse.status.too_large": "A sala excede o volume interior máximo",

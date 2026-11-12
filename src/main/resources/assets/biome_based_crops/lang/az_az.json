@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "İstixana biomu etibarlı deyil",
   "biome_based_crops.ac.room_climate": "Otaq iqlimi: %s",
   "biome_based_crops.ac.unit_capacity": "kondisionerlər: %s quraşdırılıb, %s lazımdır",
-  "biome_based_crops.ac.capacity_hint": "Hər bir kondisioner iqlim dəyişikliyi zamanı 256 daxili bloku dəstəkləyir. Biome qeydiyyatı həmişə Elektrik və ya Tough As Nails termoregulyatora ehtiyac duyur.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ön çıxış bloklanıb",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Otağın daxili həcminə görə daha çox kondisioner lazımdır",
   "biome_based_crops.greenhouse.status.too_large": "Otaq maksimum daxili həcmi aşır",

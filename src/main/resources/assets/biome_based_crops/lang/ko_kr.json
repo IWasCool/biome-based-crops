@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "온실 생물 군계가 유효하지 않습니다.",
   "biome_based_crops.ac.room_climate": "실내 온도: %s",
   "biome_based_crops.ac.unit_capacity": "에어컨: %s 설치됨, %s 필요",
-  "biome_based_crops.ac.capacity_hint": "각 에어컨은 기후 변화 시 256개의 내부 블록을 지원합니다. 생물 군계 등록에는 항상 전기 또는 Tough As Nails 온도 조절기가 필요합니다.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "앞쪽 콘센트가 막혔어요",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "방의 내부 용적에 비해 더 많은 에어컨이 필요합니다.",
   "biome_based_crops.greenhouse.status.too_large": "방이 최대 내부 용적을 초과합니다.",

@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Lo biòma de sèrra pas valid",
   "biome_based_crops.ac.room_climate": "Clima de la sala: %s",
   "biome_based_crops.ac.unit_capacity": "climatizators: %s installats, %s necessaris",
-  "biome_based_crops.ac.capacity_hint": "Cada climatizador pren en carga 256 blòts interiors al moment de cambiar de clima. L'enregistrament del biòma a totjorn besonh d'un termoregulator electric o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La sortida davancièra es blocada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La sala a besonh de mai d'aire condicionat per son volum interior",
   "biome_based_crops.greenhouse.status.too_large": "La sala despassa lo volum interior maximal",

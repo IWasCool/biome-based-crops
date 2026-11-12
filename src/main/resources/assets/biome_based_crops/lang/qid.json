@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma roemah katja tidak valid",
   "biome_based_crops.ac.room_climate": "Iklim roeangan: %s",
   "biome_based_crops.ac.unit_capacity": "ATj: %s terpasang, %s diperloekan",
-  "biome_based_crops.ac.capacity_hint": "Setiap ATj mendoekoeng 256 blok interior saat peroebahan iklim. Pendaftaran bioma selaloe memerloekan termoregoelasi Listrik ataoe Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Stopkontak depan diblokir",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Roeangan memerloekan lebih banjak ATj oentoek voloeme interiornja",
   "biome_based_crops.greenhouse.status.too_large": "Roeangan melebihi voloeme interior maksimoem",

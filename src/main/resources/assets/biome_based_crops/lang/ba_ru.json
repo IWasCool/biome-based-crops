@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Теплица биомы дөрөҫ түгел",
   "biome_based_crops.ac.room_climate": "Бүлмә климаты: %s",
   "biome_based_crops.ac.unit_capacity": "кондиционерҙар: %s ҡуйылған, %s кәрәк",
-  "biome_based_crops.ac.capacity_hint": "Һәр кондиционер климат үҙгәргәндә 256 эске блокты ҡабул итә. Биом теркәү һәр ваҡыт кәрәк Электр йәки Tough As Nails терморегулятор.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Алғы розетка тығылған .",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Бүлмәгә эске күләме өсөн күберәк кондиционерҙар кәрәк .",
   "biome_based_crops.greenhouse.status.too_large": "Бүлмә максималь эске күләмдән артып китә",

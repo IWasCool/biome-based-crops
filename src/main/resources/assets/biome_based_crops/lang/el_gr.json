@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Μη έγκυρο βίωμα θερμοκηπίου",
   "biome_based_crops.ac.room_climate": "Κλίμα δωματίου: %s",
   "biome_based_crops.ac.unit_capacity": "κλιματιστικά: %s εγκατεστημένα, %s απαιτούνται",
-  "biome_based_crops.ac.capacity_hint": "Κάθε κλιματιστικό υποστηρίζει 256 εσωτερικά μπλοκ όταν αλλάζει το κλίμα. Η εγγραφή Biome χρειάζεται πάντα έναν ηλεκτρικό ή θερμορρυθμιστή Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Η μπροστινή έξοδος είναι φραγμένη",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Το δωμάτιο χρειάζεται περισσότερα κλιματιστικά για τον εσωτερικό του όγκο",
   "biome_based_crops.greenhouse.status.too_large": "Το δωμάτιο υπερβαίνει τον μέγιστο εσωτερικό όγκο",

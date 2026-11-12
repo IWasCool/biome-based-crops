@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Az üvegházhatású biom nem érvényes",
   "biome_based_crops.ac.room_climate": "Szobaklíma: %s",
   "biome_based_crops.ac.unit_capacity": "klímaberendezések: %s telepítve, %s szükséges",
-  "biome_based_crops.ac.capacity_hint": "Minden klímaberendezés 256 belső blokkot támogat klímaváltozáskor. A biom regisztrációhoz mindig szükség van egy elektromos vagy Tough As Nails hőszabályozóra.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Az elülső kimenet blokkolva van",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "A helyiségnek több légkondicionálóra van szüksége a belső térfogatához",
   "biome_based_crops.greenhouse.status.too_large": "A helyiség túllépi a maximális belső térfogatot",

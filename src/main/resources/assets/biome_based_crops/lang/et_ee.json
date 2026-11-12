@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Kasvuhoone bioom ei kehti",
   "biome_based_crops.ac.room_climate": "Ruumi kliima: %s",
   "biome_based_crops.ac.unit_capacity": "kliimaseadmed: %s paigaldatud, vaja on %s",
-  "biome_based_crops.ac.capacity_hint": "Iga kliimaseade toetab kliima muutmisel 256 siseplokki. Biome registreerimine vajab alati elektrilist või Tough As Nails termoregulaatorit.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Eesmine väljalaskeava on blokeeritud",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ruum vajab oma sisemahu jaoks rohkem konditsioneere",
   "biome_based_crops.greenhouse.status.too_large": "Ruum ületab maksimaalse sisemise mahu",

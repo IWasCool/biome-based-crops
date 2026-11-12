@@ -27,9 +27,8 @@
   "writing_system_fallbacks": {
     "zlm_arab": "Malay Latin script for new text; existing Jawi text preserved"
   },
-  "source_keys": 111,
+  "source_keys": 110,
   "last_refreshed_keys": [
-    "biome_based_crops.ac.capacity_hint",
     "biome_based_crops.guide.setup_text"
   ],
   "translation_method": "Machine-assisted; native-speaker review is not complete.",

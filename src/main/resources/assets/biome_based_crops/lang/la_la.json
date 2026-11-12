@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "CONSERVATORIUM biome non valet",
   "biome_based_crops.ac.room_climate": "Locus climatis: %s",
   "biome_based_crops.ac.unit_capacity": "aer conditioners: %s inauguratus, %s necessarius",
-  "biome_based_crops.ac.capacity_hint": "Quilibet aer Conditioner stipes interiores sustinet cum mutabili climate 256. Biome adnotatione electrico vel Tough As Nails thermoregulatore eget semper.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ante exitum obstructus",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Conclave plus indiget aeris conditionarii ad suum volumen interiorem",
   "biome_based_crops.greenhouse.status.too_large": "Conclave maximum volumen interiorem excedit",

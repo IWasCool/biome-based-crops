@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "ชีวนิเวศเรือนกระจกไม่ถูกต้อง",
   "biome_based_crops.ac.room_climate": "สภาพอากาศในห้อง: %s",
   "biome_based_crops.ac.unit_capacity": "เครื่องปรับอากาศ: ติดตั้งแล้ว %s ต้องการ %s",
-  "biome_based_crops.ac.capacity_hint": "เครื่องปรับอากาศแต่ละเครื่องรองรับบล็อกภายในได้ 256 บล็อกเมื่อมีการเปลี่ยนแปลงสภาพอากาศ การลงทะเบียนชีวนิเวศต้องใช้เครื่องปรับอุณหภูมิแบบไฟฟ้าหรือ Tough As Nails เสมอ",
   "biome_based_crops.greenhouse.status.blocked_outlet": "เต้าเสียบด้านหน้าถูกปิดกั้น",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "ห้องต้องการเครื่องปรับอากาศเพิ่มเพื่อปริมาตรภายใน",
   "biome_based_crops.greenhouse.status.too_large": "ห้องมีปริมาณเกินปริมาณภายในสูงสุด",

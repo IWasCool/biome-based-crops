@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "El bioma in serra no vałido",
   "biome_based_crops.ac.room_climate": "Clima deła stansa: %s",
   "biome_based_crops.ac.unit_capacity": "condisionatori: %s instałai, %s necesari",
-  "biome_based_crops.ac.capacity_hint": "Ogni condisionador el ga 256 blochi interni quando che se canbia el clima. Pa ła registrasion del bioma ła ga senpre bisogno de un termoregołador ełetrico o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ła presa davanti ła xe blocà",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ła stansa ła ga bisogno de pì climatixatori pa el so vołume interno",
   "biome_based_crops.greenhouse.status.too_large": "Ła stansa ła supera el vołume interno masimo",

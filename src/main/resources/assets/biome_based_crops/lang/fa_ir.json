@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "بیوم گلخانه معتبر نیست",
   "biome_based_crops.ac.room_climate": "آب و هوای اتاق: %s",
   "biome_based_crops.ac.unit_capacity": "تهویه مطبوع: %s نصب شده، %s مورد نیاز است",
-  "biome_based_crops.ac.capacity_hint": "هر تهویه مطبوع از 256 بلوک داخلی در هنگام تغییر آب و هوا پشتیبانی می کند. ثبت Biome همیشه به یک تنظیم‌کننده حرارت الکتریکی یا Tough As Nails نیاز دارد.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "خروجی جلو مسدود است",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "اتاق برای حجم داخلی خود به دستگاه های تهویه مطبوع بیشتری نیاز دارد",
   "biome_based_crops.greenhouse.status.too_large": "اتاق بیش از حداکثر حجم داخلی است",

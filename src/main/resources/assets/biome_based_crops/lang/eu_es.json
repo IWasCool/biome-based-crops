@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Berotegi-bioma ez da baliozkoa",
   "biome_based_crops.ac.room_climate": "Gelako klima: %s",
   "biome_based_crops.ac.unit_capacity": "aire girotua: %s instalatuta, %s behar da",
-  "biome_based_crops.ac.capacity_hint": "Aire girotu bakoitzak 256 barruko bloke onartzen ditu klima aldatzean. Biomaren erregistroak beti behar du Elektrikoa edo Tough As Nails termoerreguladore bat.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Aurrealdeko irteera blokeatuta dago",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Gelak aire girotu gehiago behar ditu bere barruko bolumenerako",
   "biome_based_crops.greenhouse.status.too_large": "Gelak barruko bolumen maximoa gainditzen du",

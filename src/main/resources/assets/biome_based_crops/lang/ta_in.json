@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "கிரீன்ஹவுஸ் பயோம் செல்லாது",
   "biome_based_crops.ac.room_climate": "அறை காலநிலை: %s",
   "biome_based_crops.ac.unit_capacity": "ஏர் கண்டிஷனர்கள்: %s நிறுவப்பட்டது, %s தேவை",
-  "biome_based_crops.ac.capacity_hint": "ஒவ்வொரு ஏர் கண்டிஷனரும் காலநிலையை மாற்றும் போது 256 உட்புறத் தொகுதிகளை ஆதரிக்கிறது. பயோம் பதிவுக்கு எப்போதும் எலக்ட்ரிக்கல் அல்லது Tough As Nails தெர்மோர்குலேட்டர் தேவை.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "முன் கடையடைப்பு தடுக்கப்பட்டுள்ளது",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "அறையின் உட்புறத் தொகுதிக்கு அதிக குளிரூட்டிகள் தேவை",
   "biome_based_crops.greenhouse.status.too_large": "அறையானது அதிகபட்ச உட்புற அளவை விட அதிகமாக உள்ளது",

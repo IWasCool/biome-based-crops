@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Gróðurhúsalíffræði ekki gild",
   "biome_based_crops.ac.room_climate": "Loftslag í herbergi: %s",
   "biome_based_crops.ac.unit_capacity": "loftræstitæki: %s uppsett, %s þarf",
-  "biome_based_crops.ac.capacity_hint": "Hver loftkæling styður 256 innri blokkir þegar loftslag er breytt. Biome skráningu þarf alltaf rafmagns eða Tough As Nails hitastillir.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Úttakið að framan er stíflað",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Herbergið þarf fleiri loftræstitæki fyrir innra rúmmál þess",
   "biome_based_crops.greenhouse.status.too_large": "Herbergið fer yfir hámarks innra rúmmál",

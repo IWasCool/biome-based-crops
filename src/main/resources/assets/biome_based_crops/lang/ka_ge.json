@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "სათბურის ბიომი არასწორია",
   "biome_based_crops.ac.room_climate": "ოთახის კლიმატი: %s",
   "biome_based_crops.ac.unit_capacity": "კონდიციონერები: %s დაყენებული, %s საჭიროა",
-  "biome_based_crops.ac.capacity_hint": "თითოეული კონდიციონერი მხარს უჭერს 256 შიდა ბლოკს კლიმატის შეცვლისას. ბიომის რეგისტრაციას ყოველთვის სჭირდება ელექტრო ან Tough As Nails თერმორეგულატორი.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "წინა გამოსასვლელი დაბლოკილია",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "ოთახს სჭირდება მეტი კონდიციონერი მისი შიდა მოცულობისთვის",
   "biome_based_crops.greenhouse.status.too_large": "ოთახი აღემატება ინტერიერის მაქსიმალურ მოცულობას",

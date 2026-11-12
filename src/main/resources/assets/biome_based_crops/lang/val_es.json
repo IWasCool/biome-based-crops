@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "El bioma d'hivernacle no és vàlid",
   "biome_based_crops.ac.room_climate": "Clima de l'habitació: %s",
   "biome_based_crops.ac.unit_capacity": "aire condicionat: %s instal·lat, %s necessari",
-  "biome_based_crops.ac.capacity_hint": "Cada aire condicionat admet 256 blocs interiors quan es canvia el clima. El registre del bioma sempre necessita un termoregulador elèctric o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La sortida frontal està bloquejada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La sala necessita més aire condicionat pel seu volum interior",
   "biome_based_crops.greenhouse.status.too_large": "L'habitació supera el volum interior màxim",

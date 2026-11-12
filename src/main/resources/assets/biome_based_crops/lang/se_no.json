@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Dálkkádatbioma ii leat dohkálaš",
   "biome_based_crops.ac.room_climate": "Ruovttu dálkkádat: %s",
   "biome_based_crops.ac.unit_capacity": "klimatihkkarusttegat: %s biddjon, %s dárbbašuvvo",
-  "biome_based_crops.ac.capacity_hint": "Juohke klimatihkkár doarju 256 sisáibmolohkki go rievdá dálkkádat. Bioma registreremii dárbbašuvvo álo elrávnnji dahje Tough As Nails termoreguláhtor.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ovddabeale čujuhus lea giddejuvvon",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Latnja dárbbaša eanet klimatihkkarusttegiid dan sisáibmovoluma várás",
   "biome_based_crops.greenhouse.status.too_large": "Ruovttus lea badjel alimus sisáibmovoluma",

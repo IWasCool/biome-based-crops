@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Parnikovy biiom niesapraŭdny",
   "biome_based_crops.ac.room_climate": "Pakaiovy klimat: %s",
   "biome_based_crops.ac.unit_capacity": "kandycyianiery: %s ustaliavany, %s patrebny",
-  "biome_based_crops.ac.capacity_hint": "Kožny kandycyianier padtrymlivaie 256 ŭnutranych blokaŭ pry zmienie klimatu. Dlia rehistracyi biiama zaŭsiody patrebny eliektryčny abo Tough As Nails termarehuliatar.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Piaredni vychad zablakavany",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Pakoj maie patrebu ŭ bolšaj kolkasci kandycyianieraŭ dlia ŭnutranaha ab'iomu",
   "biome_based_crops.greenhouse.status.too_large": "Pakoj pieravyšaie maksimalny ŭnutrany ab'iom",

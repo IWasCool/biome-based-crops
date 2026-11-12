@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biomi i serrës nuk është i vlefshëm",
   "biome_based_crops.ac.room_climate": "Klima e dhomës: %s",
   "biome_based_crops.ac.unit_capacity": "kondicionerët: %s të instaluar, %s nevojiten",
-  "biome_based_crops.ac.capacity_hint": "Çdo kondicioner mbështet 256 blloqe të brendshme kur ndryshon klimën. Regjistrimi i biomes ka nevojë gjithmonë për një termoregulator elektrik ose Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Priza e përparme është e bllokuar",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Dhoma ka nevojë për më shumë kondicionerë për vëllimin e saj të brendshëm",
   "biome_based_crops.greenhouse.status.too_large": "Dhoma e tejkalon volumin maksimal të brendshëm",

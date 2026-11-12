@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Växthusbiomet är inte giltigt",
   "biome_based_crops.ac.room_climate": "Rumsklimat: %s",
   "biome_based_crops.ac.unit_capacity": "luftkonditioneringsapparater: %s installerade, %s behövs",
-  "biome_based_crops.ac.capacity_hint": "Varje luftkonditioneringsapparat stöder 256 inre block vid klimatbyte. Biomregistrering kräver alltid en elektrisk eller Tough As Nails termoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Det främre utloppet är blockerat",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Rummet behöver fler luftkonditioneringsapparater för sin inre volym",
   "biome_based_crops.greenhouse.status.too_large": "Rummet överskrider den maximala inre volymen",

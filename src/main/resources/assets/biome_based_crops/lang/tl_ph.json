@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Hindi wasto ang biome ng greenhouse",
   "biome_based_crops.ac.room_climate": "Klima ng silid: %s",
   "biome_based_crops.ac.unit_capacity": "mga air conditioner: %s naka-install, %s kailangan",
-  "biome_based_crops.ac.capacity_hint": "Ang bawat air conditioner ay sumusuporta sa 256 panloob na bloke kapag nagbabago ang klima. Ang pagpaparehistro ng biome ay palaging nangangailangan ng isang Electrical o Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ang labasan sa harap ay nakaharang",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ang silid ay nangangailangan ng mas maraming air conditioner para sa panloob na volume nito",
   "biome_based_crops.greenhouse.status.too_large": "Ang silid ay lumampas sa maximum na panloob na volume",

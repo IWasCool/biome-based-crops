@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Greenhouse biome not valid",
   "biome_based_crops.ac.room_climate": "Room climate: %s",
   "biome_based_crops.ac.unit_capacity": "AC units: %s installed, %s needed",
-  "biome_based_crops.ac.capacity_hint": "Each AC supports 256 interior blocks when changing climate. Biome registration always needs an Electrical or Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "The front outlet is blocked",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "The room needs more AC units for its interior volume",
   "biome_based_crops.greenhouse.status.too_large": "The room exceeds the maximum interior volume",

@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Kasbioom niet geldig",
   "biome_based_crops.ac.room_climate": "Kamerklimaat: %s",
   "biome_based_crops.ac.unit_capacity": "airconditioners: %s geïnstalleerd, %s nodig",
-  "biome_based_crops.ac.capacity_hint": "Elke airconditioner ondersteunt 256 binnenblokken bij klimaatverandering. Voor bioomregistratie is altijd een elektrische of Tough As Nails thermoregulator vereist.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "De uitlaat aan de voorkant is geblokkeerd",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "De kamer heeft meer airconditioners nodig vanwege het binnenvolume",
   "biome_based_crops.greenhouse.status.too_large": "De kamer overschrijdt het maximale binnenvolume",

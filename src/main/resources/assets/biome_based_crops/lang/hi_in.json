@@ -75,7 +75,6 @@
   "biome_based_crops.ac.greenhouse_unregistered": "ग्रीनहाउस बायोम मान्य नहीं है",
   "biome_based_crops.ac.room_climate": "कमरे का माहौल: %s",
   "biome_based_crops.ac.unit_capacity": "एयर कंडीशनर: %s स्थापित, %s की आवश्यकता",
-  "biome_based_crops.ac.capacity_hint": "जलवायु बदलते समय प्रत्येक एयर कंडीशनर 256 आंतरिक ब्लॉकों का समर्थन करता है। बायोम पंजीकरण के लिए हमेशा एक इलेक्ट्रिकल या Tough As Nails थर्मोरेगुलेटर की आवश्यकता होती है।",
   "biome_based_crops.greenhouse.status.blocked_outlet": "सामने का आउटलेट अवरुद्ध है",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "कमरे की आंतरिक मात्रा के लिए अधिक एयर कंडीशनर की आवश्यकता है",
   "biome_based_crops.greenhouse.status.too_large": "कमरा अधिकतम आंतरिक आयतन से अधिक है",
