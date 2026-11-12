@@ -24,9 +24,11 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
             "air_conditioner", () -> IMenuTypeExtension.create(AirConditionerMenu::new));
     public static final int MIN_TARGET = 0;
     public static final int MAX_TARGET = CropClimate.values().length - 1;
-    private static final int DATA_COUNT = 26;
+    public static final int TOGGLE_POWER = MAX_TARGET + 1;
+    private static final int DATA_COUNT = 27;
     private final BlockPos position;
     private final Level level;
+    private final Player owner;
     private final ContainerData data;
 
     public static void register(IEventBus bus) {
@@ -82,6 +84,7 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
                     case 23 -> frontRoom().inspection().glazing().roofRequired() & 0xFFFF;
                     case 24 -> frontRoom().inspection().glazing().roofRequired() >>> 16;
                     case 25 -> { frontRoom(); yield roofSkyExposed ? 1 : 0; }
+                    case 26 -> unit.enabled() ? 1 : 0;
                     default -> 0;
                 };
             }
@@ -96,6 +99,7 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
         super(TYPE.get(), id);
         this.position = position.immutable();
         this.level = inventory.player.level();
+        this.owner = inventory.player;
         this.data = data;
         addDataSlots(data);
         for (int row = 0; row < 3; row++) for (int column = 0; column < 9; column++) {
@@ -113,6 +117,7 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
         data.set(11, CropClimate.NEUTRAL.ordinal());
         data.set(15, 256);
         data.set(19, CropClimate.NEUTRAL.ordinal());
+        data.set(26, 1);
         return data;
     }
 
@@ -122,6 +127,7 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
     public int energyCost() { return Math.max(0, combined(data.get(3), data.get(4))); }
     public int roomVolume() { return Math.max(0, combined(data.get(8), data.get(9))); }
     public boolean active() { return data.get(7) != 0; }
+    public boolean enabled() { return data.get(26) != 0; }
     public CropClimate targetClimate() { return climate(data.get(0)); }
     public CropClimate localClimate() { return climate(data.get(11)); }
     public RoomStatus roomStatus() { return RoomStatus.values()[Math.clamp(data.get(12), 0, RoomStatus.values().length - 1)]; }
@@ -160,14 +166,15 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
     }
 
     @Override public boolean stillValid(Player player) {
-        return player.level() == level && player.level().getBlockEntity(position) instanceof AirConditionerBlockEntity
+        return player == owner && player.level() == level && player.level().getBlockEntity(position) instanceof AirConditionerBlockEntity
                 && player.distanceToSqr(position.getX() + 0.5, position.getY() + 0.5, position.getZ() + 0.5) <= 64;
     }
 
     @Override public boolean clickMenuButton(Player player, int button) {
-        if (player.level().isClientSide || button < 0 || button > MAX_TARGET || !stillValid(player)) return false;
+        if (player.level().isClientSide || button < 0 || button > TOGGLE_POWER || !stillValid(player)) return false;
         if (player.level().getBlockEntity(position) instanceof AirConditionerBlockEntity unit) {
-            unit.setClimate(CropClimate.values()[button]);
+            if (button == TOGGLE_POWER) unit.setEnabled(!unit.enabled());
+            else unit.setClimate(CropClimate.values()[button]);
             broadcastChanges();
             return true;
         }

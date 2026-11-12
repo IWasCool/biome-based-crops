@@ -11,6 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -28,8 +29,12 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
     private static final int CLIMATE_X = 42, CLIMATE_Y = 57;
     private static final int CLIMATE_ARROW_WIDTH = 18, CLIMATE_WIDTH = 80, CLIMATE_GAP = 4;
     private static final int CLIMATE_CENTER_X = CLIMATE_X + CLIMATE_ARROW_WIDTH + CLIMATE_GAP + CLIMATE_WIDTH / 2;
+    private static final int POWER_Y = 84, POWER_WIDTH = CLIMATE_ARROW_WIDTH * 2 + CLIMATE_WIDTH + CLIMATE_GAP * 2;
     private CropClimate selectedClimate;
     private int pendingTicks;
+    private Button powerButton;
+    private boolean displayedEnabled, requestedEnabled;
+    private int powerPendingTicks;
 
     public AirConditionerScreen(AirConditionerMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -40,6 +45,8 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
     @Override protected void init() {
         super.init();
         selectedClimate = menu.targetClimate();
+        displayedEnabled = menu.enabled();
+        powerPendingTicks = 0;
         addRenderableWidget(Button.builder(Component.literal("<"), button -> cycleClimate(-1))
                 .bounds(leftPos + CLIMATE_X, topPos + CLIMATE_Y, CLIMATE_ARROW_WIDTH, 20)
                 .createNarration(message -> Component.translatable("biome_based_crops.ac.previous_climate")).build());
@@ -50,7 +57,28 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
                 .bounds(leftPos + CLIMATE_X + CLIMATE_ARROW_WIDTH + CLIMATE_WIDTH + CLIMATE_GAP * 2,
                         topPos + CLIMATE_Y, CLIMATE_ARROW_WIDTH, 20)
                 .createNarration(message -> Component.translatable("biome_based_crops.ac.next_climate")).build());
+        powerButton = addRenderableWidget(Button.builder(powerLabel(), button -> togglePower())
+                .bounds(leftPos + CLIMATE_X, topPos + POWER_Y, POWER_WIDTH, 20)
+                .createNarration(message -> powerDescription().copy()).build());
+        powerButton.setTooltip(Tooltip.create(powerDescription()));
         addRenderableWidget(new RoomStatusIndicator(leftPos + STATUS_X, topPos + STATUS_Y));
+    }
+
+    private Component powerLabel() {
+        return Component.translatable(displayedEnabled ? "options.on" : "options.off")
+                .withStyle(displayedEnabled ? ChatFormatting.GREEN : ChatFormatting.RED);
+    }
+
+    private Component powerDescription() {
+        return title.copy().append(": ").append(powerLabel());
+    }
+
+    private void togglePower() {
+        if (minecraft.gameMode == null || powerPendingTicks > 0) return;
+        requestedEnabled = !menu.enabled();
+        powerPendingTicks = 20;
+        powerButton.active = false;
+        minecraft.gameMode.handleInventoryButtonClick(menu.containerId, AirConditionerMenu.TOGGLE_POWER);
     }
 
     private void cycleClimate(int direction) {
@@ -71,6 +99,16 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
         if (pendingTicks > 0) pendingTicks--;
         if (pendingTicks == 0 || menu.targetClimate() == selectedClimate) {
             selectedClimate = menu.targetClimate();
+        }
+        if (powerPendingTicks > 0) {
+            powerPendingTicks--;
+            if (menu.enabled() == requestedEnabled) powerPendingTicks = 0;
+        }
+        powerButton.active = powerPendingTicks == 0;
+        if (displayedEnabled != menu.enabled()) {
+            displayedEnabled = menu.enabled();
+            powerButton.setMessage(powerLabel());
+            powerButton.setTooltip(Tooltip.create(powerDescription()));
         }
     }
 

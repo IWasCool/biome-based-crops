@@ -23,6 +23,7 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
     public static final int MAX_RECEIVE = 10_000;
     private final Battery battery = new Battery();
     private CropClimate selectedClimate = CropClimate.NEUTRAL;
+    private boolean enabled = true;
     private RoomClimateState lastRoomState;
     private long lastTickedGameTime = Long.MIN_VALUE;
     private long lastPaidTick = Long.MIN_VALUE;
@@ -32,18 +33,19 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
     }
 
     public CropClimate selectedClimate() { return selectedClimate; }
+    public boolean enabled() { return enabled; }
     public CropClimate outletClimate() { return selectedClimate; }
     public int energyStored() { return battery.getEnergyStored(); }
     public IEnergyStorage energyStorage() { return battery; }
     public IEnergyStorage energy() { return battery; }
     public boolean hasPaidAirflow() {
-        return level != null && !isRemoved() && getBlockState().getValue(AirConditionerBlock.ACTIVE)
+        return enabled && level != null && !isRemoved() && getBlockState().getValue(AirConditionerBlock.ACTIVE)
                 && (level.isClientSide || lastPaidTick >= level.getGameTime() - 1);
     }
     public boolean hasThermalInfluence() { return hasPaidAirflow(); }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, AirConditionerBlockEntity unit) {
-        if (state.getValue(AirConditionerBlock.ACTIVE)) {
+        if (unit.enabled && state.getValue(AirConditionerBlock.ACTIVE)) {
             AirConditionerBlock.emitAirflow(level, pos, state);
             AirConditionerBlock.emitIntakeAirflow(level, pos, state);
         }
@@ -77,7 +79,7 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
         return state == null ? 0 : state.roomVolume();
     }
     public int currentEnergyCost() {
-        if (level == null) return 0;
+        if (!enabled || level == null) return 0;
         RoomClimateState state = roomState(false);
         CropClimate natural = state == null ? localClimate() : state.naturalClimate();
         boolean breathable = state == null ? NorthstarAtmosphere.naturalAtmosphereBreathable(level) : state.naturalBreathable();
@@ -90,6 +92,19 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
         updateTargetIndicator();
         changed(true);
     }
+    public void setEnabled(boolean enabled) {
+        if (this.enabled == enabled) return;
+        this.enabled = enabled;
+        if (!enabled) {
+            lastPaidTick = Long.MIN_VALUE;
+            if (level != null && !level.isClientSide) {
+                RoomClimateState room = roomState(false);
+                if (room != null) room.removeDrive(worldPosition.asLong());
+                setActive(false);
+            }
+        }
+        changed(true);
+    }
     private void updateTargetIndicator() {
         if (level == null || level.isClientSide) return;
         BlockState state = getBlockState();
@@ -97,6 +112,7 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
             level.setBlock(worldPosition, state.setValue(AirConditionerBlock.CLIMATE, selectedClimate), Block.UPDATE_CLIENTS);
     }
     public boolean canProvideClimate(CropClimate climate) {
+        if (!enabled) return false;
         RoomClimateState state = roomState(false);
         return state != null && state.breathable() && state.climateAt(worldPosition, level.getGameTime()) == climate;
     }
@@ -105,6 +121,12 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
         if (level.isClientSide || unit.lastTickedGameTime == level.getGameTime()) return;
         unit.lastTickedGameTime = level.getGameTime();
         unit.updateTargetIndicator();
+        if (!unit.enabled) {
+            unit.lastPaidTick = Long.MIN_VALUE;
+            if (unit.lastRoomState != null) unit.lastRoomState.removeDrive(pos.asLong());
+            unit.setActive(false);
+            return;
+        }
         RoomClimateState room = unit.roomState(true);
         int cost = unit.currentEnergyCost();
         boolean working = cost > 0 && !level.hasNeighborSignal(pos) && unit.battery.getEnergyStored() >= cost;
@@ -143,10 +165,12 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
         super.saveAdditional(tag, registries);
         tag.putInt("Energy", battery.getEnergyStored());
         tag.putString("Climate", selectedClimate.name());
+        tag.putBoolean("Enabled", enabled);
     }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         battery.load(tag.getInt("Energy"));
+        enabled = !tag.contains("Enabled") || tag.getBoolean("Enabled");
         selectedClimate = tag.contains("Climate")
                 ? CropClimate.byId(tag.getString("Climate")).orElse(CropClimate.NEUTRAL)
                 : tag.contains("TargetTemperature") ? LegacyClimate.fromCelsius(tag.getInt("TargetTemperature")) : CropClimate.NEUTRAL;
