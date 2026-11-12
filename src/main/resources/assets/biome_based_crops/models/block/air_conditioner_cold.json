@@ -1,0 +1,6 @@
+{
+  "parent": "biome_based_crops:block/air_conditioner",
+  "textures": {
+    "front": "biome_based_crops:block/air_conditioner_front"
+  }
+}

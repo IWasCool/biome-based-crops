@@ -22,17 +22,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public final class AirConditionerBlock extends BaseEntityBlock {
     public static final MapCodec<AirConditionerBlock> CODEC = simpleCodec(AirConditionerBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
-    public static final BooleanProperty WARM = BooleanProperty.create("warm");
+    public static final EnumProperty<CropClimate> CLIMATE = EnumProperty.create("climate", CropClimate.class);
 
     public AirConditionerBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false).setValue(WARM, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false).setValue(CLIMATE, CropClimate.NEUTRAL));
     }
 
     @Override protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
@@ -43,7 +44,7 @@ public final class AirConditionerBlock extends BaseEntityBlock {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(FACING, ACTIVE, WARM); }
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(FACING, ACTIVE, CLIMATE); }
     @Override protected BlockState rotate(BlockState state, Rotation rotation) { return state.setValue(FACING, rotation.rotate(state.getValue(FACING))); }
     @Override protected BlockState mirror(BlockState state, Mirror mirror) { return state.rotate(mirror.getRotation(state.getValue(FACING))); }
 

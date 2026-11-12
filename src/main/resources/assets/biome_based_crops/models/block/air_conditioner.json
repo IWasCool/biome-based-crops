@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "front": "biome_based_crops:block/air_conditioner_front",
+    "front": "biome_based_crops:block/air_conditioner_front_neutral",
     "back": "biome_based_crops:block/air_conditioner_back",
     "side": "biome_based_crops:block/air_conditioner_side",
     "top": "biome_based_crops:block/air_conditioner_top",

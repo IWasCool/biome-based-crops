@@ -93,9 +93,8 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
     private void updateTargetIndicator() {
         if (level == null || level.isClientSide) return;
         BlockState state = getBlockState();
-        boolean warm = selectedClimate == CropClimate.WARM || selectedClimate == CropClimate.HOT;
-        if (state.getValue(AirConditionerBlock.WARM) != warm)
-            level.setBlock(worldPosition, state.setValue(AirConditionerBlock.WARM, warm), Block.UPDATE_CLIENTS);
+        if (state.getValue(AirConditionerBlock.CLIMATE) != selectedClimate)
+            level.setBlock(worldPosition, state.setValue(AirConditionerBlock.CLIMATE, selectedClimate), Block.UPDATE_CLIENTS);
     }
     public boolean canProvideClimate(CropClimate climate) {
         RoomClimateState state = roomState(false);

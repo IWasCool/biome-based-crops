@@ -46,11 +46,30 @@ public final class AirConditionerGameTests {
                     .setValue(AirConditionerBlock.ACTIVE, active), Block.UPDATE_ALL);
             for (CropClimate climate : CropClimate.values()) {
                 unit.setClimate(climate);
-                boolean warm = climate == CropClimate.WARM || climate == CropClimate.HOT;
-                helper.assertTrue(unit.getBlockState().getValue(AirConditionerBlock.WARM) == warm, "Wrong indicator for " + climate);
+                helper.assertTrue(unit.getBlockState().getValue(AirConditionerBlock.CLIMATE) == climate, "Wrong indicator for " + climate);
                 helper.assertTrue(unit.getBlockState().getValue(AirConditionerBlock.ACTIVE) == active, "Selecting climate changed running state");
                 helper.assertTrue(unit.getBlockState().getValue(AirConditionerBlock.FACING) == facing, "Selecting climate rotated controller");
             }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "air_conditioners")
+    public static void loadedTargetRestoresFrontIndicatorOnFirstTick(GameTestHelper helper) {
+        AirConditionerBlockEntity unit = place(helper);
+        for (CropClimate climate : CropClimate.values()) {
+            // Old chunks have no categorical indicator property, so load with its default state.
+            helper.getLevel().setBlock(unit.getBlockPos(), unit.getBlockState()
+                    .setValue(AirConditionerBlock.CLIMATE, CropClimate.NEUTRAL)
+                    .setValue(AirConditionerBlock.FACING, Direction.EAST), Block.UPDATE_ALL);
+            var saved = unit.saveWithoutMetadata(helper.getLevel().registryAccess());
+            saved.putString("Climate", climate.name());
+            unit.loadWithComponents(saved, helper.getLevel().registryAccess());
+            AirConditionerBlockEntity.serverTick(helper.getLevel(), unit.getBlockPos(), unit.getBlockState(), unit);
+            helper.assertTrue(unit.getBlockState().getValue(AirConditionerBlock.CLIMATE) == climate,
+                    "First tick did not restore saved indicator for " + climate);
+            helper.assertTrue(unit.getBlockState().getValue(AirConditionerBlock.FACING) == Direction.EAST,
+                    "Restoring indicator rotated controller");
         }
         helper.succeed();
     }

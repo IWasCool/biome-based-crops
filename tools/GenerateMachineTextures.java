@@ -10,7 +10,9 @@ class GenerateMachineTextures {
     // Muted green-gray metal and charcoal sampled from Power Grid's electric machines.
     static final int BODY = 0x8F9691, EDGE = 0x505351, LIGHT = 0xA8B3AB,
             SHADE = 0x707570, DARK = 0x353438,
-            BLADE = 0x767C78, HUB = BODY, BLUE = 0x58B5E0, ORANGE = 0xE9934D;
+            BLADE = 0x767C78, HUB = BODY;
+    static final int ICY = 0x93E8E8, COLD = 0x5D86DE, NEUTRAL = 0xC4CBC6,
+            WARM = 0xE9D063, HOT = 0xE9934D;
 
     static void rect(BufferedImage image, int x, int y, int w, int h, int color) {
         for (int j = y; j < y + h; j++) for (int i = x; i < x + w; i++)
@@ -26,7 +28,7 @@ class GenerateMachineTextures {
         return image;
     }
 
-    static BufferedImage front(boolean warm) {
+    static BufferedImage front(int indicator) {
         var image = casing();
         rect(image, 2, 3, 12, 6, DARK);
         rect(image, 2, 4, 12, 1, SHADE);
@@ -34,9 +36,9 @@ class GenerateMachineTextures {
         rect(image, 2, 8, 12, 1, SHADE);
         rect(image, 2, 11, 3, 2, EDGE);
         rect(image, 9, 11, 5, 2, DARK);
-        rect(image, 10, 11, 1, 1, warm ? ORANGE : BLUE);
-        rect(image, 12, 11, 1, 1, warm ? ORANGE : BLUE);
-        rect(image, 11, 12, 2, 1, warm ? ORANGE : BLUE);
+        rect(image, 10, 11, 1, 1, indicator);
+        rect(image, 12, 11, 1, 1, indicator);
+        rect(image, 11, 12, 2, 1, indicator);
         return image;
     }
 
@@ -104,9 +106,18 @@ class GenerateMachineTextures {
         ImageIO.write(image, "PNG", path.toFile());
     }
 
+    static void saveFronts() throws IOException {
+        save("block/air_conditioner_front_icy", front(ICY));
+        save("block/air_conditioner_front", front(COLD));
+        save("block/air_conditioner_front_neutral", front(NEUTRAL));
+        save("block/air_conditioner_front_warm", front(WARM));
+        save("block/air_conditioner_front_hot", front(HOT));
+    }
+
     public static void main(String[] args) throws IOException {
-        save("block/air_conditioner_front", front(false));
-        save("block/air_conditioner_front_warm", front(true));
+        saveFronts();
+        // Recolor the indicator without regenerating hand-edited casing/fan assets.
+        if (args.length == 1 && args[0].equals("--fronts-only")) return;
         var side = casing();
         rect(side, 3, 3, 10, 10, SHADE);
         rect(side, 4, 4, 8, 8, BODY);

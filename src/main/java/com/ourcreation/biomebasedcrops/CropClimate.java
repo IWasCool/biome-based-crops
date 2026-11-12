@@ -11,10 +11,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.biome.Biome;
 import net.neoforged.neoforge.common.Tags;
 
-public enum CropClimate {
+public enum CropClimate implements StringRepresentable {
     ICY("icy", "Icy", ChatFormatting.AQUA),
     COLD("cold", "Cold", ChatFormatting.BLUE),
     NEUTRAL("neutral", "Neutral", ChatFormatting.GRAY),
@@ -84,5 +85,10 @@ public enum CropClimate {
 
     public String label() {
         return label;
+    }
+
+    @Override
+    public String getSerializedName() {
+        return id;
     }
 }

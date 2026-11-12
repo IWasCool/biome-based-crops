@@ -1,63 +1,153 @@
 {
   "variants": {
-    "facing=north,active=false,warm=false": {
+    "facing=north,active=false,climate=icy": {
+      "model": "biome_based_crops:block/air_conditioner_icy"
+    },
+    "facing=north,active=false,climate=cold": {
+      "model": "biome_based_crops:block/air_conditioner_cold"
+    },
+    "facing=north,active=false,climate=neutral": {
       "model": "biome_based_crops:block/air_conditioner"
     },
-    "facing=north,active=false,warm=true": {
+    "facing=north,active=false,climate=warm": {
       "model": "biome_based_crops:block/air_conditioner_warm"
     },
-    "facing=north,active=true,warm=false": {
+    "facing=north,active=false,climate=hot": {
+      "model": "biome_based_crops:block/air_conditioner_hot"
+    },
+    "facing=north,active=true,climate=icy": {
+      "model": "biome_based_crops:block/air_conditioner_on_icy"
+    },
+    "facing=north,active=true,climate=cold": {
+      "model": "biome_based_crops:block/air_conditioner_on_cold"
+    },
+    "facing=north,active=true,climate=neutral": {
       "model": "biome_based_crops:block/air_conditioner_on"
     },
-    "facing=north,active=true,warm=true": {
+    "facing=north,active=true,climate=warm": {
       "model": "biome_based_crops:block/air_conditioner_on_warm"
     },
-    "facing=east,active=false,warm=false": {
+    "facing=north,active=true,climate=hot": {
+      "model": "biome_based_crops:block/air_conditioner_on_hot"
+    },
+    "facing=east,active=false,climate=icy": {
+      "model": "biome_based_crops:block/air_conditioner_icy",
+      "y": 90
+    },
+    "facing=east,active=false,climate=cold": {
+      "model": "biome_based_crops:block/air_conditioner_cold",
+      "y": 90
+    },
+    "facing=east,active=false,climate=neutral": {
       "model": "biome_based_crops:block/air_conditioner",
       "y": 90
     },
-    "facing=east,active=false,warm=true": {
+    "facing=east,active=false,climate=warm": {
       "model": "biome_based_crops:block/air_conditioner_warm",
       "y": 90
     },
-    "facing=east,active=true,warm=false": {
+    "facing=east,active=false,climate=hot": {
+      "model": "biome_based_crops:block/air_conditioner_hot",
+      "y": 90
+    },
+    "facing=east,active=true,climate=icy": {
+      "model": "biome_based_crops:block/air_conditioner_on_icy",
+      "y": 90
+    },
+    "facing=east,active=true,climate=cold": {
+      "model": "biome_based_crops:block/air_conditioner_on_cold",
+      "y": 90
+    },
+    "facing=east,active=true,climate=neutral": {
       "model": "biome_based_crops:block/air_conditioner_on",
       "y": 90
     },
-    "facing=east,active=true,warm=true": {
+    "facing=east,active=true,climate=warm": {
       "model": "biome_based_crops:block/air_conditioner_on_warm",
       "y": 90
     },
-    "facing=south,active=false,warm=false": {
+    "facing=east,active=true,climate=hot": {
+      "model": "biome_based_crops:block/air_conditioner_on_hot",
+      "y": 90
+    },
+    "facing=south,active=false,climate=icy": {
+      "model": "biome_based_crops:block/air_conditioner_icy",
+      "y": 180
+    },
+    "facing=south,active=false,climate=cold": {
+      "model": "biome_based_crops:block/air_conditioner_cold",
+      "y": 180
+    },
+    "facing=south,active=false,climate=neutral": {
       "model": "biome_based_crops:block/air_conditioner",
       "y": 180
     },
-    "facing=south,active=false,warm=true": {
+    "facing=south,active=false,climate=warm": {
       "model": "biome_based_crops:block/air_conditioner_warm",
       "y": 180
     },
-    "facing=south,active=true,warm=false": {
+    "facing=south,active=false,climate=hot": {
+      "model": "biome_based_crops:block/air_conditioner_hot",
+      "y": 180
+    },
+    "facing=south,active=true,climate=icy": {
+      "model": "biome_based_crops:block/air_conditioner_on_icy",
+      "y": 180
+    },
+    "facing=south,active=true,climate=cold": {
+      "model": "biome_based_crops:block/air_conditioner_on_cold",
+      "y": 180
+    },
+    "facing=south,active=true,climate=neutral": {
       "model": "biome_based_crops:block/air_conditioner_on",
       "y": 180
     },
-    "facing=south,active=true,warm=true": {
+    "facing=south,active=true,climate=warm": {
       "model": "biome_based_crops:block/air_conditioner_on_warm",
       "y": 180
     },
-    "facing=west,active=false,warm=false": {
+    "facing=south,active=true,climate=hot": {
+      "model": "biome_based_crops:block/air_conditioner_on_hot",
+      "y": 180
+    },
+    "facing=west,active=false,climate=icy": {
+      "model": "biome_based_crops:block/air_conditioner_icy",
+      "y": 270
+    },
+    "facing=west,active=false,climate=cold": {
+      "model": "biome_based_crops:block/air_conditioner_cold",
+      "y": 270
+    },
+    "facing=west,active=false,climate=neutral": {
       "model": "biome_based_crops:block/air_conditioner",
       "y": 270
     },
-    "facing=west,active=false,warm=true": {
+    "facing=west,active=false,climate=warm": {
       "model": "biome_based_crops:block/air_conditioner_warm",
       "y": 270
     },
-    "facing=west,active=true,warm=false": {
+    "facing=west,active=false,climate=hot": {
+      "model": "biome_based_crops:block/air_conditioner_hot",
+      "y": 270
+    },
+    "facing=west,active=true,climate=icy": {
+      "model": "biome_based_crops:block/air_conditioner_on_icy",
+      "y": 270
+    },
+    "facing=west,active=true,climate=cold": {
+      "model": "biome_based_crops:block/air_conditioner_on_cold",
+      "y": 270
+    },
+    "facing=west,active=true,climate=neutral": {
       "model": "biome_based_crops:block/air_conditioner_on",
       "y": 270
     },
-    "facing=west,active=true,warm=true": {
+    "facing=west,active=true,climate=warm": {
       "model": "biome_based_crops:block/air_conditioner_on_warm",
+      "y": 270
+    },
+    "facing=west,active=true,climate=hot": {
+      "model": "biome_based_crops:block/air_conditioner_on_hot",
       "y": 270
     }
   }
