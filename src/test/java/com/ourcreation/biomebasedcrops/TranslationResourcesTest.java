@@ -92,7 +92,7 @@ class TranslationResourcesTest {
     }
 
     @Test
-    void notebookNamesAndControllerGuidanceStayCurrentInEveryLocale() throws IOException {
+    void notebookNamesAndClimateHeadingsStayCurrentInEveryLocale() throws IOException {
         try (var paths = Files.list(LANG)) {
             for (Path path : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
                 JsonObject language = JsonParser.parseString(Files.readString(path, StandardCharsets.UTF_8)).getAsJsonObject();
@@ -103,8 +103,7 @@ class TranslationResourcesTest {
                 assertTrue(language.get("biome_based_crops.message.blocked_biomes").getAsString().contains("Biomes Notebook"),
                         path + " must point readers to the current notebook name");
                 String setup = language.get("biome_based_crops.guide.setup_text").getAsString();
-                assertTrue(setup.contains("Tough As Nails") && setup.contains("Sable"),
-                        path + " must include the current controller and ship guidance");
+                assertFalse(setup.contains("Sable"), path + " setup should stay focused on greenhouse construction");
                 assertEquals(List.of(1), arguments(language.get("biome_based_crops.guide.required_climate").getAsString()),
                         path + " climate headings need the selected climate argument");
             }
