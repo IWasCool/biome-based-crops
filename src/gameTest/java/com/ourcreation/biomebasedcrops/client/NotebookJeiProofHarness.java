@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.ourcreation.biomebasedcrops.BiomeBasedCrops;
 import com.ourcreation.biomebasedcrops.client.viewer.GreenhouseViewerBridge;
 import mezz.jei.api.runtime.IJeiRuntime;
+import mezz.jei.gui.elements.IconButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -111,17 +112,27 @@ public final class NotebookJeiProofHarness {
             sample.addProperty("windowHeight", mc.getWindow().getHeight());
             boolean listDisplayed = ((IJeiRuntime) runtime).getIngredientListOverlay().isListDisplayed();
             sample.addProperty("ingredientListDisplayed", listDisplayed);
-            if ((expectedBook || stage == 4) && !listDisplayed) throw new IllegalStateException("JEI ingredient list is not displayed");
+            if (stage == 4 && !listDisplayed) throw new IllegalStateException("Normal inventory JEI list is not displayed");
+            if (expectedBook || stage == 4) {
+                JsonArray buttons = new JsonArray();
+                IJeiRuntime jei = (IJeiRuntime) runtime;
+                checkButton(buttons, jei.getIngredientListOverlay(), "configButton", expectedBook);
+                checkButton(buttons, jei.getBookmarkOverlay(), "bookmarkButton", expectedBook);
+                checkButton(buttons, jei.getBookmarkOverlay(), "historyButton", expectedBook);
+                sample.add("utilityButtons", buttons);
+            }
             if (mc.screen instanceof FieldGuideScreen guide) {
                 var bounds = guide.bookBounds();
                 sample.addProperty("bookX", bounds.getX()); sample.addProperty("bookY", bounds.getY());
                 sample.addProperty("bookWidth", bounds.getWidth()); sample.addProperty("bookHeight", bounds.getHeight());
-                Object layout = FieldGuideScreen.class.getMethod("jeiLayout").invoke(guide);
-                sample.add("jeiLayout", new GsonBuilder().create().toJsonTree(layout));
-                if (!Boolean.TRUE.equals(FieldGuideScreen.class.getMethod("hasJeiBottomPanels").invoke(guide)))
-                    throw new IllegalStateException("Notebook bottom JEI panels are not enabled");
+                int expectedWidth = Math.min(456, guide.width - 12);
+                int expectedHeight = Math.min(300, guide.height - 12);
+                if (bounds.getWidth() != expectedWidth || bounds.getHeight() != expectedHeight
+                        || bounds.getX() != (guide.width - expectedWidth) / 2
+                        || bounds.getY() != (guide.height - expectedHeight) / 2)
+                    throw new IllegalStateException("Notebook no longer has its original centered bounds");
             }
-            String filename = "notebook-jei-" + NAMES[stage] + ".png";
+            String filename = "notebook-jei-buttons-" + NAMES[stage] + ".png";
             sample.addProperty("screenshot", "screenshots/" + filename);
             CAPTURES.add(sample);
             Screenshot.grab(mc.gameDirectory, filename, mc.getMainRenderTarget(), message -> SAVED.incrementAndGet());
@@ -134,6 +145,23 @@ public final class NotebookJeiProofHarness {
         }
     }
 
+    private static void checkButton(JsonArray states, Object owner, String fieldName, boolean hidden)
+            throws ReflectiveOperationException {
+        var field = owner.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        IconButton button = (IconButton) field.get(owner);
+        boolean visible = button.isVisible();
+        boolean hoverable = button.isMouseOver(button.getX() + button.getWidth() / 2.0,
+                button.getY() + button.getHeight() / 2.0);
+        JsonObject state = new JsonObject();
+        state.addProperty("button", fieldName);
+        state.addProperty("visible", visible);
+        state.addProperty("hoverable", hoverable);
+        states.add(state);
+        if (visible == hidden || hoverable == hidden)
+            throw new IllegalStateException(fieldName + " has incorrect visibility/hover state");
+    }
+
     private static void finish(Minecraft mc, String failure) {
         if (done) return;
         done = true;
@@ -142,7 +170,7 @@ public final class NotebookJeiProofHarness {
             mc.setScreen(null);
             var directory = mc.gameDirectory.toPath().toAbsolutePath().normalize();
             if (failure == null) for (String name : NAMES)
-                if (!Files.isRegularFile(directory.resolve("screenshots/notebook-jei-" + name + ".png")))
+                if (!Files.isRegularFile(directory.resolve("screenshots/notebook-jei-buttons-" + name + ".png")))
                     failure = "Missing saved screenshot for " + name;
             JsonObject report = new JsonObject();
             report.addProperty("complete", failure == null);
@@ -152,7 +180,7 @@ public final class NotebookJeiProofHarness {
             report.addProperty("savedScreenshots", SAVED.get());
             report.add("captures", CAPTURES);
             Files.createDirectories(directory);
-            Files.writeString(directory.resolve("notebook-jei-proof.json"), new GsonBuilder().setPrettyPrinting().create().toJson(report));
+            Files.writeString(directory.resolve("notebook-jei-buttons-proof.json"), new GsonBuilder().setPrettyPrinting().create().toJson(report));
             BiomeBasedCrops.LOGGER.info("[NOTEBOOK_JEI_PROOF] {}", failure == null ? "Complete" : failure);
         } catch (Throwable error) {
             BiomeBasedCrops.LOGGER.error("[NOTEBOOK_JEI_PROOF] Could not write proof report", error);

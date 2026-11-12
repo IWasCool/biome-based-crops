@@ -26,18 +26,6 @@ import org.jetbrains.annotations.Nullable;
 public final class GreenhouseViewerBridge {
     private GreenhouseViewerBridge() {}
 
-    /** Reserve a bottom drawer only for the active JEI integration, without loading its classes otherwise. */
-    public static int jeiBottomPanelHeight() {
-        if (!ModList.get().isLoaded("jei") || ModList.get().isLoaded("emi")
-                || ModList.get().isLoaded("roughlyenoughitems")) return 0;
-        try {
-            return GreenhouseJeiPlugin.bottomPanelHeight();
-        } catch (RuntimeException | LinkageError error) {
-            BiomeBasedCrops.LOGGER.debug("JEI could not size the notebook drawer", error);
-            return 0;
-        }
-    }
-
     /** Viewer screen-change hooks can run before Minecraft initializes the new screen. */
     @Nullable
     static Rect2i initializedBounds(FieldGuideScreen screen) {

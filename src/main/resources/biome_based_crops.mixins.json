@@ -15,8 +15,8 @@
     "ToughAsNailsThermoregulatorEffectMixin"
   ],
   "client": [
-    "JeiNotebookIngredientLayoutMixin",
-    "JeiNotebookBookmarkLayoutMixin"
+    "JeiNotebookUtilityButtonMixin",
+    "JeiNotebookUtilityButtonInputMixin"
   ],
   "injectors": {
     "defaultRequire": 1
