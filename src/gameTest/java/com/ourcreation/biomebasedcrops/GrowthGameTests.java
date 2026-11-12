@@ -334,7 +334,7 @@ public final class GrowthGameTests {
             BlockPos first = crop.west();
             BlockPos second = crop.east();
             Block regulator = regulatorBlock();
-            CropProfile cold = new CropProfile(Set.of(CropClimate.COLD));
+            CropProfile icy = new CropProfile(Set.of(CropClimate.ICY));
             CropProfile neutral = new CropProfile(Set.of(CropClimate.NEUTRAL));
             // Use real registered TAN properties, exercising identity-keyed state
             // access as well as the pure mode mapping covered by JUnit.
@@ -349,21 +349,21 @@ public final class GrowthGameTests {
                     .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Block.UPDATE_ALL);
             level.setBlock(second, regulatorState(regulator, true, false, true)
                     .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
-            helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Heating or inactive regulator supported cold crops");
+            helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, icy), "Heating or inactive regulator supported icy crops");
 
             level.setBlock(second, regulatorState(regulator, true, true, false)
                     .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
-            helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Inactive regulator hid a later active cooling regulator");
-            CropProfile biomeRestricted = new CropProfile(Set.of(CropClimate.COLD),
+            helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, crop, icy), "Inactive regulator hid a later active cooling regulator");
+            CropProfile biomeRestricted = new CropProfile(Set.of(CropClimate.ICY),
                     List.of(BiomeSelector.parse("minecraft:jungle").orElseThrow()));
             helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, biomeRestricted),
                     "Cooling regulator bypassed an explicit biome requirement");
             level.setBlock(second, regulatorState(regulator, false, true, false)
                     .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
-            helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Disabled regulator remained active");
+            helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, icy), "Disabled regulator remained active");
             level.setBlock(second, regulatorState(regulator, true, true, true)
                     .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
-            helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Both fuels incorrectly provided a cold climate");
+            helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, icy), "Both fuels incorrectly provided an icy climate");
             helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, crop, neutral), "Both fuels did not provide a neutral climate");
 
             level.removeBlock(second, false);
@@ -384,13 +384,14 @@ public final class GrowthGameTests {
             BlockPos crop = new BlockPos(boundaryX - 1, origin.getY() + 2, origin.getZ() + 6);
             BlockPos machine = crop.east();
             BlockState previous = level.getBlockState(machine);
-            CropProfile cold = new CropProfile(Set.of(CropClimate.COLD));
+            CropProfile icy = new CropProfile(Set.of(CropClimate.ICY));
             try {
                 level.setBlock(machine, regulatorState(regulatorBlock(), true, true, false)
                         .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
-                helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Loaded regulator across a chunk boundary was missed");
-                helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop.west(4), cold), "Regulator outside the horizontal radius was counted");
-                helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop.below(4), cold), "Regulator above the vertical range was counted");
+                helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, crop, icy), "Loaded regulator across a chunk boundary was missed");
+                helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop.west(4), icy), "Regulator supplied its core climate after returning to the native icy biome");
+                helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop.west(7), icy), "Regulator outside its transition range was counted");
+                helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop.below(4), icy), "Regulator above the vertical range was counted");
             } finally {
                 level.setBlock(machine, previous, Block.UPDATE_ALL);
             }
@@ -398,9 +399,10 @@ public final class GrowthGameTests {
             BlockPos remote = new BlockPos(1_000_000, crop.getY(), 1_000_000);
             helper.assertTrue(level.getChunkSource().getChunkNow(remote.getX() >> 4, remote.getZ() >> 4) == null,
                     "Remote test chunk was unexpectedly loaded before lookup");
-            helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, remote, cold), "An unloaded area supplied an artificial climate");
-            for (int x = (remote.getX() - 4) >> 4; x <= (remote.getX() + 4) >> 4; x++) {
-                for (int z = (remote.getZ() - 4) >> 4; z <= (remote.getZ() + 4) >> 4; z++) {
+            helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, remote, icy), "An unloaded area supplied an artificial climate");
+            int reach = AirConditionerAirflow.INFLUENCE_REACH;
+            for (int x = (remote.getX() - reach) >> 4; x <= (remote.getX() + reach) >> 4; x++) {
+                for (int z = (remote.getZ() - reach) >> 4; z <= (remote.getZ() + reach) >> 4; z++) {
                     helper.assertTrue(level.getChunkSource().getChunkNow(x, z) == null, "Regulator lookup loaded a remote chunk");
                 }
             }

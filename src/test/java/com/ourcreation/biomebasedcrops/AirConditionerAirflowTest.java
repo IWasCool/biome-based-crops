@@ -1,5 +1,6 @@
 package com.ourcreation.biomebasedcrops;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -55,6 +56,39 @@ class AirConditionerAirflowTest {
             assertOutside(face, front.above(2));
             assertOutside(face, front.below(2));
         }
+    }
+
+    @Test
+    void everyTargetKeepsItsFourBlockCoreThenReturnsOneCategoryPerBlockToAnyNativeClimate() {
+        CropClimate[] climates = CropClimate.values();
+        for (CropClimate target : climates) for (CropClimate natural : climates) {
+            for (Direction face : Direction.Plane.HORIZONTAL) {
+                CropClimate previous = target;
+                for (int distance = 1; distance <= 9; distance++) {
+                    CropClimate actual = AirConditionerAirflow.falloffClimate(target, natural, MACHINE, MACHINE.relative(face, distance));
+                    if (distance <= 4) assertEquals(target, actual, "Core changed for " + target + " / " + natural);
+                    else {
+                        assertTrue(Math.abs(actual.ordinal() - previous.ordinal()) <= 1, "Skipped a climate category");
+                        assertTrue(Math.abs(actual.ordinal() - natural.ordinal()) <= Math.abs(previous.ordinal() - natural.ordinal()), "Moved away from native climate");
+                        if (previous != natural) assertTrue(actual != previous, "Falloff failed to advance by one category");
+                    }
+                    if (distance >= 8) assertEquals(natural, actual, "Falloff overshot ambient");
+                    previous = actual;
+                }
+            }
+        }
+    }
+
+    @Test
+    void circularFalloffUsesHorizontalAnnuliRatherThanSquareDistanceOrVerticalOffset() {
+        assertEquals(CropClimate.COLD, AirConditionerAirflow.falloffClimate(CropClimate.ICY, CropClimate.HOT,
+                MACHINE, MACHINE.offset(4, 1, 1)));
+        assertEquals(CropClimate.COLD, AirConditionerAirflow.falloffClimate(CropClimate.ICY, CropClimate.HOT,
+                MACHINE, MACHINE.offset(3, -1, 4)));
+        assertEquals(CropClimate.NEUTRAL, AirConditionerAirflow.falloffClimate(CropClimate.ICY, CropClimate.HOT,
+                MACHINE, MACHINE.offset(4, 0, 4)));
+        assertEquals(CropClimate.WARM, AirConditionerAirflow.falloffClimate(CropClimate.ICY, CropClimate.HOT,
+                MACHINE, MACHINE.offset(6, 0, 3)));
     }
 
     private static void assertInside(Direction face, BlockPos crop) {

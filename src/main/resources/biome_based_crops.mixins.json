@@ -11,7 +11,8 @@
     "SliceAndDiceFertilizerMixin",
     "GreenhouseBlockChangeMixin",
     "NorthstarRoomOxygenMixin",
-    "NorthstarRoomTemperatureMixin"
+    "NorthstarRoomTemperatureMixin",
+    "ToughAsNailsThermoregulatorEffectMixin"
   ],
   "injectors": {
     "defaultRequire": 1

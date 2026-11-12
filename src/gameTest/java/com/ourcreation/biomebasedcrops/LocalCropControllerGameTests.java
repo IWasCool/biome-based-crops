@@ -6,6 +6,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
@@ -58,11 +59,22 @@ public final class LocalCropControllerGameTests {
         withSettings(helper, () -> verifyCoverage(helper, true));
     }
 
+    @GameTest(template = "empty", skyAccess = true, batch = "local_crop_controllers")
+    public static void electricalClimateAndCropsFollowAmbientDependentTransitionRings(GameTestHelper helper) {
+        withSettings(helper, () -> verifyGradient(helper, false));
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "local_crop_controllers")
+    public static void fueledTanClimateAndCropsFollowAmbientDependentTransitionRings(GameTestHelper helper) {
+        if (!ModList.get().isLoaded("toughasnails")) { helper.succeed(); return; }
+        withSettings(helper, () -> verifyGradient(helper, true));
+    }
+
     private static void verifyActualGrowth(GameTestHelper helper, boolean tan) {
         ServerLevel level = helper.getLevel();
         BlockPos machine = helper.absolutePos(new BlockPos(8, 60, 8));
         BlockPos crop = machine.north(2);
-        for (CropClimate climate : new CropClimate[] { CropClimate.HOT, CropClimate.COLD }) {
+        for (CropClimate climate : new CropClimate[] { CropClimate.HOT, tan ? CropClimate.ICY : CropClimate.COLD }) {
             Config.CROP_CLIMATE_RULES.set(List.of("wheat=" + climate.name().toLowerCase(java.util.Locale.ROOT)));
             Config.CROP_BIOME_RULES.set(List.of());
             CropClimateRules.clearCache();
@@ -96,6 +108,46 @@ public final class LocalCropControllerGameTests {
             level.setBlock(machine, stopped, Block.UPDATE_CLIENTS);
             helper.assertFalse(CommonEvents.canGrowNaturally(level, crop, level.getBlockState(crop)),
                     "A stopped controller retained crop support");
+            level.removeBlock(machine, false);
+        }
+    }
+
+    private static void verifyGradient(GameTestHelper helper, boolean tan) {
+        ServerLevel level = helper.getLevel();
+        BlockPos machine = helper.absolutePos(new BlockPos(8, 60, 8));
+        CropClimate[][] expectedRows = {
+                { CropClimate.ICY, CropClimate.COLD, CropClimate.NEUTRAL, CropClimate.WARM, CropClimate.HOT },
+                { CropClimate.HOT, CropClimate.WARM, CropClimate.NEUTRAL, CropClimate.COLD, CropClimate.ICY },
+                { CropClimate.HOT, CropClimate.WARM, CropClimate.NEUTRAL, CropClimate.NEUTRAL, CropClimate.NEUTRAL }
+        };
+        for (CropClimate[] expected : expectedRows) {
+            CropClimate target = expected[0], natural = expected[4];
+            var registry = level.registryAccess().registryOrThrow(Registries.BIOME);
+            var nativeBiome = registry.holders().filter(holder -> CropClimate.at(holder, machine) == natural).findFirst().orElseThrow();
+            var sampler = level.getChunkSource().randomState().sampler();
+            for (int cx = (machine.getX() >> 4) - 1; cx <= (machine.getX() >> 4) + 1; cx++)
+                for (int cz = (machine.getZ() >> 4) - 1; cz <= (machine.getZ() >> 4) + 1; cz++)
+                    level.getChunk(cx, cz).fillBiomesFromNoise((x, y, z, unused) -> nativeBiome, sampler);
+            placeController(level, machine, tan);
+            activateController(level, machine, tan, target);
+            for (Direction face : Direction.Plane.HORIZONTAL) {
+                level.setBlock(machine, level.getBlockState(machine).setValue(BlockStateProperties.HORIZONTAL_FACING, face), Block.UPDATE_CLIENTS);
+                for (int distance = 1; distance <= 8; distance++) {
+                    BlockPos query = machine.relative(face, distance);
+                    CropClimate climate = expected[Math.max(0, distance - 4)];
+                    helper.assertTrue(GreenhouseEnvironment.currentClimate(level, query) == climate,
+                            "Wrong " + (tan ? "TAN" : "AC") + " transition at " + distance + " in " + natural + " facing " + face);
+                    helper.assertTrue(CommonEvents.canGrow(level, query, new CropProfile(Set.of(climate))), "Transition climate did not support matching crop");
+                    if (climate != target && natural != target)
+                        helper.assertFalse(CommonEvents.canGrow(level, query, new CropProfile(Set.of(target))), "Core climate leaked beyond its transition ring");
+                }
+                BlockPos barrier = machine.relative(face, 3);
+                level.setBlock(barrier, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+                helper.assertTrue(GreenhouseEnvironment.currentClimate(level, machine.relative(face, 5)) == natural, "Transition crossed a solid wall");
+                level.removeBlock(barrier, false);
+            }
+            level.setBlock(machine, level.getBlockState(machine).setValue(tan ? BlockStateProperties.ENABLED : AirConditionerBlock.ACTIVE, false), Block.UPDATE_CLIENTS);
+            helper.assertTrue(GreenhouseEnvironment.currentClimate(level, machine.north(5)) == natural, "Stopped controller retained transition ring");
             level.removeBlock(machine, false);
         }
     }

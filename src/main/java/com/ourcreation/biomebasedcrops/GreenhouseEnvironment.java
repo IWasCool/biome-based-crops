@@ -51,7 +51,8 @@ public final class GreenhouseEnvironment {
         return naturalClimate(level, at);
     }
 
-    private static CropClimate naturalClimate(Level level, BlockPos pos) {
+    /** Ambient climate at the current world position, without room or outlet conditioning. */
+    static CropClimate naturalClimate(Level level, BlockPos pos) {
         return NorthstarAtmosphere.naturalClimate(level, pos).orElseGet(() -> CropClimate.at(nativeBiome(level, pos), pos));
     }
 
@@ -250,9 +251,14 @@ public final class GreenhouseEnvironment {
 
     @Nullable
     private static CropClimate localControllerClimate(Level level, BlockPos pos) {
-        CropClimate outlet = AirConditionerAirflow.climateAt(level, pos);
+        return localControllerClimate(level, pos, null);
+    }
+
+    @Nullable
+    private static CropClimate localControllerClimate(Level level, BlockPos pos, @Nullable CropClimate ambient) {
+        CropClimate outlet = AirConditionerAirflow.climateAt(level, pos, ambient);
         if (outlet != null) return outlet;
-        return withoutOverlay(() -> ThermoregulatorDetector.nearbyClimate(level, pos).orElse(null));
+        return withoutOverlay(() -> ThermoregulatorDetector.nearbyClimate(level, pos, ambient).orElse(null));
     }
 
     private static CropClimate roomClimateAt(Level level, RoomClimateState air, BlockPos pos, long tick) {
@@ -264,16 +270,24 @@ public final class GreenhouseEnvironment {
     /** Optional integrations use categories too; Celsius is converted only at their API boundary. */
     @Nullable
     public static CropClimate controlledClimate(Level level, BlockPos pos) {
+        return controlledClimate(level, pos, null);
+    }
+
+    /** Optional temperature APIs can supply their native weather/altitude/shelter baseline without another query. */
+    @Nullable
+    public static CropClimate controlledClimate(Level level, BlockPos pos, @Nullable CropClimate ambient) {
         if (nativeQueryActive() || !loaded(level, pos)) return null;
         if (!level.isClientSide && level.getServer() != null && !level.getServer().isSameThread()) return null;
-        if (ShipCropEnvironment.isOnShip(level, pos) || !GreenhouseSettings.enabled()) return localControllerClimate(level, pos);
+        // A storage plot's incoming temperature is unrelated to the ship's current world biome.
+        if (ShipCropEnvironment.isOnShip(level, pos)) return localControllerClimate(level, pos);
+        if (!GreenhouseSettings.enabled()) return localControllerClimate(level, pos, ambient);
         if (level.isClientSide) {
             CropClimate climate = GreenhouseClientBiomes.climateAt(level, pos, null);
-            return climate != null ? climate : localControllerClimate(level, pos);
+            return climate != null ? climate : localControllerClimate(level, pos, ambient);
         }
         var air = physicalAirAt(level, pos);
         return air != null && air.hasControlAt(pos, level.getGameTime())
-                ? air.climateAt(pos, level.getGameTime()) : localControllerClimate(level, pos);
+                ? air.climateAt(pos, level.getGameTime()) : localControllerClimate(level, pos, ambient);
     }
 
     public static float oxygenPercent(Level level, BlockPos pos) {

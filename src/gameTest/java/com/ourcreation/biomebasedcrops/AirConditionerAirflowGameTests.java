@@ -32,10 +32,12 @@ public final class AirConditionerAirflowGameTests {
                 helper.assertTrue(AirConditionerAirflow.climateAt(level, at) == CropClimate.HOT, "Missing outlet wind at " + at + " facing " + face);
             }
             for (BlockPos at : new BlockPos[] { machine, machine.relative(side), machine.relative(side, -1),
-                    machine.relative(face.getOpposite()), machine.above(), machine.relative(face, 5),
-                    machine.relative(face, 4).relative(side), machine.relative(face, 3).relative(side, 3),
+                    machine.relative(face.getOpposite()), machine.above(), machine.relative(face, 6),
                     machine.relative(face).above(2) })
                 helper.assertTrue(AirConditionerAirflow.climateAt(level, at) == null, "Proximity outside the outlet wind changed climate at " + at);
+            for (BlockPos at : new BlockPos[] { machine.relative(face, 5), machine.relative(face, 4).relative(side),
+                    machine.relative(face, 3).relative(side, 3) })
+                helper.assertTrue(AirConditionerAirflow.climateAt(level, at) == CropClimate.WARM, "Outlet edge did not gradually return toward the neutral biome at " + at);
             BlockPos barrier = machine.relative(face, 2);
             level.setBlock(barrier, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
             helper.assertTrue(AirConditionerAirflow.climateAt(level, machine.relative(face, 3)) == null, "Climate passed through a solid glass wall");

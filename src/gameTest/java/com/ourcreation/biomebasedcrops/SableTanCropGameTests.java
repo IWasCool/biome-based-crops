@@ -74,7 +74,7 @@ public final class SableTanCropGameTests {
             Block regulator = BuiltInRegistries.BLOCK.get(ResourceLocation.parse("toughasnails:thermoregulator"));
 
             for (boolean heating : new boolean[] { true, false }) {
-                CropProfile profile = new CropProfile(Set.of(heating ? CropClimate.HOT : CropClimate.COLD));
+                CropProfile profile = new CropProfile(Set.of(heating ? CropClimate.HOT : CropClimate.ICY));
                 level.setBlock(machine, regulator.defaultBlockState().setValue(BlockStateProperties.ENABLED, true)
                         .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), Block.UPDATE_ALL);
                 SableCropGameTests.moveShipTo(level, ship, crop, heating ? coldWorld : hotWorld, new Quaterniond());
@@ -93,6 +93,11 @@ public final class SableTanCropGameTests {
                 helper.assertTrue(CommonEvents.canGrow(level, crop, profile), "Moving the ship broke TAN crop coverage");
                 SableCropGameTests.moveShipTo(level, ship, crop, temperateWorld, new Quaterniond().rotateY(Math.PI / 2));
                 helper.assertTrue(CommonEvents.canGrow(level, crop, profile), "Rotating the ship broke its local TAN coverage");
+                CropClimate transition = heating ? CropClimate.WARM : CropClimate.COLD;
+                helper.assertTrue(GreenhouseEnvironment.currentClimate(level, machine.north(5)) == transition,
+                        "Rotated TAN ship lost its first transition ring in its current world biome");
+                helper.assertTrue(CommonEvents.canGrow(level, machine.north(5), new CropProfile(Set.of(transition))),
+                        "Rotated TAN ship transition ring did not support its matching crop");
                 level.setBlock(machine, level.getBlockState(machine).setValue(BlockStateProperties.ENABLED, false), Block.UPDATE_CLIENTS);
                 helper.assertTrue(GreenhouseEnvironment.nativeBiome(level, crop).is(Biomes.FOREST), "Stopping TAN unexpectedly moved the ship's crop");
                 helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, profile), "Disabled ship TAN regulator supplied a climate");

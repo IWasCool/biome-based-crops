@@ -116,6 +116,7 @@ public final class ToughAsNailsGreenhouseGameTests {
             level.getChunkAt(machine.east(17));
             Block regulator = BuiltInRegistries.BLOCK.get(ResourceLocation.parse("toughasnails:thermoregulator"));
             CropClimate baseline = GreenhouseEnvironment.currentClimate(level, query);
+            helper.assertTrue(baseline == CropClimate.NEUTRAL, "Fixture must have a neutral native climate");
             for (boolean heating : new boolean[] { true, false }) {
                 level.removeBlock(machine, false);
                 level.setBlock(machine, regulator.defaultBlockState().setValue(BlockStateProperties.ENABLED, true)
@@ -129,8 +130,19 @@ public final class ToughAsNailsGreenhouseGameTests {
                 Object gauge = Class.forName("toughasnails.temperature.TemperatureHelperImpl")
                         .getMethod("getTemperatureAtPosWithoutProximity", Level.class, BlockPos.class).invoke(null, level, query);
                 helper.assertTrue(gauge.toString().equals(desired.name()), "Optional gauge did not use the climate category: " + gauge);
-                helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, machine.east(4)).isPresent(), "Controller missed the four-block front edge");
-                helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, machine.east(5)).isEmpty(), "Controller exceeded its four-block reach");
+                helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, machine.east(4)).orElseThrow() == desired, "Controller missed its full-strength four-block front edge");
+                CropClimate transition = heating ? CropClimate.WARM : CropClimate.COLD;
+                BlockPos outer = machine.east(5);
+                helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, outer).orElseThrow() == transition, "Controller did not step toward the native climate in its fifth block");
+                helper.assertTrue(GreenhouseEnvironment.currentClimate(level, outer) == transition, "Instrument ignored the transition climate");
+                Object outerGauge = Class.forName("toughasnails.temperature.TemperatureHelperImpl")
+                        .getMethod("getTemperatureAtPosWithoutProximity", Level.class, BlockPos.class).invoke(null, level, outer);
+                helper.assertTrue(outerGauge.toString().equals(transition.name()), "Optional gauge ignored the transition climate: " + outerGauge);
+                for (int distance : new int[] {6, 8}) {
+                    BlockPos nativeAir = machine.east(distance);
+                    helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, nativeAir).isEmpty(), "Controller retained conditioning after returning to ambient");
+                    helper.assertTrue(GreenhouseEnvironment.currentClimate(level, nativeAir) == baseline, "Instrument did not return to the native climate");
+                }
                 helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, machine.west()).isEmpty(), "Controller conditioned behind itself");
             }
             level.setBlock(machine.below(), Blocks.REDSTONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);

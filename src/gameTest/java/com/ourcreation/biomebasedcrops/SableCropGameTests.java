@@ -88,6 +88,15 @@ public final class SableCropGameTests {
             helper.assertTrue(CommonEvents.canGrow(level, crop, temperateCrop), "Local ship AC did not condition the crop");
             moveShipTo(level, ship, crop, desert, new Quaterniond().rotateY(Math.PI / 2));
             helper.assertTrue(CommonEvents.canGrow(level, crop, temperateCrop), "Rotating the ship broke its local AC coverage");
+            unit.setClimate(CropClimate.ICY);
+            helper.assertTrue(GreenhouseEnvironment.currentClimate(level, machine.north(4)) == CropClimate.ICY,
+                    "Rotated ship lost its four-block cooling core");
+            helper.assertTrue(GreenhouseEnvironment.currentClimate(level, machine.north(5)) == CropClimate.COLD,
+                    "Rotated ship did not preserve its cold transition ring over Desert");
+            moveShipTo(level, ship, crop, temperate, new Quaterniond().rotateY(Math.PI / 2));
+            helper.assertTrue(GreenhouseEnvironment.currentClimate(level, machine.north(6)) == temperateClimate,
+                    "Moving ship did not return the transition ring to its current world biome");
+            moveShipTo(level, ship, crop, desert, new Quaterniond().rotateY(Math.PI / 2));
             level.removeBlock(machine, false);
             helper.assertTrue(GreenhouseEnvironment.nativeBiome(level, crop).is(Biomes.DESERT), "Changing ship mass displaced the crop from its world biome");
             helper.assertFalse(CommonEvents.canGrow(level, crop, temperateCrop), "Removed ship AC continued to condition the crop");

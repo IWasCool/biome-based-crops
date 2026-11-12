@@ -20,7 +20,7 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 - Distinguish greenhouse biomes with characteristic flowers, trees, and rocks; mixed completed layouts never grant multiple biome identities.
 - Apply the detected biome inside the room, including its natural mob spawn lists, while the surrounding world keeps its native biome.
 - Grow greenhouse plants under sky-exposed glass.
-- Grow climate-based crops in the four-block circular front area of an active Electrical or Tough As Nails thermoregulator, without a greenhouse or glass.
+- Grow climate-based crops in the four-block circular front core of an active Electrical or Tough As Nails thermoregulator, with a gradual transition to the native climate outside it, without a greenhouse or glass.
 - On Sable ships, crop biome requirements follow the ship's actual world location; local thermoregulators move with the crops.
 - Open doors and holes release subtle air wisps; reseal the room before its climate drifts back toward the natural climate.
 - Read local conditions with a Thermometer and plan greenhouses using the Biomes Notebook.
@@ -32,7 +32,7 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 
 ## Greenhouses
 
-Plants grow normally in a natural biome that represents their allowed climate or explicit biome rule. Active Electrical and Tough As Nails thermoregulators can also support climate-based crops and saplings directly: aim the front toward the plants, within a four-block horizontal radius and one block above or below. This rounded front half-circle needs no enclosure, habitat materials, or overhead glass. Solid obstructions block the airflow; fuel, FE, and redstone shutdowns still apply. Explicit biome rules require a matching biome.
+Plants grow normally in a natural biome that represents their allowed climate or explicit biome rule. Active Electrical and Tough As Nails thermoregulators can also support climate-based crops and saplings directly: aim the front toward the plants, within a four-block horizontal radius and one block above or below. Outside this core, each one-block ring steps one climate category toward the position's natural biome climate. For example, cooling a Hot biome to Icy gives four blocks of Icy, then one block each of Cold, Neutral, and Warm before returning to Hot at eight blocks. Heating follows the same rule in reverse, and smaller climate differences need fewer rings. This rounded front half-circle needs no enclosure, habitat materials, or overhead glass. Solid obstructions block the airflow; fuel, FE, and redstone shutdowns still apply. Explicit biome rules require a matching biome.
 
 For plants outside both their natural biome and direct thermoregulator coverage, greenhouses provide another option with all three conditions:
 

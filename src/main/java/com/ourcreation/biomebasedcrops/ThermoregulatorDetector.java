@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.Optional;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -61,10 +62,14 @@ public final class ThermoregulatorDetector {
 
     /** Optional active regulator climate, selected by proximity rather than averaged degrees. */
     public static Optional<CropClimate> nearbyClimate(Level level, BlockPos query) {
-        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
+        return nearbyClimate(level, query, null);
+    }
+
+    public static Optional<CropClimate> nearbyClimate(Level level, BlockPos query, @Nullable CropClimate ambient) {
+        if (!level.hasChunkAt(query) || !Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
                 || !controllersRegistered(true)) return Optional.empty();
         int externalRadius = Config.THERMOREGULATOR_RADIUS.get();
-        int radius = Math.max(AirConditionerAirflow.WIND_REACH, externalRadius);
+        int radius = Math.max(AirConditionerAirflow.INFLUENCE_REACH, externalRadius);
         CropClimate selected = null;
         double nearest = Double.POSITIVE_INFINITY;
         long chosen = Long.MAX_VALUE;
@@ -85,7 +90,10 @@ public final class ThermoregulatorDetector {
                             || !AirConditionerAirflow.canReach(level, at, query)) continue;
                     var output = providedClimateAt(level, at, query);
                     if (output.isEmpty()) continue;
-                    selected = output.get();
+                    CropClimate climate = id.equals(THERMOREGULATOR_ID)
+                            ? AirConditionerAirflow.conditionedClimateAt(level, at, query, output.get(), ambient) : output.get();
+                    if (climate == null) continue;
+                    selected = climate;
                     nearest = distance;
                     chosen = at.asLong();
                 }
@@ -96,14 +104,14 @@ public final class ThermoregulatorDetector {
 
     private static boolean hasMatchingThermoregulator(Level level, BlockPos cropPos, Set<CropClimate> climates,
                                                      boolean includeSealedControllers) {
-        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
+        if (!level.hasChunkAt(cropPos) || !Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
                 || climates.isEmpty() || !controllersRegistered(includeSealedControllers)) {
             return false;
         }
 
         int radius = includeSealedControllers
-                ? Math.max(AirConditionerAirflow.WIND_REACH, Config.THERMOREGULATOR_RADIUS.get())
-                : AirConditionerAirflow.WIND_REACH;
+                ? Math.max(AirConditionerAirflow.INFLUENCE_REACH, Config.THERMOREGULATOR_RADIUS.get())
+                : AirConditionerAirflow.INFLUENCE_REACH;
         int minX = cropPos.getX() - radius;
         int maxX = cropPos.getX() + radius;
         int minY = cropPos.getY() - 1;
@@ -131,7 +139,12 @@ public final class ThermoregulatorDetector {
                     BlockState state = blockEntity.getBlockState();
                     ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
                     if (id.equals(THERMOREGULATOR_ID)) {
-                        if (supportsClimates(state, climates) && localTanCoverage(level, pos, state, cropPos)) return true;
+                        var output = providedClimateAt(level, pos, cropPos);
+                        if (output.isPresent()) {
+                            CropClimate climate = AirConditionerAirflow.conditionedClimateAt(level, pos, cropPos, output.get());
+                            if (climate != null && climates.contains(climate)
+                                    && localTanCoverage(level, pos, state, cropPos)) return true;
+                        }
                         continue;
                     }
                     if (!includeSealedControllers || !id.equals(NORTHSTAR_REGULATOR_ID)) continue;

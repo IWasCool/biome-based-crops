@@ -30,13 +30,13 @@ public class Config {
             .define("enableSaplingBiomeDependencies", true);
 
     public static final ModConfigSpec.BooleanValue ENABLE_THERMOREGULATOR_COMPATIBILITY = BUILDER
-            .comment("Allows active external climate controllers to condition greenhouse air and Tough As Nails thermoregulators to support crops in their four-block front area.",
+            .comment("Allows active external climate controllers to condition greenhouse air and Tough As Nails thermoregulators to support crops in their four-block front area with a gradual transition to the native climate.",
                     "Direct crop climate support needs no greenhouse or glass; explicit biome rules still require a matching biome.")
             .define("enableThermoregulatorCompatibility", true);
 
     public static final ModConfigSpec.IntValue THERMOREGULATOR_RADIUS = BUILDER
             .comment("Search radius for other active external climate controllers, such as Northstar's sealed regulator.",
-                    "Electrical and Tough As Nails thermoregulators always have a four-block circular front area for direct crop support.")
+                    "Electrical and Tough As Nails thermoregulators have a four-block circular front core, then one-block climate steps back to the native climate.")
             .defineInRange("thermoregulatorRadius", 16, 1, 64);
 
     public static final ModConfigSpec.IntValue CLIMATE_RULES_VERSION = BUILDER

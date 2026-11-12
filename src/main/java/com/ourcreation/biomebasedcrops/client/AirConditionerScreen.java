@@ -132,7 +132,6 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
 
     private List<Component> roomTooltip() {
         var lines = new ArrayList<Component>();
-        lines.add(Component.translatable("biome_based_crops.ac.front_room").withStyle(ChatFormatting.BOLD));
         if (hasDetectedRoom() && menu.roomStatus() != AirConditionerMenu.RoomStatus.LEAKING)
             lines.add(Component.translatable("biome_based_crops.ac.enclosed_room").withStyle(ChatFormatting.GRAY));
         lines.add(roomSummary().copy().withStyle(menu.roomStatus() == AirConditionerMenu.RoomStatus.VALID
