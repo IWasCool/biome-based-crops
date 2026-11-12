@@ -7,7 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
+import com.electronwill.nightconfig.core.file.FileWatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
@@ -15,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.LevelResource;
+import net.neoforged.fml.loading.FMLConfig;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.AfterEach;
@@ -30,6 +33,14 @@ class GrowthCommandsTest {
 
     @BeforeAll
     static void captureConfig(MinecraftServer server) {
+        // These tests exercise commands and their synchronous disk writes, not
+        // external file editing. NeoForge's watcher can reload an intermediate
+        // save on another thread between successive command assertions. Remove
+        // only this ephemeral server config's watch for the JUnit session.
+        if (!FMLConfig.getBoolConfigValue(FMLConfig.ConfigValue.DISABLE_CONFIG_WATCHER)) {
+            FileWatcher.defaultInstance().removeWatchFuture(configPath(server))
+                    .orTimeout(10, TimeUnit.SECONDS).join();
+        }
         originalCrops = Config.ENABLE_CROP_BIOME_DEPENDENCIES.get();
         originalTrees = Config.ENABLE_SAPLING_BIOME_DEPENDENCIES.get();
     }
@@ -130,11 +141,14 @@ class GrowthCommandsTest {
     }
 
     private static void assertPersisted(MinecraftServer server, boolean crops, boolean trees) throws IOException {
-        String filename = BiomeBasedCrops.MODID + "-server.toml";
-        Path worldConfig = server.getWorldPath(new LevelResource("serverconfig")).resolve(filename);
-        Path config = Files.exists(worldConfig) ? worldConfig : FMLPaths.CONFIGDIR.get().resolve(filename);
-        String contents = Files.readString(config);
+        String contents = Files.readString(configPath(server));
         assertTrue(contents.matches("(?s).*\\benableCropBiomeDependencies\\s*=\\s*" + crops + "\\b.*"), contents);
         assertTrue(contents.matches("(?s).*\\benableSaplingBiomeDependencies\\s*=\\s*" + trees + "\\b.*"), contents);
+    }
+
+    private static Path configPath(MinecraftServer server) {
+        String filename = BiomeBasedCrops.MODID + "-server.toml";
+        Path worldConfig = server.getWorldPath(new LevelResource("serverconfig")).resolve(filename);
+        return Files.exists(worldConfig) ? worldConfig : FMLPaths.CONFIGDIR.get().resolve(filename);
     }
 }

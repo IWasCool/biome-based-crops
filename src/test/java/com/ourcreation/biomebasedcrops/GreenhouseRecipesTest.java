@@ -27,7 +27,7 @@ class GreenhouseRecipesTest {
     void everyLoadedBiomeHasAUsableRecipeAndCorrectNativeExamples(MinecraftServer server) {
         var biomes = server.registryAccess().registryOrThrow(Registries.BIOME);
         for (var biome : biomes.holders().toList()) {
-            var recipe = GreenhouseRecipes.forServerBiome(biome);
+            var recipe = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biome);
             assertFalse(recipe.specimens().isEmpty(), biome.key().location().toString());
             assertTrue(recipe.specimens().size() <= 32);
             assertTrue(recipe.count() > 0);
@@ -47,34 +47,125 @@ class GreenhouseRecipesTest {
                 assertNotEquals(Items.AIR, BuiltInRegistries.BLOCK.get(block).asItem(), "Unplaceable native ground " + block);
             }
         }
-        var cherry = GreenhouseRecipes.forServerBiome(biomes.getHolder(id("minecraft:cherry_grove")).orElseThrow());
+        var cherry = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biomes.getHolder(id("minecraft:cherry_grove")).orElseThrow());
         assertEquals(id("minecraft:cherry_log"), cherry.specimens().getFirst());
-        var mangrove = GreenhouseRecipes.forServerBiome(biomes.getHolder(id("minecraft:mangrove_swamp")).orElseThrow());
+        var mangrove = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biomes.getHolder(id("minecraft:mangrove_swamp")).orElseThrow());
         assertEquals(id("minecraft:mangrove_log"), mangrove.specimens().getFirst());
     }
 
     @Test
-    void all64VanillaBiomesHaveDistinctFullHabitatsOrCompatibleOceanAliases(MinecraftServer server) {
+    void all64VanillaBiomesHaveDistinctFullHabitats(MinecraftServer server) {
         Map<HabitatSignature, Set<ResourceLocation>> palettes = new HashMap<>();
-        Set<ResourceLocation> oceanAliases = Set.of(id("minecraft:ocean"), id("minecraft:deep_ocean"),
-                id("minecraft:lukewarm_ocean"), id("minecraft:deep_lukewarm_ocean"),
-                id("minecraft:cold_ocean"), id("minecraft:deep_cold_ocean"));
         int count = 0;
         for (var biome : server.registryAccess().registryOrThrow(Registries.BIOME).holders().toList()) {
             if (!biome.key().location().getNamespace().equals("minecraft")) continue;
-            var recipe = GreenhouseRecipes.forServerBiome(biome);
+            var recipe = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biome);
             var signature = habitat(recipe);
             palettes.computeIfAbsent(signature, ignored -> new HashSet<>()).add(biome.key().location());
             assertTrue(recipe.requirements().stream().allMatch(material -> material.count() >= 1 && material.count() <= 64));
             count++;
         }
         assertEquals(64, count);
-        for (var aliases : palettes.values()) {
-            assertTrue(aliases.size() == 1 || oceanAliases.containsAll(aliases),
-                    "Unexpected identical full vanilla habitats: " + aliases);
+        for (var matches : palettes.values()) {
+            assertEquals(1, matches.size(), "Identical full vanilla habitats: " + matches);
         }
-        assertEquals(habitat(server, "minecraft:ocean"), habitat(server, "minecraft:deep_ocean"),
-                "Matching shallow/deep ocean habitats should remain usable aliases");
+        assertNotEquals(habitat(server, "minecraft:ocean"), habitat(server, "minecraft:deep_ocean"));
+    }
+
+    @Test
+    void everyRequiredMaterialHasAPlayerPlacementItem(MinecraftServer server) {
+        var all = GreenhouseRecipes.serverCatalog(server.registryAccess().registryOrThrow(Registries.BIOME));
+        Set<ResourceLocation> blocks = new java.util.TreeSet<>();
+        all.values().forEach(recipe -> { blocks.addAll(recipe.specimens()); blocks.addAll(recipe.floor().blocks()); });
+        List<String> invalid = new java.util.ArrayList<>();
+        for (var id : blocks) {
+            var block = BuiltInRegistries.BLOCK.get(id);
+            var item = block.asItem();
+            if (!(item instanceof net.minecraft.world.item.BlockItem placeable) || placeable.getBlock() != block) {
+                invalid.add(id + " cannot be placed as that block using " + BuiltInRegistries.ITEM.getKey(item));
+                continue;
+            }
+        }
+        assertTrue(invalid.isEmpty(), "Unusable survival requirements: " + invalid);
+    }
+
+    @Test
+    void creativeOnlyItemsAndChorusStemsAreNotUsableRequirements() {
+        for (String block : List.of("bedrock", "barrier", "spawner", "budding_amethyst", "command_block",
+                "structure_block", "jigsaw", "end_portal_frame", "reinforced_deepslate", "chorus_plant"))
+            assertFalse(GreenhouseRecipes.usable(id("minecraft:" + block)), block);
+        for (String block : List.of("chorus_flower", "short_grass", "fern", "oak_leaves"))
+            assertTrue(GreenhouseRecipes.usable(id("minecraft:" + block)), block);
+    }
+
+    @Test
+    void anUnobtainableOverrideFallsBackToTheNormalBiomeRecipe(MinecraftServer server) {
+        var old = List.copyOf(GreenhouseSettings.BIOME_MATERIAL_RULES.get());
+        try {
+            GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of("minecraft:desert=minecraft:bedrock*1"));
+            GreenhouseRecipes.clearCache();
+            var safe = recipe(server, "minecraft:desert");
+            assertFalse(safe.specimens().contains(id("minecraft:bedrock")));
+            assertTrue(safe.specimens().contains(id("minecraft:cactus")));
+        } finally {
+            GreenhouseSettings.BIOME_MATERIAL_RULES.set(old);
+            GreenhouseRecipes.clearCache();
+        }
+    }
+
+    @Test
+    void everyLoadedBiomeHasDistinctMaterialChoices(MinecraftServer server) {
+        Map<List<Set<ResourceLocation>>, Set<ResourceLocation>> palettes = new HashMap<>();
+        for (var biome : server.registryAccess().registryOrThrow(Registries.BIOME).holders().toList()) {
+            var recipe = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biome);
+            palettes.computeIfAbsent(List.of(Set.copyOf(recipe.specimens()), Set.copyOf(recipe.floor().blocks())),
+                    ignored -> new HashSet<>()).add(biome.key().location());
+        }
+        var duplicates = palettes.values().stream().filter(ids -> ids.size() > 1).toList();
+        assertTrue(duplicates.isEmpty(), "Biomes with identical material choices: " + duplicates);
+    }
+
+    @Test
+    void biomeSpecificFlowersAndSceneryDistinguishPreviouslyIdenticalModBiomes(MinecraftServer server) {
+        var biomes = server.registryAccess().registryOrThrow(Registries.BIOME);
+        for (var entry : Map.of("lavender_field", "lavender", "auroral_garden", "icy_iris",
+                "pasture", "barley", "prairie", "goldenrod", "tundra", "tundra_shrub",
+                "hot_springs", "thermal_calcite", "crystalline_chasm", "rose_quartz_block",
+                "glowing_grotto", "glowshroom").entrySet()) {
+            var biome = biomes.getHolder(id("biomesoplenty:" + entry.getKey()));
+            if (biome.isEmpty()) continue;
+            assertTrue(GreenhouseRecipes.forServerBiome(biomes, biome.get()).specimens()
+                    .contains(id("biomesoplenty:" + entry.getValue())), "Missing identifying scenery for " + entry.getKey());
+        }
+    }
+
+    @Test
+    void identicalDatapackBiomesGetStableDifferentMaterialsAndClientSyncUsesTheResolvedPlan(MinecraftServer server) {
+        var template = server.registryAccess().registryOrThrow(Registries.BIOME)
+                .getHolder(id("minecraft:plains")).orElseThrow().value();
+        var biomes = new net.minecraft.core.MappedRegistry<net.minecraft.world.level.biome.Biome>(
+                Registries.BIOME, com.mojang.serialization.Lifecycle.stable());
+        for (int i = 0; i < 4; i++) {
+            var clone = new net.minecraft.world.level.biome.Biome.BiomeBuilder()
+                    .hasPrecipitation(true).temperature(0.8F).downfall(0.4F)
+                    .specialEffects(template.getSpecialEffects()).mobSpawnSettings(template.getMobSettings())
+                    .generationSettings(template.getGenerationSettings()).build();
+            biomes.register(net.minecraft.resources.ResourceKey.create(Registries.BIOME, id("example:meadow_" + i)),
+                    clone, net.minecraft.core.RegistrationInfo.BUILT_IN);
+        }
+        biomes.freeze();
+        var catalog = GreenhouseRecipes.serverCatalog(biomes);
+        assertEquals(4, catalog.values().stream().map(recipe -> Set.copyOf(recipe.specimens())).distinct().count());
+        GreenhouseRecipes.clearCache();
+        assertEquals(catalog, GreenhouseRecipes.serverCatalog(biomes), "Material assignment changed after cache rebuild");
+        try {
+            GreenhouseRecipes.acceptServerRecipes(catalog);
+            for (var biome : biomes.holders().toList())
+                assertEquals(catalog.get(biome.key().location()), GreenhouseRecipes.forBiome(biome));
+        } finally {
+            GreenhouseRecipes.clearClientRecipes();
+            GreenhouseRecipes.clearCache();
+        }
     }
 
     @Test
@@ -112,7 +203,7 @@ class GreenhouseRecipesTest {
                     "minecraft:desert=minecraft:sand*8,minecraft:sandstone*4,minecraft:cactus*2"));
             GreenhouseRecipes.clearCache();
             var desert = server.registryAccess().registryOrThrow(Registries.BIOME).getHolder(id("minecraft:desert")).orElseThrow();
-            var recipe = GreenhouseRecipes.forServerBiome(desert);
+            var recipe = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), desert);
             assertEquals(14, recipe.count());
             assertEquals(List.of(8, 4, 2), recipe.requirements().stream().map(GreenhouseRecipes.MaterialRequirement::count).toList());
             assertEquals(List.of(id("minecraft:sand"), id("minecraft:sandstone"), id("minecraft:cactus")), recipe.specimens());
@@ -122,20 +213,35 @@ class GreenhouseRecipesTest {
 
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of("minecraft:desert=minecraft:sand,minecraft:sandstone,minecraft:cactus"));
             GreenhouseRecipes.clearCache();
-            var legacy = GreenhouseRecipes.forServerBiome(desert);
+            var legacy = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), desert);
             assertEquals(12, legacy.count());
             assertEquals(List.of(4, 4, 4), legacy.requirements().stream().map(GreenhouseRecipes.MaterialRequirement::count).toList());
             assertEquals(GreenhouseRecipes.FloorRequirement.none(), legacy.floor());
             GreenhouseSettings.BIOME_FLOOR_RULES.set(List.of("minecraft:desert=90:minecraft:dirt", "minecraft:desert=100:minecraft:sand"));
             GreenhouseRecipes.clearCache();
             assertEquals(new GreenhouseRecipes.FloorRequirement(List.of(id("minecraft:sand")), 100),
-                    GreenhouseRecipes.forServerBiome(desert).floor(), "Explicit floor rule did not apply to a custom material recipe");
+                    GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), desert).floor(), "Explicit floor rule did not apply to a custom material recipe");
         } finally {
             GreenhouseSettings.REQUIRED_SPECIMENS.set(oldDefault);
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(oldRules);
             GreenhouseSettings.BIOME_FLOOR_RULES.set(oldFloors);
             GreenhouseRecipes.clearCache();
         }
+    }
+
+    @Test
+    void basaltDeltasUseNativeRockGroundAndAWholeInteriorPercentageOfMagma(MinecraftServer server) {
+        var basalt = recipe(server, "minecraft:basalt_deltas");
+        assertEquals(CropClimate.HOT, basalt.climate());
+        assertEquals(new GreenhouseRecipes.FloorRequirement(List.of(id("minecraft:basalt"), id("minecraft:blackstone")), 90), basalt.floor());
+        assertEquals(List.of(id("minecraft:magma_block")), basalt.specimens());
+        var magma = basalt.requirements().getFirst();
+        assertTrue(GreenhouseRecipes.isPercentageBased(magma));
+        assertEquals(3, GreenhouseRecipes.materialPercent(magma, 512));
+        assertEquals(13, GreenhouseRecipes.scaledCount(magma, 405, 81, 512));
+        assertEquals(122, GreenhouseRecipes.scaledCount(magma, 4050, 81, 512));
+        assertEquals(62, GreenhouseRecipes.scaledCount(magma, 2048, 256, 512));
+        assertEquals(13, GreenhouseRecipes.scaledCount(magma, 405, 405, 512), "Habitat quotas must use interior volume, not floor area");
     }
 
     @Test
@@ -181,7 +287,7 @@ class GreenhouseRecipesTest {
     void ominousWoodsRequiresItsSpecificSurvivalMaterialsWhenInstalled(MinecraftServer server) {
         var holder = server.registryAccess().registryOrThrow(Registries.BIOME).getHolder(id("biomesoplenty:ominous_woods"));
         if (holder.isEmpty()) return;
-        var recipe = GreenhouseRecipes.forServerBiome(holder.get());
+        var recipe = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), holder.get());
         assertEquals(List.of(id("biomesoplenty:umbran_log"), id("biomesoplenty:umbran_leaves"),
                 id("biomesoplenty:dead_leaves"), id("biomesoplenty:umbran_wood")), recipe.specimens());
         assertEquals(List.of(16, 64, 8, 8), recipe.requirements().stream().map(GreenhouseRecipes.MaterialRequirement::count).toList());
@@ -201,7 +307,7 @@ class GreenhouseRecipesTest {
             String planet = planets.entrySet().stream().filter(entry -> biomeId.getPath().startsWith(entry.getKey()))
                     .map(Map.Entry::getValue).findFirst().orElse(null);
             if (planet == null) continue;
-            var habitat = GreenhouseRecipes.forServerBiome(biome);
+            var habitat = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biome);
             assertTrue(habitat.specimens().stream().noneMatch(earthFillers::contains), "Earth fillers in " + biomeId);
             assertTrue(habitat.specimens().stream().allMatch(block -> block.getNamespace().equals("northstar")
                     && block.getPath().startsWith(planet + "_")), "Wrong planet's features in " + biomeId);
@@ -210,21 +316,21 @@ class GreenhouseRecipesTest {
             assertTrue(habitat.floor().blocks().stream().noneMatch(earthFillers::contains), "Earth ground in " + biomeId);
         }
         biomes.getHolder(id("northstar:lunar_plains")).ifPresent(biome -> assertEquals(
-                List.of(id("northstar:moon_sand")), GreenhouseRecipes.forServerBiome(biome).floor().blocks()));
+                List.of(id("northstar:moon_sand")), GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biome).floor().blocks()));
         biomes.getHolder(id("northstar:venusian_wastes")).ifPresent(biome -> assertEquals(
-                List.of(id("northstar:volcanic_ash")), GreenhouseRecipes.forServerBiome(biome).floor().blocks()));
+                List.of(id("northstar:volcanic_ash")), GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biome).floor().blocks()));
     }
 
     @Test
     void synchronizedClientCatalogCannotAlterIntegratedServerRecipes(MinecraftServer server) {
         var biome = server.registryAccess().registryOrThrow(Registries.BIOME).getHolder(id("minecraft:plains")).orElseThrow();
-        var original = GreenhouseRecipes.forServerBiome(biome);
+        var original = GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biome);
         var fakeClient = new GreenhouseRecipes.Recipe(CropClimate.HOT, List.of(id("minecraft:diamond_block")), 64);
         try {
             GreenhouseRecipes.acceptServerRecipes(Map.of(id("minecraft:plains"), fakeClient));
             assertEquals(fakeClient, GreenhouseRecipes.forBiome(biome));
-            assertNotEquals(fakeClient, GreenhouseRecipes.forServerBiome(biome));
-            assertEquals(original, GreenhouseRecipes.forServerBiome(biome));
+            assertNotEquals(fakeClient, GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biome));
+            assertEquals(original, GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), biome));
         } finally {
             GreenhouseRecipes.clearClientRecipes();
         }
@@ -235,7 +341,7 @@ class GreenhouseRecipesTest {
     }
 
     private static GreenhouseRecipes.Recipe recipe(MinecraftServer server, String biome) {
-        return GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME)
+        return GreenhouseRecipes.forServerBiome(server.registryAccess().registryOrThrow(Registries.BIOME), server.registryAccess().registryOrThrow(Registries.BIOME)
                 .getHolder(id(biome)).orElseThrow());
     }
 

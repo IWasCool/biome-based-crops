@@ -10,7 +10,7 @@ public class Config {
     public static final ModConfigSpec.BooleanValue ENABLE_TOOLTIPS = ClientConfig.ENABLE_TOOLTIPS;
 
     public static final ModConfigSpec.BooleanValue BLOCK_NATURAL_GROWTH = BUILDER
-            .comment("Enforces plant growth requirements using local temperature, valid greenhouses, and active thermoregulators.")
+            .comment("Enforces matching natural biome or sky-lit greenhouse biome and climate requirements.")
             .define("blockNaturalGrowth", true);
 
     public static final ModConfigSpec.BooleanValue BLOCK_BONEMEAL_GROWTH = BUILDER
@@ -30,13 +30,16 @@ public class Config {
             .define("enableSaplingBiomeDependencies", true);
 
     public static final ModConfigSpec.BooleanValue ENABLE_THERMOREGULATOR_COMPATIBILITY = BUILDER
-            .comment("When Tough As Nails is installed, nearby thermoregulators can provide artificial plant climates.")
+            .comment("Allows optional external climate controllers to condition greenhouse air; controllers alone never bypass plant requirements.")
             .define("enableThermoregulatorCompatibility", true);
 
     public static final ModConfigSpec.IntValue THERMOREGULATOR_RADIUS = BUILDER
-            .comment("Horizontal crop-support radius checked for active Tough As Nails thermoregulators.",
-                    "The vertical range is one block below to three above the plant; this is separate from TAN's player-temperature area.")
-            .defineInRange("thermoregulatorRadius", 4, 1, 12);
+            .comment("Climate coverage radius checked for active external climate controllers.")
+            .defineInRange("thermoregulatorRadius", 16, 1, 64);
+
+    public static final ModConfigSpec.IntValue CLIMATE_RULES_VERSION = BUILDER
+            .comment("Tracks migration of the original controller coverage default; customized radii are preserved.")
+            .defineInRange("climateRulesVersion", 0, 0, 1);
 
     public static final ModConfigSpec.ConfigValue<List<? extends String>> SUPPORTED_CROP_NAMESPACES = BUILDER
             .comment("Crop/item namespaces that are treated as crop-compatible when their block behaves like a crop.",
@@ -171,12 +174,19 @@ public class Config {
             .comment("Optional biome overrides for crops and saplings. Format: crop=biome,biome,#biome_tag",
                     "Example: wheat=minecraft:plains,minecraft:forest or rice=#minecraft:is_jungle",
                     "Use * to allow a crop in every biome: wheat=*",
-                    "These replace climate requirements; valid greenhouses can emulate the listed biomes, but temperature sources alone cannot.",
+                    "These replace climate requirements; valid greenhouses can emulate the listed biomes, but climate controllers alone cannot.",
                     "Crop tokens match block/item ids like cropClimateRules: longest token wins, first entry breaks ties.",
                     "An empty list keeps the climate rules. Biome and tag ids must include their namespace.")
             .defineListAllowEmpty("cropBiomeRules", List.of(), () -> "", Config::validateBiomeRule);
 
     static final ModConfigSpec SPEC = BUILDER.build();
+
+    static boolean migrateClimateRules() {
+        if (!SPEC.isLoaded() || CLIMATE_RULES_VERSION.get() >= 1) return false;
+        if (THERMOREGULATOR_RADIUS.get() == 4) THERMOREGULATOR_RADIUS.set(16);
+        CLIMATE_RULES_VERSION.set(1);
+        return true;
+    }
 
     static boolean validateBiomeRule(Object obj) {
         if (!(obj instanceof String value)) {

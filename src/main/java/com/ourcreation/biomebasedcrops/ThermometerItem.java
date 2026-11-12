@@ -1,7 +1,6 @@
 package com.ourcreation.biomebasedcrops;
 
 import java.util.List;
-import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -21,21 +20,31 @@ public final class ThermometerItem extends Item {
 
     @Override public InteractionResult useOn(UseOnContext context) {
         if (context.getPlayer() instanceof ServerPlayer player)
-            read(player, context.getClickedPos().relative(context.getClickedFace()));
+            read(player);
         return InteractionResult.sidedSuccess(context.getLevel().isClientSide);
     }
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        if (player instanceof ServerPlayer serverPlayer) read(serverPlayer, player.blockPosition());
+        if (player instanceof ServerPlayer serverPlayer) read(serverPlayer);
         return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide);
     }
 
-    private void read(ServerPlayer player, BlockPos pos) {
+    private void read(ServerPlayer player) {
         player.getCooldowns().addCooldown(this, 10);
-        float temperature = GreenhouseEnvironment.currentTemperature(player.level(), pos);
-        float oxygen = GreenhouseEnvironment.oxygenPercent(player.level(), pos);
-        player.displayClientMessage(Component.translatable("biome_based_crops.message.temperature_reading",
-                String.format(Locale.ROOT, "%.1f", temperature), Math.round(oxygen) + "%")
+        showReading(player);
+    }
+
+    public static void showReading(ServerPlayer player) {
+        showReading(player, player.blockPosition());
+    }
+
+    public static void showReading(ServerPlayer player, BlockPos pos) {
+        CropClimate climate = GreenhouseEnvironment.currentClimate(player.level(), pos);
+        Component biome = player.level().getBiome(pos).unwrapKey()
+                .map(key -> BiomeSelector.parse(key.location().toString()).orElseThrow().component())
+                .orElseGet(() -> Component.translatable("biome_based_crops.biome.unknown"));
+        player.displayClientMessage(Component.translatable("biome_based_crops.message.climate_reading",
+                climate.component(), biome)
                 .withStyle(ChatFormatting.GRAY), true);
     }
 

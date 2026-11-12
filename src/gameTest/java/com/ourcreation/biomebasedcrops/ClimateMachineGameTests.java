@@ -43,7 +43,7 @@ public final class ClimateMachineGameTests {
             float actualTemperature = ((Number) temperature.invoke(unit)).floatValue();
             helper.assertTrue(rpm == 0, "Unconnected regulator unexpectedly had kinetic power");
             helper.assertTrue(Float.isFinite(actualTemperature), "Northstar returned a non-finite temperature");
-            helper.assertTrue(ThermoregulatorDetector.northstarClimate(20F) == CropClimate.NEUTRAL,
+            helper.assertTrue(LegacyClimate.fromCelsius(20F) == CropClimate.NEUTRAL,
                     "Northstar's ambient 20 C reference did not map to neutral");
             BlockPos crop = source.east();
             helper.assertFalse((Boolean) sealed.invoke(unit, crop), "Unpowered regulator claimed an active sealed volume");

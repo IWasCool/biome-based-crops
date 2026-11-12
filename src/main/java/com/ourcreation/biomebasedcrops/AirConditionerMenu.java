@@ -2,6 +2,7 @@ package com.ourcreation.biomebasedcrops;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -21,9 +22,9 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
             net.minecraft.core.registries.Registries.MENU, BiomeBasedCrops.MODID);
     public static final DeferredHolder<MenuType<?>, MenuType<AirConditionerMenu>> TYPE = MENUS.register(
             "air_conditioner", () -> IMenuTypeExtension.create(AirConditionerMenu::new));
-    public static final int MIN_TARGET = -20;
-    public static final int MAX_TARGET = 50;
-    private static final int DATA_COUNT = 12;
+    public static final int MIN_TARGET = 0;
+    public static final int MAX_TARGET = CropClimate.values().length - 1;
+    private static final int DATA_COUNT = 26;
     private final BlockPos position;
     private final Level level;
     private final ContainerData data;
@@ -38,26 +39,57 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
 
     public AirConditionerMenu(int id, Inventory inventory, AirConditionerBlockEntity unit) {
         this(id, inventory, unit.getBlockPos(), new ContainerData() {
+            private long inspectedTick = Long.MIN_VALUE;
+            private GreenhouseEnvironment.ControllerRoomInfo frontRoom;
+            private boolean roofSkyExposed;
+
+            private GreenhouseEnvironment.ControllerRoomInfo frontRoom() {
+                long tick = inventory.player.level().getGameTime();
+                if (frontRoom == null || tick != inspectedTick) {
+                    frontRoom = GreenhouseEnvironment.controllerRoomInfo(inventory.player.level(), unit.getBlockPos());
+                    roofSkyExposed = GreenhouseEnvironment.hasSkyGlassAbove(inventory.player.level(), unit.getBlockPos()
+                            .relative(unit.getBlockState().getValue(AirConditionerBlock.FACING)));
+                    inspectedTick = tick;
+                }
+                return frontRoom;
+            }
+
             @Override public int get(int index) {
                 return switch (index) {
-                    case 0 -> unit.targetTemperature();
+                    case 0 -> unit.selectedClimate().ordinal();
                     case 1 -> unit.energyStored() & 0xFFFF;
                     case 2 -> unit.energyStored() >>> 16;
                     case 3 -> unit.currentEnergyCost() & 0xFFFF;
                     case 4 -> unit.currentEnergyCost() >>> 16;
-                    case 5 -> Math.round(unit.currentTemperature() * 10.0F);
+                    case 5 -> unit.currentClimate().ordinal();
                     case 6 -> Math.round(unit.oxygenPercent() * 100.0F);
                     case 7 -> unit.getBlockState().getValue(AirConditionerBlock.ACTIVE) ? 1 : 0;
-                    case 8 -> unit.roomVolume() & 0xFFFF;
-                    case 9 -> unit.roomVolume() >>> 16;
+                    case 8 -> frontRoom().inspection().roomVolume() & 0xFFFF;
+                    case 9 -> frontRoom().inspection().roomVolume() >>> 16;
                     case 10 -> unit.selectedClimate().ordinal();
                     case 11 -> unit.localClimate().ordinal();
+                    case 12 -> RoomStatus.fromKey(frontRoom().inspection().status()).ordinal();
+                    case 13 -> frontRoom().inspection().roomVolume() & 0xFFFF;
+                    case 14 -> frontRoom().inspection().roomVolume() >>> 16;
+                    case 15 -> frontRoom().interiorCapacity() & 0xFFFF;
+                    case 16 -> frontRoom().interiorCapacity() >>> 16;
+                    case 17 -> frontRoom().installedUnits();
+                    case 18 -> frontRoom().requiredUnits();
+                    case 19 -> frontRoom().inspection().climate().ordinal();
+                    case 20 -> frontRoom().inspection().enclosed() ? 1 : 0;
+                    case 21 -> frontRoom().inspection().glazing().roofFound() & 0xFFFF;
+                    case 22 -> frontRoom().inspection().glazing().roofFound() >>> 16;
+                    case 23 -> frontRoom().inspection().glazing().roofRequired() & 0xFFFF;
+                    case 24 -> frontRoom().inspection().glazing().roofRequired() >>> 16;
+                    case 25 -> { frontRoom(); yield roofSkyExposed ? 1 : 0; }
                     default -> 0;
                 };
             }
             @Override public void set(int index, int value) { }
             @Override public int getCount() { return DATA_COUNT; }
         });
+        GreenhouseRoomScanner.prioritize(inventory.player.level(), unit.getBlockPos()
+                .relative(unit.getBlockState().getValue(AirConditionerBlock.FACING)));
     }
 
     private AirConditionerMenu(int id, Inventory inventory, BlockPos position, ContainerData data) {
@@ -74,23 +106,50 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
 
     private static ContainerData clientData() {
         SimpleContainerData data = new SimpleContainerData(DATA_COUNT);
-        data.set(0, 20);
-        data.set(5, 200);
+        data.set(0, CropClimate.NEUTRAL.ordinal());
+        data.set(5, CropClimate.NEUTRAL.ordinal());
         data.set(6, 10000);
         data.set(10, CropClimate.NEUTRAL.ordinal());
         data.set(11, CropClimate.NEUTRAL.ordinal());
+        data.set(15, 256);
+        data.set(19, CropClimate.NEUTRAL.ordinal());
         return data;
     }
 
-    public int targetTemperature() { return Math.clamp(data.get(0), MIN_TARGET, MAX_TARGET); }
-    public float currentTemperature() { return data.get(5) / 10.0F; }
+    public CropClimate currentClimate() { return climate(data.get(5)); }
     public float oxygenPercent() { return Math.clamp(data.get(6) / 100.0F, 0.0F, 100.0F); }
     public int energyStored() { return Math.max(0, combined(data.get(1), data.get(2))); }
     public int energyCost() { return Math.max(0, combined(data.get(3), data.get(4))); }
     public int roomVolume() { return Math.max(0, combined(data.get(8), data.get(9))); }
     public boolean active() { return data.get(7) != 0; }
-    public CropClimate targetClimate() { return climate(data.get(10)); }
+    public CropClimate targetClimate() { return climate(data.get(0)); }
     public CropClimate localClimate() { return climate(data.get(11)); }
+    public RoomStatus roomStatus() { return RoomStatus.values()[Math.clamp(data.get(12), 0, RoomStatus.values().length - 1)]; }
+    public int roomInteriorBlocks() { return Math.max(0, combined(data.get(13), data.get(14))); }
+    public int roomInteriorCapacity() { return Math.max(0, combined(data.get(15), data.get(16))); }
+    public int installedUnits() { return Math.max(0, data.get(17)); }
+    public int requiredUnits() { return Math.max(0, data.get(18)); }
+    public CropClimate roomClimate() { return climate(data.get(19)); }
+    public boolean roomEnclosed() { return data.get(20) != 0; }
+    public int roofGlassFound() { return Math.max(0, combined(data.get(21), data.get(22))); }
+    public int roofGlassRequired() { return Math.max(0, combined(data.get(23), data.get(24))); }
+    public boolean roofSkyExposed() { return data.get(25) != 0; }
+
+    public enum RoomStatus {
+        SCANNING("scanning"), VALID("valid"), LEAKING("leaking"), OPEN("open"), NO_GLASS("no_glass"),
+        MISSING_SPECIMENS("missing_specimens"), WRONG_CLIMATE("wrong_climate"),
+        MISSING_FLOOR("missing_floor"), FILLING_AIR("filling_air"), AMBIGUOUS("ambiguous"),
+        TOO_LARGE("too_large"), INSUFFICIENT_CAPACITY("insufficient_capacity"),
+        UNLOADED("unloaded"), DISABLED("disabled"), BLOCKED_OUTLET("blocked_outlet"), OUTSIDE("outside");
+
+        private final String status;
+        RoomStatus(String status) { this.status = status; }
+        public Component message() { return Component.translatable("biome_based_crops.greenhouse.status." + status); }
+        private static RoomStatus fromKey(String key) {
+            for (RoomStatus value : values()) if (key.endsWith("." + value.status)) return value;
+            return OPEN;
+        }
+    }
 
     private static int combined(int low, int high) {
         return (low & 0xFFFF) | ((high & 0xFFFF) << 16);
@@ -106,9 +165,9 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
     }
 
     @Override public boolean clickMenuButton(Player player, int button) {
-        if (player.level().isClientSide || button < 0 || button > MAX_TARGET - MIN_TARGET || !stillValid(player)) return false;
+        if (player.level().isClientSide || button < 0 || button > MAX_TARGET || !stillValid(player)) return false;
         if (player.level().getBlockEntity(position) instanceof AirConditionerBlockEntity unit) {
-            unit.setTargetTemperature(button + MIN_TARGET);
+            unit.setClimate(CropClimate.values()[button]);
             broadcastChanges();
             return true;
         }

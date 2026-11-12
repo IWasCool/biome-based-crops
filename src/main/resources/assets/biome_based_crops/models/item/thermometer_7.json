@@ -1,0 +1,58 @@
+{
+  "parent": "biome_based_crops:item/thermometer_geometry",
+  "loader": "neoforge:composite",
+  "children": {
+    "body": {
+      "parent": "biome_based_crops:item/thermometer_geometry",
+      "render_type": "minecraft:solid"
+    },
+    "mercury": {
+      "parent": "biome_based_crops:item/thermometer_geometry",
+      "render_type": "minecraft:solid",
+      "elements": [
+        {
+          "name": "mercury_column",
+          "from": [
+            7,
+            3,
+            6.75
+          ],
+          "to": [
+            8,
+            10,
+            9.25
+          ],
+          "faces": {
+            "north": {
+              "uv": [
+                7,
+                3,
+                8,
+                10
+              ],
+              "texture": "#mercury"
+            },
+            "south": {
+              "uv": [
+                7,
+                3,
+                8,
+                10
+              ],
+              "texture": "#mercury"
+            }
+          }
+        }
+      ]
+    },
+    "glass": {
+      "parent": "biome_based_crops:item/thermometer_glass",
+      "render_type": "minecraft:translucent"
+    }
+  },
+  "item_render_order": [
+    "body",
+    "mercury",
+    "glass"
+  ]
+}

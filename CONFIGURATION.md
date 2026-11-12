@@ -25,91 +25,84 @@ cropBiomeRules = [
 
 - Biome IDs and biome tags need their full namespace. Prefix a tag with `#`.
 - A plant can grow in any listed biome or tag. `*` allows every biome.
-- An override replaces that plant's climate requirements for natural growth, bonemeal, and supported fertilizers. Temperature alone cannot bypass an explicit biome override; a valid greenhouse registering as a listed biome can satisfy it.
+- An override replaces that plant's climate requirements for natural growth, bonemeal, and supported fertilizers. Climate alone cannot bypass an explicit biome override; a valid greenhouse registering as a listed biome can satisfy it.
 - The crop token is a case-insensitive substring of the block or item path. A token containing `:` matches the full ID. `wheat` therefore covers wheat plants and seeds; `farmersdelight:tomato` targets that mod's tomatoes.
 - The longest matching crop token wins. The first entry wins equal-length ties.
 - Only detected crops and growable plants are affected. Adding a rule does not make decorative blocks grow.
 - Missing biomes or tags do not match anything. Check spelling and install any mod supplying the referenced biome. Invalid syntax is rejected by config validation.
 
-The default is `cropBiomeRules = []`, preserving all climate defaults. Remove an override to restore the matching plant's climate rule. Tooltips show biome names or tag IDs when an override applies.
+The default is `cropBiomeRules = []`, preserving all climate defaults. Remove an override to restore the matching plant's climate rule. Plant item tooltips remain concise and show climate categories; explicit biome rules still govern growth when configured.
 
 ## Greenhouses
 
-Greenhouses identify their biome automatically from required native materials, actual room temperature, and breathable air. No core, biome sample, or binding step is required. The detected biome applies inside its connected interior for crop growth, biome queries, and natural mob spawn lists. Floor, wall, roof, and outdoor positions keep their native biome.
+A plant can grow in a matching natural biome. Outside that biome, it needs **sky-exposed glass above it**, a **matching greenhouse biome**, and the **climate required by that biome**. Climate is one of **Icy, Cold, Neutral, Warm, Hot**. A controller is needed only when the natural room climate does not match.
 
-The room's biome is a reversible overlay: it does not rewrite saved chunk biomes or generate new terrain. Opening the enclosure or disabling greenhouses restores the native biome. Natural spawning still follows normal light, space, structure, dimension, and mob-cap rules.
+Greenhouses identify their biome from a sealed enclosure, native floors, habitat materials, matching climate, and breathable air. Glass is not part of biome registration. The field guide contains the construction notes; detection is automatic. The biome overlay is reversible and does not rewrite saved chunk biomes or generate terrain. A wrong climate cannot activate a habitat's biome. Outdoor controllers do not replace the greenhouse requirements.
 
-1. Craft a **Greenhouse Probe** with glass, copper ingots, redstone, and a stick. Craft a book with wheat for the **Farmer's Field Guide**.
-2. Select your intended biome in the guide. Meet its native-floor coverage and **every listed habitat percentage**.
-3. Build a closed room of any shape with a native floor and glass walls and roof. Glass blocks and panes count in every orientation, including coloured and tagged mod glass. Close the entrance.
-4. Place habitat materials inside the enclosure, including sandstone and other rocks. Tree logs and plants belong above ground, with canopies above the trunks.
-5. Match the required temperature and air conditions. A naturally suitable room needs no machine. Otherwise, place a powered **Thermoregulator** inside the connected room, choose a Celsius target, and wait for temperature and oxygen to settle.
-6. Use the probe inside the room to check the detected biome, enclosure, temperature, and individual material progress. In hostile atmospheres, room oxygen must reach 95% before it is breathable.
+1. Craft the **Farmer's Field Guide** and select the intended biome.
+2. Build a sealed room with a native floor and suitable solid walls. Give each crop or sapling glass above it with an unobstructed path to the sky.
+3. Meet the native-floor coverage and every habitat percentage in the guide.
+4. Match the biome's climate naturally or with a powered **Electrical Thermoregulator** set to Icy, Cold, Neutral, Warm or Hot.
+5. Check local climate and biome using the **Thermometer**. It reads the player's position, even when a block is clicked.
+
+The room's biome applies only where its enclosure, climate, and habitat qualify. Minecraft still controls spawning, including Peaceful mode, difficulty, the `doMobSpawning` gamerule, light, space, structures, dimensions, and mob caps.
 
 ### Native floors and habitat percentages
 
-The default enclosure requires glass walls and roof. Up to four closed door/trapdoor blocks and four climate-machine blocks may form functional openings; additional opaque blocks fail the glass requirement. Existing factory settings of 50% roof glass and 10% wall glass upgrade once to the full-glass defaults. Other customized ratios are preserved.
+The enclosure requires sealed walls, flooring, and a roof. **Glass is needed only directly above crops and saplings that use greenhouse growth, with a clear path to the sky.** It is not needed for the room's biome to register, and the rest of the roof may be solid. There are no separate window or entrance quotas. AC capacity scales with enclosed interior volume only when changing the natural climate, as described below. Legacy roof and wall glass ratios do not impose biome-registration quotas.
 
-Floor coverage is a percentage of ground area. Listed ground blocks are alternatives and may be mixed. Forest needs **90%** grass blocks, dirt, rooted dirt, or coarse dirt; Desert needs **100% sand**.
+Floor coverage is a percentage of ground area. Listed ground blocks are alternatives and may be mixed. Forest needs **90%** grass blocks, dirt, rooted dirt, or coarse dirt; Desert needs **100% sand**. Basalt Deltas needs a **90% basalt/blackstone floor**, interior magma blocks equal to **3% of enclosed interior volume**, and **Hot** climate. Magma in the foundation, walls, or roof does not count toward its habitat materials.
 
-Each habitat material has its own percentage of interior volume, including the space occupied by interior scenery. Every percentage must be met inside the room; the same proportions scale down for small greenhouses and up for large ones. The server rounds fractional block requirements up. Logs and plants count above ground, and leaf canopies count at least two blocks above the floor.
+The guide shows each habitat material's whole-number percentage. Habitat percentages use enclosed interior volume, including the space occupied by interior scenery. Every material must be inside the room; foundation, wall, and roof blocks do not count. The same proportions scale down for small greenhouses and up for large ones. The server rounds fractional block requirements up. Logs and plants count above ground, and leaf canopies count at least two blocks above the floor. Explicit count-based overrides retain block-count labels.
 
-The English guide combines the selected biome's floor, habitat percentages, and temperature/Thermoregulator instructions. Hover item icons for standard tooltips; left-click for recipes or right-click for uses with JEI, EMI, or REI installed.
+The localized guide combines the selected biome's floor, habitat percentages, climate requirements, and **Greenhouse Setup** instructions. The guide and climate controls follow the selected game language, with entries for all 137 Minecraft 1.21.1 locales and fallback text for unsupported rare languages. Hover item icons for standard item tooltips; left-click for recipes or right-click for uses with JEI, EMI, or REI installed.
 
-Vanilla biomes have curated habitats; installed mod biomes derive materials from native vegetation and terrain. Custom recipes can replace them. If several recipes fit, the most specific completed recipe takes priority. Remove unrelated materials when changing the intended greenhouse. Existing greenhouse cores remain optional inspection stations.
+The **Greenhouse Setup** section explains plant lighting, sealed enclosure, leaks, native floor, habitat materials, and climate control. Select a biome on the left to plan its requirements. Room detection and habitat checks run automatically; scanner blocks, probes, and manual surveys have been removed.
 
-### Thermoregulator
+Vanilla and Biomes O' Plenty biomes have distinct curated habitats, using characteristic flowers, trees, and rocks. Other installed biomes derive materials from native vegetation and terrain; the server adds distinguishing native materials or obtainable garden/rock accents when two generated plans would otherwise be identical. The guide shows the final server requirements. Custom recipes can replace them without automatic changes.
 
-The **Thermoregulator** retains the registry ID `biome_based_crops:air_conditioner` for saved-world compatibility. Supply Forge Energy (FE) from any side. It stores **100,000,000 FE** and accepts up to **20,000,000 FE per transfer**. A redstone signal stops conditioning.
+Default plans use collectible placement items: short grass and ferns, and chorus flowers instead of chorus-plant stem items. Shears or Silk Touch may be needed to collect foliage, webs, crystals, and other delicate materials. Unplaceable or known unobtainable material overrides are ignored in favor of the biome's normal plan; unavailable floor alternatives are omitted. Survival tests check placement-item mappings, real harvest drops, and crafting outputs for the loaded recipes.
 
-Right-click to set its centered Celsius dial from **-20 to 50 C**, default **20 C**. Hover the top-right Thermometer for current temperature. The vertical red FE gauge shows stored energy; hover it for exact energy, power use, and room volume. The screen uses a vanilla container background with custom dial and gauge textures. Room oxygen remains part of conditioning and can be checked with the Thermometer or probe.
+A greenhouse provides **one biome only**. Extra identifying materials can refine a simpler recipe into its more specific variant. If two separate complete recipes fit, or custom overrides define identical plans, the room supplies no biome overlay or biome-specific crop support. Remove the extra identifying materials to leave a single complete habitat plan.
 
-The machine is a full block with original 16-pixel painted-metal textures, intake and outlet grilles, a control lens, and rear mechanical details. Resource packs can replace its artwork.
+### Electrical Thermoregulator
 
-While conditioning, each unit uses:
+The **Electrical Thermoregulator** retains registry ID `biome_based_crops:air_conditioner`. Supply Forge Energy from any side. It stores **100,000 FE**, accepts **10,000 FE per transfer**, and uses **360 FE/t** while running. A redstone signal stops it.
 
-```text
-FE/t = (2000 + ceil(50 * abs(target C - native C))) * ceil(room volume / 512)
-```
+Its climate selector has exactly five settings, in order: **Icy, Cold, Neutral, Warm, Hot**. Use the vanilla left/right buttons beside the recessed climate readout to select a mode. Clicking the readout also cycles modes; Shift-click cycles backward. The controls support keyboard focus. Opening the menu prioritizes the room directly in front. Hover the small **!** indicator at the top right for **No greenhouse detected** when no room is found, or **Enclosed room detected** with an explicit **greenhouse biome valid/not-valid** result. The sky-exposed-glass instruction appears at the bottom with the capacity guidance. Ceiling-glass counts are informational; glass is not a biome-registration requirement. Put sky-exposed glass directly above each crop or sapling that needs greenhouse growth. Climate, interior capacity, required AC count, and any unmet biome requirement are also shown. Hover the FE gauge for energy, power use, and room volume. There are no numerical temperature controls or readings.
 
-Cost is capped at 100,000,000 FE/t. A 512-block room with native 20 C and target 30 C costs **2,500 FE/t**; a 1,024-block room costs **5,000 FE/t**. The power formula always uses 512 blocks, independently of the configurable material reference volume. A naturally breathable room idles at zero cost after it settles at its native temperature. A hostile atmosphere still needs powered air maintenance.
+The front outlet chooses which room an AC serves. Install it inside the room, or in a wall with the outlet facing inward. Its selected climate spreads through that connected, sealed room. Outdoors, only the short breeze directly in front of the outlet changes local climate; standing nearby at the sides or rear does not. The actual climate at the plant must match its greenhouse biome; a controller never bypasses plant lighting, habitat, or biome checks. A naturally matching climate works without a controller.
 
-Temperature and oxygen change gradually throughout the shared room; selecting a dial target does not instantly qualify a biome. Larger rooms take longer, and multiple powered units contribute to the same room air. Power loss or redstone shutdown stops conditioning; stored heat and oxygen then drift toward native conditions. Opening the room lets air escape.
+When changing the natural climate, each eligible installed AC supports **256 enclosed interior blocks** in its room. Count the entire interior volume, including its height: an 8×8×4 interior uses one unit's 256-block capacity; 8×8×8 uses two units' 512-block capacity. Capacities add across units facing into the same sealed room, including units placed inside it. **Naturally matching rooms need no AC at any interior size.** Rooms may have any shape within the separate maximum interior-volume limit.
 
-Actual Celsius temperatures map to crop climates as follows:
+Opening a door or removing a boundary block from a previously sealed room starts a leak. Faint air wisps leave the opening. Repair or close it within about **one minute** to keep the room climate. If left open, the climate gradually steps toward the natural climate; paid AC output cannot indefinitely preserve the room setting through an opening. Repeated inspections or additional holes do not restart this grace period.
 
-| Climate | Room temperature |
-| --- | --- |
-| Icy | 0 C or below |
-| Cold | Above 0 through 10 C |
-| Neutral | Above 10 through 25 C |
-| Warm | Above 25 through 35 C |
-| Hot | Above 35 C |
+Power loss, redstone shutdown, or removal ends the unit's active climate output. The fan, faint airflow particles, and compressor sound run only while the unit is active. In hostile atmospheres, powered air maintenance still supplies room oxygen; a sealed room must be breathable for plants to grow.
 
-Craft a **Thermometer** with a vertical column of **glass, redstone, copper ingot**, from top to bottom. Use it to read current temperature and oxygen at your position, or at a clicked block face. Fire, lava, magma, ice, and snow do not condition rooms.
+The machine uses original 16-pixel textures in a Power Grid-inspired muted green-gray and charcoal palette. Its static rear casing and animated rotor use files no larger than 16 pixels on either axis. The screen uses native Minecraft button and text-field sprites for its climate selector. Resource packs can replace the artwork.
 
-### Optional climate and atmosphere compatibility
+Craft a **Thermometer** with glass, redstone, and an iron ingot in a vertical column. It displays **Climate:** followed by the player's local **Icy, Cold, Neutral, Warm or Hot** climate, then **Biome:** followed by the active greenhouse biome or natural biome. Clicking a block does not measure that block's position. Its mercury illustration has five category readings beneath tinted glass, with the solid readout in a separate render pass.
 
-Tough As Nails thermoregulators and Northstar's Temperature Regulator remain supported when genuinely active. Northstar regulators must be powered, unstressed, and sealing the queried position; unrelated fans, ice boxes, and reactor coolers are not room conditioners. The field guide displays this mod's Thermoregulator rather than listing optional machines.
+### Optional integrations
 
-On Northstar planets, greenhouse conditioning uses the native Celsius temperature and atmosphere. Current temperature and breathable room oxygen apply only to the exact connected interior; oxygen drains consume that room's stored air. Northstar's own providers retain priority. Outside controlled rooms, native planetary temperature, oxygen, and other dimensions' environments remain unchanged.
+The mod does not require another temperature mod. Optional external climate controllers and native atmosphere integrations remain supported when installed and active. They participate in the same greenhouse climate checks; they cannot let crops grow in an unrelated outdoor biome or remove the plant-lighting requirement. Crop requirements and normal messages do not depend on those integrations.
 
 ### Large rooms and glass
 
-There are no fixed side-length or height limits. The default maximum is **262,144 connected interior blocks**, configurable up to **1,048,576**. All room chunks must already be loaded. Large rooms scan gradually; the probe shows a scanning status until ready. Ordinary energy updates do not repeat a large flood fill. Small air snapshots preserve produced heat and oxygen when geometry is evicted from the bounded scan cache.
+There are no fixed side-length or height limits. The default maximum is **1,048,576 connected interior blocks**. AC interior capacity matters when changing climate; a naturally matching greenhouse does not need machines. All room chunks must already be loaded. Large rooms are detected gradually over several ticks without a manual scan. Ordinary energy updates do not repeat a large flood fill. Small air snapshots preserve the room state and oxygen when geometry is evicted from the bounded scan cache; unloaded time never produces free controller output.
 
-The default enclosure has **100% glass walls and roof**, with a closed entrance allowed. Habitat materials go inside this shell. Supported glass is recognized through the common glass block/pane tags and `biome_based_crops:greenhouse_glass`; colour and orientation do not change whether it counts.
+Build a sealed enclosure with the required habitat materials and climate to register its biome. Then place sky-exposed glass directly above any crops and saplings that need greenhouse growth. Other roof cells and walls may use solid decorative blocks. Supported glass is recognized through the common glass block/pane tags and `biome_based_crops:greenhouse_glass`; colour and orientation do not change whether it counts for plant lighting.
 
 ### Greenhouse settings
 
 | Setting | Default | Effect |
 | --- | --- | --- |
 | `enableGreenhouses` | `true` | Recognize suitable enclosed greenhouse biomes. |
-| `maxRoomBlocks` | `262144` | Maximum interior volume, from 64 to 1,048,576 blocks. |
+| `maxRoomBlocks` | `1048576` | Maximum interior volume, from 64 to 1,048,576 blocks. |
 | `scanBlocksPerTick` | `1024` | Background scan work per level tick, from 256 to 16,384. |
 | `materialReferenceVolume` | `512` | Reference for default habitat percentages and legacy custom-count scaling, from 64 to 1,048,576 blocks. |
-| `minimumRoofGlassRatio` | `1.0` | Required glass fraction of the roof. |
-| `minimumWallGlassRatio` | `1.0` | Required glass fraction of the walls, allowing a closed entrance. |
+| `minimumRoofGlassRatio` | `1.0` | Legacy roof-glass survey ratio; it does not control biome registration or require a fully glazed roof for plant growth. |
+| `minimumWallGlassRatio` | `0.0` | Legacy setting retained for existing configs; ignored because wall glass is no longer required. |
 | `requiredSpecimens` | `4` | Base value for generated mod percentages and bare-ID custom overrides. |
 | `cacheTicks` | `20` | Maximum refresh delay in ticks, from 1 to 20. |
 | `biomeMaterialRules` | `[]` | Replace complete material recipes for individual biomes. |
@@ -154,7 +147,7 @@ defaultCropClimates = "neutral,warm"
 
 The generated config contains the full default list; this short example replaces that list if copied verbatim. Edit individual entries to retain the other defaults. Matching and precedence work like biome rules. Valid climates are `icy`, `cold`, `neutral`, `warm`, and `hot`. A rule listing all five permits every climate. `defaultCropClimates` applies to detected plants without a matching climate token.
 
-Biomes resolve to one climate. Explicit `toughasnails:*_biomes` tags take priority, including those supplied by Biomes O' Plenty. Conflicting tags resolve in the order icy, cold, hot, warm, neutral. Otherwise snowy/icy biomes or base temperatures below 0.15 are icy; cold-tagged biomes or temperatures below 0.5 are cold; remaining desert-tagged biomes are hot. Other base temperatures resolve to neutral through 0.8, warm through 1.0, and hot above 1.0. Seasons and altitude do not change this classification.
+Biomes resolve to one of the five climate categories using climate tags and their native biome classification. Snowy and icy biomes classify as Icy, cold biomes as Cold, temperate biomes as Neutral, and warmer biomes as Warm or Hot. Seasons and altitude do not change the crop category. Compatibility biome tags can refine the classification when another biome mod supplies them.
 
 ## Growth switches
 
@@ -164,13 +157,14 @@ Biomes resolve to one climate. Explicit `toughasnails:*_biomes` tags take priori
 | `enableSaplingBiomeDependencies` | `true` | Apply rules to trees, bamboo, cactus, sugar cane, mushrooms, fungi, and azaleas. |
 | `blockNaturalGrowth` | `true` | Enforce rules for natural growth. |
 | `blockBonemealGrowth` | `true` | Enforce rules for bonemeal and supported fertilizers. |
-| `enableThermoregulatorCompatibility` | `true` | Let active Tough As Nails thermoregulators satisfy climate requirements. |
-| `thermoregulatorRadius` | `4` | Horizontal thermoregulator search radius, from 1 to 12 blocks. |
+| `enableThermoregulatorCompatibility` | `true` | Allow active optional external controllers to condition greenhouse climate. They do not bypass growth requirements. |
+| `thermoregulatorRadius` | `16` | External climate-controller coverage radius, from 1 to 64 blocks. |
+| `climateRulesVersion` | `0` | Migration marker for the controller-radius default; earlier factory radii upgrade to 16. |
 | `supportedCropNamespaces` | Generated list | Recognize additional custom crop-like plants and raw produce from these mods. |
 
 Vanilla crop and sapling classes are recognized automatically. Namespaces containing `delight` are also supported. Plants can still be placed outside their growth requirements. Disabling either category restores ordinary growth for it and hides its requirement tooltips. `enableTooltips` is in the client config.
 
-Active cooling thermoregulators supply icy/cold/neutral climates; heating supplies neutral/warm/hot; both supply neutral. Empty, inactive, and redstone-disabled regulators supply none. In greenhouses, these modes condition the shared air gradually. The search covers one block below to three blocks above the plant in loaded chunks. Tough As Nails is optional.
+An external controller must be active and cover the queried position. Empty, inactive, and redstone-disabled controllers supply no climate. Their output is considered only as climate conditioning, never as a shortcut around a greenhouse or biome rule.
 
 ## Commands
 

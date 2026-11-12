@@ -21,12 +21,17 @@ public class BiomeBasedCropsClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) ->
                 event.register(AirConditionerMenu.TYPE.get(), com.ourcreation.biomebasedcrops.client.AirConditionerScreen::new));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent event) ->
+                event.registerSpriteSet(GreenhouseContent.AIRFLOW_PARTICLE.get(), com.ourcreation.biomebasedcrops.client.AirflowParticle.Provider::new));
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent event) ->
+                event.enqueueWork(com.ourcreation.biomebasedcrops.client.InstrumentClient::registerProperties));
+        NeoForge.EVENT_BUS.addListener(com.ourcreation.biomebasedcrops.client.InstrumentClient::tick);
         NeoForge.EVENT_BUS.addListener(BiomeBasedCropsClient::onTooltip);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) -> {
             GreenhouseClientBiomes.clear();
+            com.ourcreation.biomebasedcrops.client.InstrumentClient.clear();
             GreenhouseRecipes.clearClientRecipes();
             com.ourcreation.biomebasedcrops.client.EnglishGuideText.clearCache();
-            com.ourcreation.biomebasedcrops.client.FieldGuideScreen.clearSurvey();
         });
     }
 
@@ -39,8 +44,7 @@ public class BiomeBasedCropsClient {
         // SERVER rules are synced when joining a world; no authoritative rules exist in menus.
         if (Config.SPEC.isLoaded()) {
             CropMatcher.profileForItem(stack).ifPresent(profile -> {
-                String key = profile.hasBiomeRule() ? "biome_based_crops.tooltip.biomes" : "biome_based_crops.tooltip.climate";
-                MutableComponent line = Component.translatable(key, profile.requirementsComponent())
+                MutableComponent line = Component.translatable("biome_based_crops.tooltip.climate", profile.climateListComponent())
                         .withStyle(ChatFormatting.GRAY);
                 event.getToolTip().add(line);
             });

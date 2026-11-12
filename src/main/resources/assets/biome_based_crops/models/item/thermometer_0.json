@@ -1,0 +1,18 @@
+{
+  "parent": "biome_based_crops:item/thermometer_geometry",
+  "loader": "neoforge:composite",
+  "children": {
+    "body": {
+      "parent": "biome_based_crops:item/thermometer_geometry",
+      "render_type": "minecraft:solid"
+    },
+    "glass": {
+      "parent": "biome_based_crops:item/thermometer_glass",
+      "render_type": "minecraft:translucent"
+    }
+  },
+  "item_render_order": [
+    "body",
+    "glass"
+  ]
+}

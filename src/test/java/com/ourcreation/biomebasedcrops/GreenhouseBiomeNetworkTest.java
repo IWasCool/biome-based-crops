@@ -91,6 +91,54 @@ class GreenhouseBiomeNetworkTest {
     }
 
     @Test
+    void controllerCoverageChangesReplaceStaleBiomeCellsEvenWhenThePlayersClimateStaysTheSame() {
+        BlockPos firstController = new BlockPos(0, 64, 0);
+        BlockPos player = firstController.east(8);
+        BlockPos secondController = firstController.east(24);
+        BlockPos movedController = firstController.west(16);
+        Set<Long> geometry = Set.of(firstController.asLong(), player.asLong(), secondController.asLong(), movedController.asLong());
+        RoomClimateState air = new RoomClimateState(4, CropClimate.NEUTRAL, true, 0);
+        air.addPaidDrive(firstController.asLong(), 0, CropClimate.HOT, true);
+        air.addPaidDrive(secondController.asLong(), 0, CropClimate.HOT, true);
+        var initial = GreenhouseBiomeNetwork.masksFor(geometry, player,
+                position -> air.climateAt(position, 0) == CropClimate.HOT);
+        try {
+            GreenhouseClientBiomes.accept(roundTrip(new GreenhouseBiomeNetwork.RoomPayload(
+                    OVERWORLD, DESERT, initial, CropClimate.HOT, 100)));
+            assertEquals(DESERT, GreenhouseClientBiomes.biomeIdAt(OVERWORLD, secondController));
+
+            air.addPaidDrive(secondController.asLong(), 0, CropClimate.ICY, true);
+            var reduced = GreenhouseBiomeNetwork.masksFor(geometry, player,
+                    position -> air.climateAt(position, 0) == CropClimate.HOT);
+            assertEquals(CropClimate.HOT, air.climateAt(player, 0));
+            assertFalse(initial.equals(reduced), "A conflicting controller must change the synchronized mask");
+            GreenhouseClientBiomes.accept(roundTrip(new GreenhouseBiomeNetwork.RoomPayload(
+                    OVERWORLD, DESERT, reduced, CropClimate.HOT, 100)));
+            assertNull(GreenhouseClientBiomes.biomeIdAt(OVERWORLD, secondController));
+            assertEquals(DESERT, GreenhouseClientBiomes.biomeIdAt(OVERWORLD, player));
+
+            air.removeDrive(secondController.asLong());
+            air.addPaidDrive(movedController.asLong(), 0, CropClimate.ICY, true);
+            var moved = GreenhouseBiomeNetwork.masksFor(geometry, player,
+                    position -> air.climateAt(position, 0) == CropClimate.HOT);
+            assertEquals(CropClimate.HOT, air.climateAt(player, 0));
+            assertFalse(reduced.equals(moved), "Moving control within the same section must replace coverage");
+            GreenhouseClientBiomes.accept(roundTrip(new GreenhouseBiomeNetwork.RoomPayload(
+                    OVERWORLD, DESERT, moved, CropClimate.HOT, 100)));
+            assertNull(GreenhouseClientBiomes.biomeIdAt(OVERWORLD, movedController));
+            assertEquals(DESERT, GreenhouseClientBiomes.biomeIdAt(OVERWORLD, secondController));
+
+            air.removeDrive(firstController.asLong());
+            air.removeDrive(movedController.asLong());
+            GreenhouseClientBiomes.accept(roundTrip(new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null,
+                    GreenhouseBiomeNetwork.masksFor(geometry, player), air.climateAt(player, 0), 100)));
+            assertNull(GreenhouseClientBiomes.biomeIdAt(OVERWORLD, player));
+            assertNull(GreenhouseClientBiomes.biomeIdAt(OVERWORLD, secondController));
+            assertEquals(CropClimate.NEUTRAL, GreenhouseClientBiomes.climateAt(OVERWORLD, player, CropClimate.ICY));
+        } finally { GreenhouseClientBiomes.clear(); }
+    }
+
+    @Test
     void masksAndPayloadListsCannotBeMutatedThroughCallerArrays() {
         long[] bits = new long[64];
         bits[0] = 1;
@@ -110,22 +158,22 @@ class GreenhouseBiomeNetworkTest {
     void physicalAirSyncIsExactBeforeAnyBiomePaletteIsComplete() {
         BlockPos inside = new BlockPos(4, 70, -2);
         var masks = GreenhouseBiomeNetwork.masksFor(Set.of(inside.asLong()), inside);
-        var payload = new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, -25.5F, 96.4F);
+        var payload = new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, CropClimate.ICY, 96.4F);
         assertEquals(payload, roundTrip(payload));
         try {
             GreenhouseClientBiomes.accept(roundTrip(payload));
             assertNull(GreenhouseClientBiomes.biomeIdAt(OVERWORLD, inside));
-            assertEquals(-25.5F, GreenhouseClientBiomes.temperatureAt(OVERWORLD, inside, 20));
+            assertEquals(CropClimate.ICY, GreenhouseClientBiomes.climateAt(OVERWORLD, inside, CropClimate.NEUTRAL));
             assertEquals(96.4F, GreenhouseClientBiomes.oxygenAt(OVERWORLD, inside, 0));
             assertTrue(GreenhouseClientBiomes.hasOxygen(OVERWORLD, inside));
             assertFalse(GreenhouseClientBiomes.hasOxygen(OVERWORLD, inside.east()));
-            assertEquals(-100F, GreenhouseClientBiomes.temperatureAt(OVERWORLD, inside.east(), -100));
+            assertEquals(CropClimate.HOT, GreenhouseClientBiomes.climateAt(OVERWORLD, inside.east(), CropClimate.HOT));
             assertFalse(GreenhouseClientBiomes.hasOxygen(id("northstar:moon"), inside));
-            GreenhouseClientBiomes.accept(new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, 20, 94.9F));
+            GreenhouseClientBiomes.accept(new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, CropClimate.NEUTRAL, 94.9F));
             assertFalse(GreenhouseClientBiomes.hasOxygen(OVERWORLD, inside));
         } finally { GreenhouseClientBiomes.clear(); }
-        assertThrows(IllegalArgumentException.class, () -> new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, Float.NaN, 100));
-        assertThrows(IllegalArgumentException.class, () -> new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, 20, 101));
+        assertThrows(NullPointerException.class, () -> new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, null, 100));
+        assertThrows(IllegalArgumentException.class, () -> new GreenhouseBiomeNetwork.RoomPayload(OVERWORLD, null, masks, CropClimate.NEUTRAL, 101));
     }
 
     @Test
@@ -185,7 +233,7 @@ class GreenhouseBiomeNetworkTest {
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
             writer.accept(buffer);
-            buffer.writeFloat(20);
+            buffer.writeEnum(CropClimate.NEUTRAL);
             buffer.writeFloat(100);
             assertThrows(IllegalArgumentException.class, () -> GreenhouseBiomeNetwork.RoomPayload.CODEC.decode(buffer));
         } finally { buffer.release(); }

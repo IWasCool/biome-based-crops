@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.BonemealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.block.CropGrowEvent;
-import net.neoforged.fml.ModList;
 
 public final class CommonEvents {
     private CommonEvents() {
@@ -81,13 +80,9 @@ public final class CommonEvents {
 
     public static boolean canGrow(Level level, BlockPos pos, CropProfile profile) {
         if (!GreenhouseEnvironment.isBreathable(level, pos)) return false;
-        var inspection = GreenhouseEnvironment.inspect(level, pos);
-        if (inspection.valid()) {
-            return GreenhouseEnvironment.canSupport(level, pos, profile);
-        }
-        return (profile.hasBiomeRule() ? profile.allows(level.getBiome(pos), pos)
-                    : profile.allows(inspection.climate()))
-                || (!inspection.enclosed() && ThermoregulatorDetector.canSupportProfile(level, pos, profile));
+        if (profile.allows(GreenhouseEnvironment.nativeBiome(level, pos), pos)) return true;
+        return GreenhouseEnvironment.hasGrowingLight(level, pos)
+                && GreenhouseEnvironment.canSupport(level, pos, profile);
     }
 
     private static void showThermometerClimate(Player player, InteractionHand hand) {
@@ -99,10 +94,6 @@ public final class CommonEvents {
         MutableComponent message = Component.translatable("biome_based_crops.message.local_climate", climate.component())
                 .withStyle(ChatFormatting.GRAY);
 
-        if (Config.SPEC.isLoaded() && ThermoregulatorDetector.hasThermoregulatorNearby(player.level(), player.blockPosition())) {
-            message.append(Component.translatable("biome_based_crops.message.thermoregulator_nearby").withStyle(ChatFormatting.GREEN));
-        }
-
         player.displayClientMessage(message, true);
     }
 
@@ -112,12 +103,10 @@ public final class CommonEvents {
 
     private static MutableComponent blockedMessage(CropProfile profile) {
         if (profile.hasBiomeRule()) {
-            return Component.translatable("biome_based_crops.message.blocked_biomes", profile.requirementsComponent())
+            return Component.translatable("biome_based_crops.message.blocked_biomes")
                     .withStyle(ChatFormatting.RED);
         }
-        String key = ModList.get().isLoaded("toughasnails") && Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
-                ? "biome_based_crops.message.blocked_with_thermoregulator"
-                : "biome_based_crops.message.blocked";
-        return Component.translatable(key, profile.climateListComponent()).withStyle(ChatFormatting.RED);
+        return Component.translatable("biome_based_crops.message.blocked", profile.climateListComponent())
+                .withStyle(ChatFormatting.RED);
     }
 }

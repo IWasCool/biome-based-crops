@@ -2,7 +2,6 @@ package com.ourcreation.biomebasedcrops;
 
 import java.util.Set;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,6 +52,33 @@ public final class ThermoregulatorDetector {
 
     public static boolean hasThermoregulatorNearby(Level level, BlockPos cropPos) {
         return hasMatchingThermoregulator(level, cropPos, ALL_CLIMATES);
+    }
+
+    /** Optional active regulator climate, selected by proximity rather than averaged degrees. */
+    public static Optional<CropClimate> nearbyClimate(Level level, BlockPos query) {
+        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()) return Optional.empty();
+        int radius = Config.THERMOREGULATOR_RADIUS.get();
+        CropClimate selected = null;
+        double nearest = radius * radius;
+        long chosen = Long.MAX_VALUE;
+        for (int chunkX = (query.getX() - radius) >> 4; chunkX <= (query.getX() + radius) >> 4; chunkX++) {
+            for (int chunkZ = (query.getZ() - radius) >> 4; chunkZ <= (query.getZ() + radius) >> 4; chunkZ++) {
+                LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
+                if (chunk == null) continue;
+                for (BlockEntity entity : chunk.getBlockEntities().values()) {
+                    if (entity.isRemoved()) continue;
+                    BlockPos at = entity.getBlockPos();
+                    double distance = at.distSqr(query);
+                    if (distance > nearest || distance == nearest && at.asLong() >= chosen) continue;
+                    var output = providedClimateAt(level, at, query);
+                    if (output.isEmpty() || !AirConditionerAirflow.canReach(level, at, query)) continue;
+                    selected = output.get();
+                    nearest = distance;
+                    chosen = at.asLong();
+                }
+            }
+        }
+        return Optional.ofNullable(selected);
     }
 
     private static boolean hasMatchingThermoregulator(Level level, BlockPos cropPos, Set<CropClimate> climates) {
@@ -119,36 +145,31 @@ public final class ThermoregulatorDetector {
         }
     }
 
-    public static CropClimate northstarClimate(float celsius) {
-        if (celsius <= 0) return CropClimate.ICY;
-        if (celsius <= 10) return CropClimate.COLD;
-        if (celsius <= 25) return CropClimate.NEUTRAL;
-        return celsius <= 35 ? CropClimate.WARM : CropClimate.HOT;
-    }
+    /** Optional API boundary only; gameplay and controls use climate categories. */
+    public static CropClimate northstarClimate(float celsius) { return LegacyClimate.fromCelsius(celsius); }
 
-    /** Actual verified machine output, used as a gradual room-air drive. */
-    public static OptionalDouble providedTemperatureAt(Level level, BlockPos machine, BlockPos query) {
-        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()) return OptionalDouble.empty();
+    public static Optional<CropClimate> providedClimateAt(Level level, BlockPos machine, BlockPos query) {
+        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()) return Optional.empty();
         BlockState state = level.getBlockState(machine);
         ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
         if (id.equals(THERMOREGULATOR_ID)) {
-            if (supportsClimates(state, Set.of(CropClimate.HOT))) return OptionalDouble.of(45);
-            if (supportsClimates(state, Set.of(CropClimate.ICY))) return OptionalDouble.of(-10);
-            if (supportsClimates(state, Set.of(CropClimate.NEUTRAL))) return OptionalDouble.of(20);
-            return OptionalDouble.empty();
+            if (supportsClimates(state, Set.of(CropClimate.HOT))) return Optional.of(CropClimate.HOT);
+            if (supportsClimates(state, Set.of(CropClimate.ICY))) return Optional.of(CropClimate.ICY);
+            if (supportsClimates(state, Set.of(CropClimate.NEUTRAL))) return Optional.of(CropClimate.NEUTRAL);
+            return Optional.empty();
         }
-        if (!id.equals(NORTHSTAR_REGULATOR_ID)) return OptionalDouble.empty();
+        if (!id.equals(NORTHSTAR_REGULATOR_ID)) return Optional.empty();
         BlockEntity entity = level.getBlockEntity(machine);
-        if (entity == null || entity.isRemoved()) return OptionalDouble.empty();
+        if (entity == null || entity.isRemoved()) return Optional.empty();
         Optional<NorthstarAccess> access = NORTHSTAR_ACCESS.get(entity.getClass());
-        if (access.isEmpty()) return OptionalDouble.empty();
+        if (access.isEmpty()) return Optional.empty();
         try {
-            if (!(Boolean) access.get().sealed.invoke(entity, query)) return OptionalDouble.empty();
+            if (!(Boolean) access.get().sealed.invoke(entity, query)) return Optional.empty();
             float temperature = (Float) access.get().temperature.invoke(entity);
-            return Float.isFinite(temperature) ? OptionalDouble.of(temperature) : OptionalDouble.empty();
+            return Float.isFinite(temperature) ? Optional.of(LegacyClimate.fromCelsius(temperature)) : Optional.empty();
         } catch (ReflectiveOperationException exception) {
             logNorthstarFailure(exception);
-            return OptionalDouble.empty();
+            return Optional.empty();
         }
     }
 

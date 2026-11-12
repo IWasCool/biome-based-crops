@@ -3,7 +3,6 @@ package com.ourcreation.biomebasedcrops;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
@@ -29,10 +28,11 @@ public final class AirConditionerBlock extends BaseEntityBlock {
     public static final MapCodec<AirConditionerBlock> CODEC = simpleCodec(AirConditionerBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
+    public static final BooleanProperty WARM = BooleanProperty.create("warm");
 
     public AirConditionerBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false).setValue(WARM, false));
     }
 
     @Override protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
@@ -43,7 +43,7 @@ public final class AirConditionerBlock extends BaseEntityBlock {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(FACING, ACTIVE); }
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(FACING, ACTIVE, WARM); }
     @Override protected BlockState rotate(BlockState state, Rotation rotation) { return state.setValue(FACING, rotation.rotate(state.getValue(FACING))); }
     @Override protected BlockState mirror(BlockState state, Mirror mirror) { return state.rotate(mirror.getRotation(state.getValue(FACING))); }
 
@@ -55,7 +55,8 @@ public final class AirConditionerBlock extends BaseEntityBlock {
     }
 
     @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide ? null : createTickerHelper(type, GreenhouseContent.AIR_CONDITIONER_ENTITY.get(), AirConditionerBlockEntity::serverTick);
+        return createTickerHelper(type, GreenhouseContent.AIR_CONDITIONER_ENTITY.get(),
+                level.isClientSide ? AirConditionerBlockEntity::clientTick : AirConditionerBlockEntity::serverTick);
     }
 
     @Override protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos neighbor, boolean moving) {
@@ -68,13 +69,20 @@ public final class AirConditionerBlock extends BaseEntityBlock {
         super.onRemove(state, level, pos, replacement, moving);
     }
 
-    @Override public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (!state.getValue(ACTIVE) || random.nextInt(5) != 0) return;
+    public static void emitAirflow(Level level, BlockPos pos, BlockState state) {
+        RandomSource random = level.random;
         Direction face = state.getValue(FACING);
+        // Cycle the fan's thirds across ticks: one faint wisp, rather than three smoke puffs.
+        int sector = (int) Math.floorMod(level.getGameTime(), 3L);
+        double angle = -Math.PI / 2 + (sector + random.nextDouble()) * Math.PI / 3;
+        double forward = Math.cos(angle), sideways = Math.sin(angle);
+        double speed = 0.12 + random.nextDouble() * 0.06;
         double across = (random.nextDouble() - 0.5) * 0.45;
-        double x = pos.getX() + 0.5 + face.getStepX() * 0.53 + (face.getAxis() == Direction.Axis.Z ? across : 0);
-        double z = pos.getZ() + 0.5 + face.getStepZ() * 0.53 + (face.getAxis() == Direction.Axis.X ? across : 0);
-        level.addParticle(ParticleTypes.CLOUD, x, pos.getY() + 0.55 + random.nextDouble() * 0.15, z,
-                face.getStepX() * 0.035, 0.005, face.getStepZ() * 0.035);
+        double x = pos.getX() + 0.5 + face.getStepX() * 0.53 + face.getStepZ() * across;
+        double z = pos.getZ() + 0.5 + face.getStepZ() * 0.53 - face.getStepX() * across;
+        level.addAlwaysVisibleParticle(GreenhouseContent.AIRFLOW_PARTICLE.get(), true,
+                x, pos.getY() + 0.55 + random.nextDouble() * 0.15, z,
+                (face.getStepX() * forward + face.getStepZ() * sideways) * speed, 0.002,
+                (face.getStepZ() * forward - face.getStepX() * sideways) * speed);
     }
 }

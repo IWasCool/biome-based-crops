@@ -1,8 +1,64 @@
 {
   "variants": {
-    "facing=north": { "model": "biome_based_crops:block/air_conditioner" },
-    "facing=east": { "model": "biome_based_crops:block/air_conditioner", "y": 90 },
-    "facing=south": { "model": "biome_based_crops:block/air_conditioner", "y": 180 },
-    "facing=west": { "model": "biome_based_crops:block/air_conditioner", "y": 270 }
+    "facing=north,active=false,warm=false": {
+      "model": "biome_based_crops:block/air_conditioner"
+    },
+    "facing=north,active=false,warm=true": {
+      "model": "biome_based_crops:block/air_conditioner_warm"
+    },
+    "facing=north,active=true,warm=false": {
+      "model": "biome_based_crops:block/air_conditioner_on"
+    },
+    "facing=north,active=true,warm=true": {
+      "model": "biome_based_crops:block/air_conditioner_on_warm"
+    },
+    "facing=east,active=false,warm=false": {
+      "model": "biome_based_crops:block/air_conditioner",
+      "y": 90
+    },
+    "facing=east,active=false,warm=true": {
+      "model": "biome_based_crops:block/air_conditioner_warm",
+      "y": 90
+    },
+    "facing=east,active=true,warm=false": {
+      "model": "biome_based_crops:block/air_conditioner_on",
+      "y": 90
+    },
+    "facing=east,active=true,warm=true": {
+      "model": "biome_based_crops:block/air_conditioner_on_warm",
+      "y": 90
+    },
+    "facing=south,active=false,warm=false": {
+      "model": "biome_based_crops:block/air_conditioner",
+      "y": 180
+    },
+    "facing=south,active=false,warm=true": {
+      "model": "biome_based_crops:block/air_conditioner_warm",
+      "y": 180
+    },
+    "facing=south,active=true,warm=false": {
+      "model": "biome_based_crops:block/air_conditioner_on",
+      "y": 180
+    },
+    "facing=south,active=true,warm=true": {
+      "model": "biome_based_crops:block/air_conditioner_on_warm",
+      "y": 180
+    },
+    "facing=west,active=false,warm=false": {
+      "model": "biome_based_crops:block/air_conditioner",
+      "y": 270
+    },
+    "facing=west,active=false,warm=true": {
+      "model": "biome_based_crops:block/air_conditioner_warm",
+      "y": 270
+    },
+    "facing=west,active=true,warm=false": {
+      "model": "biome_based_crops:block/air_conditioner_on",
+      "y": 270
+    },
+    "facing=west,active=true,warm=true": {
+      "model": "biome_based_crops:block/air_conditioner_on_warm",
+      "y": 270
+    }
   }
 }

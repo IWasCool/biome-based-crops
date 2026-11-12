@@ -5,6 +5,7 @@ import java.util.List;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -23,7 +24,7 @@ public final class LargeGreenhouseGameTests {
     private LargeGreenhouseGameTests() { }
 
     @GameTest(template = "empty", skyAccess = true, batch = "large_greenhouses", timeoutTicks = 600)
-    public static void largeRoomScansIncrementallyAndScalesItsGlassRequirements(GameTestHelper helper) {
+    public static void largeRoomScansIncrementallyAndChecksGlassOnlyAbovePlants(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         List<Long> tickets = new ArrayList<>();
         List<? extends String> oldMaterials = List.copyOf(GreenhouseSettings.BIOME_MATERIAL_RULES.get());
@@ -72,10 +73,12 @@ public final class LargeGreenhouseGameTests {
             int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
             for (int x = -1; x <= width; x++) for (int z = -1; z <= depth; z++) {
                 level.setBlock(min.offset(x, -1, z), Blocks.GLASS.defaultBlockState(), flags);
-                Block roof = (x + z) % 3 == 0 ? Blocks.TINTED_GLASS : (x + z) % 3 == 1 ? Blocks.GLASS_PANE : Blocks.RED_STAINED_GLASS;
+                Block roof = (x + z) % 3 == 0 ? Blocks.WHITE_STAINED_GLASS : (x + z) % 3 == 1 ? Blocks.GLASS_PANE : Blocks.RED_STAINED_GLASS;
                 level.setBlock(min.offset(x, height, z), roof.defaultBlockState(), flags);
             }
             for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) for (int z = 0; z < depth; z++)
+                    level.setBlock(min.offset(x, y, z), Blocks.AIR.defaultBlockState(), flags);
                 for (int x = -1; x <= width; x++) {
                     level.setBlock(min.offset(x, y, -1), Blocks.BLUE_STAINED_GLASS.defaultBlockState(), flags);
                     level.setBlock(min.offset(x, y, depth), Blocks.BLUE_STAINED_GLASS.defaultBlockState(), flags);
@@ -85,23 +88,27 @@ public final class LargeGreenhouseGameTests {
                     level.setBlock(min.offset(width, y, z), Blocks.BLUE_STAINED_GLASS.defaultBlockState(), flags);
                 }
             }
-            level.setBlock(min.offset(2, -1, 2), Blocks.DIAMOND_BLOCK.defaultBlockState(), flags);
-            level.setBlock(min.offset(3, -1, 2), Blocks.DIAMOND_BLOCK.defaultBlockState(), flags);
-            level.setBlock(min.offset(4, -1, 2), Blocks.EMERALD_BLOCK.defaultBlockState(), flags);
-            level.setBlock(min.offset(5, -1, 2), Blocks.LAPIS_BLOCK.defaultBlockState(), flags);
+            // Native Neutral climate needs no controllers, even in a very large room.
+            // Reserve interior scenery so later material swaps preserve the topology.
+            int totalMaterials = GreenhouseRecipes.scaledCount(4, width * height * depth);
+            for (int i = 0; i < totalMaterials; i++)
+                level.setBlock(min.offset(i % width, 0, i / width), Blocks.STONE.defaultBlockState(), flags);
+            level.setBlock(min.offset(2, 0, 2), Blocks.DIAMOND_BLOCK.defaultBlockState(), flags);
+            level.setBlock(min.offset(3, 0, 2), Blocks.DIAMOND_BLOCK.defaultBlockState(), flags);
+            level.setBlock(min.offset(4, 0, 2), Blocks.EMERALD_BLOCK.defaultBlockState(), flags);
+            level.setBlock(min.offset(5, 0, 2), Blocks.LAPIS_BLOCK.defaultBlockState(), flags);
             BlockPos inside = min.offset(32, 1, 32);
             var initial = GreenhouseEnvironment.inspect(level, inside);
             helper.assertTrue(initial.status().endsWith("scanning"), "131072-cell room was scanned synchronously");
             helper.assertTrue(level.getBiome(inside).is(Biomes.PLAINS), "Unfinished scan exposed a speculative biome");
             helper.runAfterDelay(240L, () -> {
                 try {
-                    var complete = GreenhouseEnvironment.inspect(level, inside);
+                    var complete = GreenhouseEnvironment.inspectForBiome(level, inside, Biomes.FOREST.location());
                     helper.assertTrue(complete.enclosed(), "Large greenhouse did not finish bounded background scanning: " + complete);
                     helper.assertFalse(complete.valid(), "Four specimens validated a 131072-cell greenhouse without volume scaling");
                     helper.assertTrue(complete.status().endsWith("missing_specimens"), "Large sparse room failed for the wrong reason: " + complete);
                     helper.assertValueEqual(complete.roomVolume(), width * height * depth, "volume reported before material requirements are complete");
-                    // Put the proportional requirements into the existing floor.
-                    // Changing one full floor block to another leaves all 131072 air cells intact.
+                    // Swap interior scenery without changing the sealed air cells.
                     int volume = width * height * depth;
                     int diamond = GreenhouseRecipes.scaledCount(2, volume);
                     int emerald = GreenhouseRecipes.scaledCount(1, volume);
@@ -111,27 +118,33 @@ public final class LargeGreenhouseGameTests {
                     for (int i = 0; i < diamond + emerald + lapis; i++) {
                         Block material = i < diamond ? Blocks.DIAMOND_BLOCK
                                 : i < diamond + emerald ? Blocks.EMERALD_BLOCK : Blocks.LAPIS_BLOCK;
-                        level.setBlock(min.offset(i % width, -1, i / width), material.defaultBlockState(), flags);
+                        level.setBlock(min.offset(i % width, 0, i / width), material.defaultBlockState(), flags);
                     }
                     var furnished = GreenhouseEnvironment.inspect(level, inside);
-                    helper.assertTrue(furnished.valid(), "Proportional floor materials did not validate large room: " + furnished);
+                    helper.assertTrue(furnished.valid(), "Proportional interior materials did not validate large room: " + furnished);
                     helper.assertValueEqual(furnished.requiredSpecimens(), diamond + emerald + lapis, "scaled total material count");
                     helper.assertValueEqual(furnished.specimens(), furnished.requiredSpecimens(), "matched proportional material total");
                     var region = GreenhouseEnvironment.regionAt(level, inside);
                     helper.assertTrue(region != null && region.interior() instanceof LongSet, "Large interior was boxed or omitted");
-                    helper.assertValueEqual(region.interior().size(), width * height * depth, "large greenhouse interior volume");
+                    helper.assertValueEqual(region.interior().size(), width * height * depth - totalMaterials, "large greenhouse air cells");
                     helper.assertTrue(level.getBiome(inside).is(Biomes.FOREST), "Large greenhouse did not expose its biome");
                     var stableCells = region.interior();
                     GreenhouseEnvironment.invalidateClimate();
                     helper.assertTrue(GreenhouseEnvironment.regionAt(level, inside).interior() == stableCells,
                             "Climate refresh copied or rescanned the large room topology");
                     for (int i = 0; i < 2050; i++) level.setBlock(min.offset(i % width, height, i / width), Blocks.OBSIDIAN.defaultBlockState(), flags);
-                    helper.assertTrue(GreenhouseEnvironment.inspect(level, inside).status().endsWith("no_glass"),
-                            "Less than half the large roof passed the proportional glass requirement");
+                    helper.assertTrue(GreenhouseEnvironment.inspect(level, inside).valid(),
+                            "Opaque roof tiles invalidated the registered biome");
+                    helper.assertFalse(GreenhouseEnvironment.hasGrowingLight(level, min.offset(0, 1, 0)),
+                            "A plant under opaque roofing received greenhouse light");
+                    helper.assertTrue(GreenhouseEnvironment.hasGrowingLight(level, inside),
+                            "A plant under remaining glass lost its lighting because other roof tiles are opaque");
                     for (int i = 0; i < 2050; i++) level.setBlock(min.offset(i % width, height, i / width), Blocks.GLASS.defaultBlockState(), flags);
                     for (int y = 0; y < height; y++) {
                         for (int x = 0; x < width; x++) {
-                            level.setBlock(min.offset(x, y, -1), Blocks.OBSIDIAN.defaultBlockState(), flags);
+                            BlockPos north = min.offset(x, y, -1);
+                            if (!level.getBlockState(north).is(GreenhouseContent.AIR_CONDITIONER.get()))
+                                level.setBlock(north, Blocks.OBSIDIAN.defaultBlockState(), flags);
                             level.setBlock(min.offset(x, y, depth), Blocks.OBSIDIAN.defaultBlockState(), flags);
                         }
                         for (int z = 0; z < depth; z++) {
@@ -140,10 +153,12 @@ public final class LargeGreenhouseGameTests {
                         }
                     }
                     for (int z = 0; z < 4; z++) level.setBlock(min.offset(-1, 0, z), Blocks.GLASS.defaultBlockState(), flags);
-                    helper.assertFalse(GreenhouseEnvironment.inspect(level, inside).valid(), "Four wall glass blocks validated an enormous opaque barn");
+                    helper.assertTrue(GreenhouseEnvironment.inspect(level, inside).valid(), "Sealed opaque walls invalidated a large glass-roof greenhouse");
                     for (int y = 0; y < 4; y++) {
                         for (int x = 0; x < width; x++) {
-                            level.setBlock(min.offset(x, y, -1), Blocks.GLASS.defaultBlockState(), flags);
+                            BlockPos north = min.offset(x, y, -1);
+                            if (!level.getBlockState(north).is(GreenhouseContent.AIR_CONDITIONER.get()))
+                                level.setBlock(north, Blocks.GLASS.defaultBlockState(), flags);
                             level.setBlock(min.offset(x, y, depth), Blocks.GLASS.defaultBlockState(), flags);
                         }
                         for (int z = 0; z < depth; z++) {
@@ -153,8 +168,19 @@ public final class LargeGreenhouseGameTests {
                     }
                     var repaired = GreenhouseEnvironment.regionAt(level, inside);
                     helper.assertTrue(repaired != null && repaired.interior() == stableCells, "Glazing-only changes restarted room topology");
-                    level.setBlock(new BlockPos(inside.getX(), min.getY() + height, inside.getZ()), Blocks.AIR.defaultBlockState(), flags);
-                    helper.assertTrue(level.getBiome(inside).is(Biomes.PLAINS), "Opening a large roof retained its biome overlay");
+                    BlockPos opening = new BlockPos(inside.getX(), min.getY() + height, inside.getZ());
+                    level.setBlock(opening, Blocks.AIR.defaultBlockState(), flags);
+                    var leaking = GreenhouseEnvironment.inspect(level, inside);
+                    helper.assertTrue(leaking.valid() && leaking.status().endsWith("leaking"),
+                            "A brief roof opening discarded the known large greenhouse: " + leaking);
+                    helper.assertTrue(level.getBiome(inside).is(Biomes.FOREST), "Large room lost its biome during leak grace");
+                    helper.assertTrue(GreenhouseEnvironment.regionAt(level, opening.above()) == null,
+                            "Large leaking room expanded above its old roof");
+                    level.setBlock(opening, Blocks.GLASS.defaultBlockState(), flags);
+                    var resealed = GreenhouseEnvironment.regionAt(level, inside);
+                    helper.assertTrue(resealed != null && resealed.interior() == stableCells
+                                    && GreenhouseEnvironment.inspect(level, inside).status().endsWith("valid"),
+                            "Resealing a large roof lost its room or climate");
                     helper.succeed();
                 } finally { restore.run(); }
             });

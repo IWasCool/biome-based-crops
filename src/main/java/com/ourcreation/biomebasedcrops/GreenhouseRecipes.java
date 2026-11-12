@@ -13,20 +13,29 @@ import java.util.WeakHashMap;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public final class GreenhouseRecipes {
     public static final int REFERENCE_VOLUME = 512;
+    // Retain the existing wire field while distinguishing ground accents from
+    // the ordinary positive flags used for room-volume habitat percentages.
     private static final Map<Holder<Biome>, Recipe> RECIPES = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final Map<Registry<Biome>, Map<ResourceLocation, Recipe>> CATALOGS = new WeakHashMap<>();
     private static final Map<String, List<MaterialRequirement>> VANILLA = vanillaRecipes();
+    private static final Map<String, List<MaterialRequirement>> BOP = biomesOPlentyRecipes();
+    private static final Set<String> UNCOLLECTIBLE = Set.of("bedrock", "barrier", "spawner", "budding_amethyst",
+            "command_block", "chain_command_block", "repeating_command_block", "structure_block", "structure_void",
+            "jigsaw", "light", "end_portal_frame", "reinforced_deepslate", "chorus_plant");
     private static volatile Map<ResourceLocation, Recipe> clientRecipes = Map.of();
     private static volatile Integer clientReferenceVolume;
 
@@ -36,11 +45,95 @@ public final class GreenhouseRecipes {
     public static Recipe forBiome(Holder<Biome> biome) {
         ResourceLocation id = biome.unwrapKey().map(key -> key.location()).orElse(null);
         Recipe synced = id == null ? null : clientRecipes.get(id);
-        return synced != null ? synced : forServerBiome(biome);
+        return synced != null ? synced : RECIPES.computeIfAbsent(biome, GreenhouseRecipes::derive);
     }
 
-    public static Recipe forServerBiome(Holder<Biome> biome) {
-        return RECIPES.computeIfAbsent(biome, GreenhouseRecipes::derive);
+    public static Recipe forServerBiome(Registry<Biome> biomes, Holder<Biome> biome) {
+        ResourceLocation id = biome.unwrapKey().orElseThrow().location();
+        return Objects.requireNonNull(serverCatalog(biomes).get(id), "Biome is not in this registry: " + id);
+    }
+
+    /** Resolve palettes together so generated biomes cannot silently share an identical building plan. */
+    public static synchronized Map<ResourceLocation, Recipe> serverCatalog(Registry<Biome> biomes) {
+        return CATALOGS.computeIfAbsent(biomes, GreenhouseRecipes::buildCatalog);
+    }
+
+    private static Map<ResourceLocation, Recipe> buildCatalog(Registry<Biome> biomes) {
+        Set<ResourceLocation> custom = new LinkedHashSet<>();
+        List<? extends String> rules = GreenhouseSettings.SPEC.isLoaded()
+                ? GreenhouseSettings.BIOME_MATERIAL_RULES.get() : GreenhouseSettings.BIOME_MATERIAL_RULES.getDefault();
+        for (String rule : rules) if (GreenhouseSettings.validateMaterialRule(rule)
+                && GreenhouseSettings.parseRequirements(rule.split("=", 2)[1], GreenhouseSettings.requiredSpecimens())
+                        .stream().allMatch(material -> usable(material.block())))
+            custom.add(ResourceLocation.parse(rule.split("=", 2)[0].trim()));
+        var ordered = biomes.holders().sorted(Comparator
+                .comparing((Holder.Reference<Biome> biome) -> !custom.contains(biome.key().location()))
+                .thenComparing(biome -> !biome.key().location().getNamespace().equals("minecraft"))
+                .thenComparing(biome -> biome.key().location().toString())).toList();
+        Map<ResourceLocation, Recipe> catalog = new LinkedHashMap<>();
+        Set<MaterialChoices> used = new LinkedHashSet<>();
+        for (var biome : ordered) {
+            ResourceLocation id = biome.key().location();
+            Recipe recipe = RECIPES.computeIfAbsent(biome, GreenhouseRecipes::derive);
+            if (!custom.contains(id) && used.contains(choices(recipe))) recipe = distinguish(biome, recipe, used);
+            catalog.put(id, recipe);
+            used.add(choices(recipe));
+        }
+        return Map.copyOf(catalog);
+    }
+
+    private static MaterialChoices choices(Recipe recipe) {
+        // Quantities and temperature alone do not distinguish what players have to build.
+        return new MaterialChoices(Set.copyOf(recipe.specimens()), Set.copyOf(recipe.floor().blocks()));
+    }
+
+    private static Recipe distinguish(Holder<Biome> biome, Recipe base, Set<MaterialChoices> used) {
+        Set<ResourceLocation> nativeBlocks = new LinkedHashSet<>();
+        biome.value().getGenerationSettings().features().stream().flatMap(set -> set.stream())
+                .flatMap(feature -> feature.value().getFeatures()).forEach(feature -> {
+                    if (feature.config() instanceof TreeConfiguration tree) {
+                        sample(tree.trunkProvider, nativeBlocks);
+                        sample(tree.foliageProvider, nativeBlocks);
+                    } else if (feature.config() instanceof SimpleBlockConfiguration simple) sample(simple.toPlace(), nativeBlocks);
+                });
+        ResourceLocation id = biome.unwrapKey().orElseThrow().location();
+        String planet = nativePlanet(id);
+        if (planet != null) {
+            nativeBlocks.removeIf(block -> !block.getNamespace().equals(id.getNamespace())
+                    || !block.getPath().startsWith(planet + "_"));
+            BuiltInRegistries.BLOCK.keySet().stream().filter(block -> block.getNamespace().equals(id.getNamespace())
+                    && block.getPath().startsWith(planet + "_")
+                    && (block.getPath().contains("ore") || block.getPath().endsWith("_stone")
+                    || block.getPath().endsWith("_gravel") || block.getPath().endsWith("_sand")))
+                    .sorted().forEach(nativeBlocks::add);
+        }
+        Recipe nativeChoice = addDistinctMaterials(base, nativeBlocks, used);
+        if (nativeChoice != null) return nativeChoice;
+        // Some datapack biomes expose exactly the same vegetation. Use obtainable garden/rock accents,
+        // never arbitrary machines, unplaceable blocks, or different amounts of the same material.
+        if (planet == null) for (String block : List.of("mossy_cobblestone", "andesite", "diorite", "granite", "tuff",
+                "calcite", "cobblestone", "moss_block", "azalea", "flowering_azalea", "allium", "cornflower",
+                "oxeye_daisy", "blue_orchid", "lily_of_the_valley", "fern", "sunflower", "rose_bush", "lilac", "peony"))
+            nativeBlocks.add(ResourceLocation.withDefaultNamespace(block));
+        Recipe fallback = addDistinctMaterials(base, nativeBlocks, used);
+        if (fallback == null) throw new IllegalStateException("No distinct greenhouse materials available for " + id);
+        return fallback;
+    }
+
+    private static Recipe addDistinctMaterials(Recipe base, Set<ResourceLocation> candidates, Set<MaterialChoices> used) {
+        var available = candidates.stream().filter(GreenhouseRecipes::usable)
+                .filter(block -> !base.specimens().contains(block) && !base.floor().blocks().contains(block)).toList();
+        for (int count = 1; count <= 2; count++) for (int i = 0; i < available.size(); i++) {
+            for (int j = count == 1 ? i : i + 1; j < (count == 1 ? i + 1 : available.size()); j++) {
+                List<MaterialRequirement> materials = new ArrayList<>(base.requirements());
+                for (ResourceLocation block : count == 1 ? List.of(available.get(i)) : List.of(available.get(i), available.get(j)))
+                    materials.add(new MaterialRequirement(block, 8, 16,
+                            BuiltInRegistries.BLOCK.get(block) instanceof BushBlock ? 1 : 0));
+                Recipe candidate = new Recipe(base.climate(), materials, base.floor());
+                if (!used.contains(choices(candidate))) return candidate;
+            }
+        }
+        return null;
     }
 
     public static void acceptServerRecipes(Map<ResourceLocation, Recipe> recipes) {
@@ -58,8 +151,9 @@ public final class GreenhouseRecipes {
         clientReferenceVolume = null;
     }
 
-    public static void clearCache() {
+    public static synchronized void clearCache() {
         RECIPES.clear();
+        CATALOGS.clear();
     }
 
     /** Reference volume advertised by the guide's authoritative recipe catalog. */
@@ -84,14 +178,15 @@ public final class GreenhouseRecipes {
         validateScale(material.count(), roomVolume, referenceVolume);
         if (!isPercentageBased(material)) return scaledCount(material.count(), roomVolume, referenceVolume);
         int volume = roomVolume == 0 ? referenceVolume : roomVolume;
-        return (int) (((long) material.count() * volume + referenceVolume - 1) / referenceVolume);
+        long percent = Math.round(materialPercent(material, referenceVolume));
+        return (int) ((percent * volume + 99) / 100);
     }
 
     public static boolean isPercentageBased(MaterialRequirement material) { return material.floorDivisor() > 0; }
 
     public static double materialPercent(MaterialRequirement material, int referenceVolume) {
         validateScale(material.count(), 0, referenceVolume);
-        return material.count() * 100D / referenceVolume;
+        return Math.max(1L, Math.round(material.count() * 100D / referenceVolume));
     }
 
     private static void validateScale(int baseCount, int roomVolume, int referenceVolume) {
@@ -115,7 +210,11 @@ public final class GreenhouseRecipes {
                 }
             }
         }
-        if (override != null) return new Recipe(climate, override, floorFor(id, climate, true));
+        if (override != null) {
+            if (override.stream().allMatch(material -> usable(material.block())))
+                return new Recipe(climate, override, floorFor(id, climate, true));
+            BiomeBasedCrops.LOGGER.warn("Ignoring greenhouse material override for {}: it contains an unavailable player placement item", id);
+        }
         String planet = nativePlanet(id);
         if (planet != null) {
             List<MaterialRequirement> nativeRock = new ArrayList<>();
@@ -129,12 +228,9 @@ public final class GreenhouseRecipes {
             List<MaterialRequirement> materials = VANILLA.get(id.getPath());
             return habitat(climate, materials, id);
         }
-        // These registered BOP materials also have survival crafting/loot definitions.
-        if (id.equals(ResourceLocation.parse("biomesoplenty:ominous_woods"))) {
-            List<MaterialRequirement> ominous = List.of(
-                    requirement("biomesoplenty:umbran_log", 8), requirement("biomesoplenty:umbran_leaves", 8),
-                    requirement("biomesoplenty:dead_leaves", 4), requirement("biomesoplenty:umbran_wood", 4));
-            if (ominous.stream().allMatch(material -> usable(material.block()))) return habitat(climate, ominous, id);
+        if (id.getNamespace().equals("biomesoplenty") && BOP.containsKey(id.getPath())) {
+            var materials = BOP.get(id.getPath());
+            if (materials.stream().allMatch(material -> usable(material.block()))) return habitat(climate, materials, id);
         }
         return deriveModRecipe(biome, id, climate);
     }
@@ -180,12 +276,14 @@ public final class GreenhouseRecipes {
             boolean log = path.endsWith("_log") || path.endsWith("_wood") || path.endsWith("_stem") || path.endsWith("_hyphae");
             boolean canopy = (path.endsWith("_leaves") && !path.equals("dead_leaves")) || path.endsWith("wart_block");
             boolean cactus = path.equals("cactus");
-            boolean plant = cactus || path.contains("flower") || path.contains("sapling") || path.contains("grass") && !path.endsWith("_block")
+            boolean plant = BuiltInRegistries.BLOCK.get(material.block()) instanceof BushBlock
+                    || cactus || path.contains("flower") || path.contains("sapling") || path.contains("grass") && !path.endsWith("_block")
                     || path.contains("fern") || path.contains("mushroom") || path.contains("fungus") || path.contains("vine")
                     || path.contains("petals") || Set.of("dandelion", "poppy", "allium", "azure_bluet", "oxeye_daisy", "cornflower",
                             "lily_pad", "cocoa", "bamboo", "sugar_cane", "dead_bush", "kelp", "seagrass", "sea_pickle", "dead_leaves").contains(path);
             int minimum = canopy ? 64 : log ? (firstLog ? 16 : 8) : cactus ? 3 : plant ? 8 : 16;
-            abundant.add(new MaterialRequirement(material.block(), Math.max(material.count(), minimum), canopy ? 2 : log ? 8 : 16,
+            abundant.add(new MaterialRequirement(material.block(), Math.max(material.count(), minimum),
+                    canopy ? 2 : log ? 8 : 16,
                     canopy ? 2 : log || plant ? 1 : 0));
             if (log) firstLog = false;
         }
@@ -205,7 +303,11 @@ public final class GreenhouseRecipes {
 
     private static FloorRequirement floorFor(ResourceLocation biome, CropClimate climate, boolean customMaterials) {
         FloorRequirement configured = GreenhouseSettings.floorOverride(biome);
-        if (configured != null) return configured;
+        if (configured != null) {
+            var available = configured.blocks().stream().filter(GreenhouseRecipes::usable).toList();
+            if (!available.isEmpty()) return new FloorRequirement(available, configured.coveragePercent());
+            BiomeBasedCrops.LOGGER.warn("Ignoring greenhouse floor override for {}: no obtainable placement blocks remain", biome);
+        }
         if (customMaterials) return FloorRequirement.none();
         String path = biome.getPath();
         if (biome.toString().equals("biomesoplenty:visceral_heap")) return floor(90, "biomesoplenty:flesh");
@@ -264,9 +366,12 @@ public final class GreenhouseRecipes {
     }
 
     private static void sample(BlockStateProvider provider, Set<ResourceLocation> output) {
-        for (int seed = 0; seed < 4; seed++) {
+        for (int seed = 0; seed < 32; seed++) {
             try {
-                ResourceLocation block = BuiltInRegistries.BLOCK.getKey(provider.getState(RandomSource.create(seed), BlockPos.ZERO).getBlock());
+                ResourceLocation block = BuiltInRegistries.BLOCK.getKey(provider.getState(RandomSource.create(seed),
+                        new BlockPos(seed * 37, 64, seed * -53)).getBlock());
+                if (block.equals(ResourceLocation.withDefaultNamespace("tall_grass"))) block = ResourceLocation.withDefaultNamespace("short_grass");
+                if (block.equals(ResourceLocation.withDefaultNamespace("large_fern"))) block = ResourceLocation.withDefaultNamespace("fern");
                 if (usable(block)) output.add(block);
             } catch (RuntimeException exception) {
                 BiomeBasedCrops.LOGGER.debug("Could not sample greenhouse specimen provider", exception);
@@ -275,8 +380,89 @@ public final class GreenhouseRecipes {
         }
     }
 
-    private static boolean usable(ResourceLocation id) {
-        return BuiltInRegistries.BLOCK.getOptional(id).map(block -> block.asItem() != Items.AIR).orElse(false);
+    static boolean usable(ResourceLocation id) {
+        if (id.getNamespace().equals("minecraft") && UNCOLLECTIBLE.contains(id.getPath())) return false;
+        return BuiltInRegistries.BLOCK.getOptional(id).map(block -> block.asItem() instanceof BlockItem item
+                && item.getBlock() == block).orElse(false);
+    }
+
+    /** Distinct native vegetation and geology from BOP's generated biome features. */
+    private static Map<String, List<MaterialRequirement>> biomesOPlentyRecipes() {
+        Map<String, List<MaterialRequirement>> recipes = new LinkedHashMap<>();
+        bop(recipes, "aspen_glade", "minecraft:birch_log*8,yellow_maple_leaves*4,reed*4");
+        bop(recipes, "auroral_garden", "minecraft:birch_log*8,rainbow_birch_leaves*4,icy_iris*4,violet*4");
+        bop(recipes, "bayou", "willow_log*8,willow_leaves*4,cattail*4");
+        bop(recipes, "bog", "minecraft:mangrove_log*8,bush*4,reed*4");
+        bop(recipes, "cold_desert", "dead_grass*4,desert_grass*4,minecraft:gravel*4");
+        bop(recipes, "coniferous_forest", "fir_log*8,fir_leaves*4,toadstool*4");
+        bop(recipes, "crag", "minecraft:andesite*8,minecraft:mossy_cobblestone*4,minecraft:short_grass*4");
+        bop(recipes, "crystalline_chasm", "rose_quartz_block*8,rose_quartz_cluster*4,minecraft:blackstone*4");
+        bop(recipes, "dead_forest", "dead_log*8,dead_leaves*4,dead_branch*4");
+        bop(recipes, "dryland", "pine_log*8,pine_leaves*4,tiny_cactus*4");
+        bop(recipes, "dune_beach", "dune_grass*4,sea_oats*4");
+        bop(recipes, "end_corruption", "null_block*8,null_leaves*4,null_plant*4");
+        bop(recipes, "end_reef", "minecraft:dead_brain_coral_block*8,barnacles*4,wispjelly*4");
+        bop(recipes, "end_wilds", "empyreal_log*8,empyreal_leaves*4,endbloom*4,enderphyte*4");
+        bop(recipes, "erupting_inferno", "brimstone*8,brimstone_cluster*4,minecraft:magma_block*4");
+        bop(recipes, "field", "white_lavender*4,wildflower*4,minecraft:rose_bush*4");
+        bop(recipes, "fir_clearing", "fir_log*8,fir_leaves*4,minecraft:fern*4");
+        bop(recipes, "floodplain", "minecraft:oak_log*8,waterlily*4,watergrass*4,orange_cosmos*4");
+        bop(recipes, "forested_field", "minecraft:oak_log*8,minecraft:oak_leaves*4,wildflower*4,sprout*4");
+        bop(recipes, "fungal_jungle", "minecraft:jungle_log*8,minecraft:jungle_leaves*4,toadstool*4,toadstool_block*4");
+        bop(recipes, "glowing_grotto", "glowing_moss_block*8,glowshroom*4,glowworm_silk*4");
+        bop(recipes, "grassland", "minecraft:short_grass*8,minecraft:dandelion*4");
+        bop(recipes, "gravel_beach", "minecraft:stone*8,minecraft:andesite*4,minecraft:cobblestone*4");
+        bop(recipes, "highland", "minecraft:cobblestone*8,minecraft:short_grass*4,minecraft:granite*4");
+        bop(recipes, "hot_springs", "pine_log*8,pine_leaves*4,thermal_calcite*4");
+        bop(recipes, "jacaranda_glade", "jacaranda_log*8,jacaranda_leaves*4,minecraft:lily_of_the_valley*4");
+        bop(recipes, "jade_cliffs", "pine_log*8,pine_leaves*4,minecraft:spruce_log*4");
+        bop(recipes, "lavender_field", "jacaranda_log*8,jacaranda_leaves*4,lavender*4,tall_lavender*4");
+        bop(recipes, "lush_desert", "palm_log*8,palm_leaves*4,desert_grass*4,wildflower*4");
+        bop(recipes, "lush_savanna", "minecraft:poppy*4,minecraft:rose_bush*4,sprout*4");
+        bop(recipes, "maple_woods", "maple_log*8,red_maple_leaves*4,violet*4");
+        bop(recipes, "marsh", "reed*4,watergrass*8");
+        bop(recipes, "mediterranean_forest", "minecraft:spruce_log*8,cypress_leaves*4,minecraft:peony*4");
+        bop(recipes, "moor", "violet*4,minecraft:allium*4,minecraft:short_grass*4");
+        bop(recipes, "muskeg", "dead_log*8,dead_branch*4,minecraft:brown_mushroom*4");
+        bop(recipes, "mystic_grove", "magic_log*8,magic_leaves*4,glowflower*4,blue_hydrangea*4");
+        bop(recipes, "old_growth_dead_forest", "dead_log*8,dead_leaves*4,dead_branch*4,minecraft:vine*4");
+        bop(recipes, "old_growth_woodland", "minecraft:oak_log*8,minecraft:oak_leaves*4,minecraft:rose_bush*4");
+        bop(recipes, "ominous_woods", "umbran_log*8,umbran_leaves*8,dead_leaves*4,umbran_wood*4");
+        bop(recipes, "orchard", "minecraft:oak_log*8,flowering_oak_leaves*4,clover*4");
+        bop(recipes, "origin_valley", "minecraft:oak_log*8,origin_leaves*4,rose*4");
+        bop(recipes, "overgrown_greens", "clover*8,pink_daffodil*4,minecraft:azure_bluet*4");
+        bop(recipes, "pasture", "barley*8,minecraft:short_grass*4");
+        bop(recipes, "prairie", "minecraft:oak_log*8,goldenrod*4,minecraft:cornflower*4");
+        bop(recipes, "pumpkin_patch", "maple_log*8,orange_maple_leaves*4,minecraft:pumpkin*4,toadstool*4");
+        bop(recipes, "rainforest", "mahogany_log*8,mahogany_leaves*4,orange_cosmos*4,minecraft:big_dripleaf*4");
+        bop(recipes, "redwood_forest", "redwood_log*8,redwood_leaves*4,minecraft:fern*4");
+        bop(recipes, "rocky_rainforest", "mahogany_log*8,mahogany_leaves*4,orange_cosmos*4,minecraft:jungle_log*4,minecraft:andesite*4");
+        bop(recipes, "rocky_shrubland", "minecraft:oak_log*8,bush*4,minecraft:allium*4,minecraft:andesite*4");
+        bop(recipes, "scrubland", "minecraft:acacia_log*8,minecraft:acacia_leaves*4,desert_grass*4,wildflower*4");
+        bop(recipes, "seasonal_forest", "maple_log*8,orange_maple_leaves*4,red_maple_leaves*4,yellow_maple_leaves*4");
+        bop(recipes, "shrubland", "minecraft:oak_log*8,bush*4,minecraft:allium*4,minecraft:lilac*4");
+        bop(recipes, "snowblossom_grove", "minecraft:cherry_log*8,snowblossom_leaves*4,white_petals*4");
+        bop(recipes, "snowy_coniferous_forest", "fir_log*8,fir_leaves*4,toadstool*4,violet*4");
+        bop(recipes, "snowy_fir_clearing", "fir_log*8,fir_leaves*4,minecraft:fern*4,minecraft:ice*4");
+        bop(recipes, "snowy_maple_woods", "maple_log*8,red_maple_leaves*4,violet*4,minecraft:ice*4");
+        bop(recipes, "spider_nest", "minecraft:cobweb*8,spider_egg*4,webbing*4");
+        bop(recipes, "tropics", "palm_log*8,palm_leaves*4,pink_hibiscus*4,blue_hydrangea*4");
+        bop(recipes, "tundra", "dead_log*8,tundra_shrub*4,reed*4");
+        bop(recipes, "undergrowth", "hellbark_log*8,hellbark_leaves*4,burning_blossom*4");
+        bop(recipes, "visceral_heap", "minecraft:bone_block*8,porous_flesh*4,eyebulb*4,hair*4");
+        bop(recipes, "volcanic_plains", "minecraft:dark_oak_log*8,mossy_black_sand*4,sprout*4");
+        bop(recipes, "volcano", "black_sandstone*8,minecraft:smooth_basalt*4,minecraft:magma_block*4");
+        bop(recipes, "wasteland", "dead_log*8,dead_grass*4,wilted_lily*4");
+        bop(recipes, "wasteland_steppe", "dead_grass*4,desert_grass*4");
+        bop(recipes, "wetland", "willow_log*8,willow_leaves*4,reed*4,toadstool*4");
+        bop(recipes, "wintry_origin_valley", "minecraft:oak_log*8,origin_leaves*4,rose*4,minecraft:ice*4");
+        bop(recipes, "withered_abyss", "blackstone_spines*8,blackstone_bulb*4,minecraft:obsidian*4");
+        bop(recipes, "woodland", "minecraft:oak_log*8,minecraft:oxeye_daisy*4,minecraft:poppy*4");
+        return Map.copyOf(recipes);
+    }
+
+    private static void bop(Map<String, List<MaterialRequirement>> recipes, String biome, String raw) {
+        put(recipes, "biomesoplenty", biome, raw);
     }
 
     private static Map<String, List<MaterialRequirement>> vanillaRecipes() {
@@ -293,13 +479,13 @@ public final class GreenhouseRecipes {
         put(recipes, "flower_forest", "oak_log*4,allium*2,azure_bluet*2,oxeye_daisy*2");
         put(recipes, "birch_forest", "birch_log*8,birch_leaves*4,grass_block*4");
         put(recipes, "dark_forest", "dark_oak_log*8,dark_oak_leaves*4,red_mushroom_block*2");
-        put(recipes, "old_growth_birch_forest", "birch_log*8,birch_leaves*4,tall_grass*4,fern*2");
+        put(recipes, "old_growth_birch_forest", "birch_log*8,birch_leaves*4,short_grass*4,fern*2");
         put(recipes, "old_growth_pine_taiga", "spruce_log*8,podzol*8,mossy_cobblestone*4,brown_mushroom*2");
-        put(recipes, "old_growth_spruce_taiga", "spruce_log*8,spruce_leaves*8,podzol*8,large_fern*2");
+        put(recipes, "old_growth_spruce_taiga", "spruce_log*8,spruce_leaves*8,podzol*8,fern*2,brown_mushroom*2");
         put(recipes, "taiga", "spruce_log*8,spruce_leaves*4,fern*4");
         put(recipes, "snowy_taiga", "spruce_log*8,spruce_leaves*4,snow_block*4");
         put(recipes, "savanna", "acacia_log*8,acacia_leaves*4,short_grass*4");
-        put(recipes, "savanna_plateau", "acacia_log*8,acacia_leaves*4,coarse_dirt*4,tall_grass*2");
+        put(recipes, "savanna_plateau", "acacia_log*8,acacia_leaves*4,coarse_dirt*4,short_grass*2");
         put(recipes, "windswept_hills", "stone*8,grass_block*4,spruce_log*2");
         put(recipes, "windswept_gravelly_hills", "gravel*8,stone*8,grass_block*2");
         put(recipes, "windswept_forest", "oak_log*4,spruce_log*4,stone*8,grass_block*4");
@@ -323,12 +509,12 @@ public final class GreenhouseRecipes {
         put(recipes, "snowy_beach", "sand*8,snow_block*4,ice*4");
         put(recipes, "stony_shore", "stone*8,gravel*4,andesite*4");
         put(recipes, "warm_ocean", "sand*8,brain_coral_block*4,sea_pickle*2");
-        put(recipes, "lukewarm_ocean", "sand*8,seagrass*4,kelp*2");
-        put(recipes, "deep_lukewarm_ocean", "sand*8,stone*4,seagrass*4,kelp*4");
-        put(recipes, "ocean", "sand*4,gravel*8,kelp*4");
-        put(recipes, "deep_ocean", "stone*8,gravel*4,kelp*4");
-        put(recipes, "cold_ocean", "gravel*8,kelp*4,seagrass*2");
-        put(recipes, "deep_cold_ocean", "stone*8,gravel*8,kelp*4,seagrass*2");
+        put(recipes, "lukewarm_ocean", "sand*8,seagrass*4,kelp*2,granite*4");
+        put(recipes, "deep_lukewarm_ocean", "sand*8,stone*4,seagrass*4,kelp*4,prismarine*4");
+        put(recipes, "ocean", "sand*4,gravel*8,kelp*4,tuff*4");
+        put(recipes, "deep_ocean", "stone*8,gravel*4,kelp*4,prismarine*4");
+        put(recipes, "cold_ocean", "gravel*8,kelp*4,seagrass*2,andesite*4");
+        put(recipes, "deep_cold_ocean", "stone*8,gravel*8,kelp*4,seagrass*2,dark_prismarine*4");
         put(recipes, "frozen_ocean", "ice*8,gravel*4,kelp*2");
         put(recipes, "deep_frozen_ocean", "packed_ice*8,gravel*4,kelp*4,stone*4");
         put(recipes, "mushroom_fields", "mycelium*8,red_mushroom_block*4,brown_mushroom_block*4");
@@ -341,18 +527,22 @@ public final class GreenhouseRecipes {
         put(recipes, "soul_sand_valley", "soul_sand*8,soul_soil*8,bone_block*4");
         put(recipes, "basalt_deltas", "basalt*8,blackstone*8,magma_block*4");
         put(recipes, "the_end", "end_stone*8,obsidian*4,purpur_block*4");
-        put(recipes, "end_highlands", "end_stone*8,chorus_plant*4,chorus_flower*2");
-        put(recipes, "end_midlands", "end_stone*8,chorus_plant*2,end_stone_bricks*4");
+        put(recipes, "end_highlands", "end_stone*8,chorus_flower*4,purpur_block*4");
+        put(recipes, "end_midlands", "end_stone*8,chorus_flower*2,end_stone_bricks*4");
         put(recipes, "small_end_islands", "end_stone*8,obsidian*2,end_stone_brick_slab*4");
         put(recipes, "end_barrens", "end_stone*8,end_stone_bricks*4,purpur_pillar*2");
         return Map.copyOf(recipes);
     }
 
     private static void put(Map<String, List<MaterialRequirement>> recipes, String biome, String raw) {
+        put(recipes, "minecraft", biome, raw);
+    }
+
+    private static void put(Map<String, List<MaterialRequirement>> recipes, String namespace, String biome, String raw) {
         List<MaterialRequirement> requirements = new ArrayList<>();
         for (String token : raw.split(",")) {
             String[] pair = token.split("\\*");
-            requirements.add(requirement("minecraft:" + pair[0], Integer.parseInt(pair[1])));
+            requirements.add(requirement(pair[0].contains(":") ? pair[0] : namespace + ":" + pair[0], Integer.parseInt(pair[1])));
         }
         recipes.put(biome, List.copyOf(requirements));
     }
@@ -360,6 +550,8 @@ public final class GreenhouseRecipes {
     private static MaterialRequirement requirement(String block, int count) {
         return new MaterialRequirement(ResourceLocation.parse(block), count);
     }
+
+    private record MaterialChoices(Set<ResourceLocation> features, Set<ResourceLocation> floor) {}
 
     public record MaterialRequirement(ResourceLocation block, int count, int floorDivisor, int minHeight) {
         public MaterialRequirement {

@@ -33,6 +33,62 @@ public final class AutoGreenhouseGameTests {
     private AutoGreenhouseGameTests() {
     }
 
+    @GameTest(template = "empty", skyAccess = true, batch = "greenhouse_three_growth_goals")
+    public static void outsideNativeBiomeNeedsSkyGlassMatchingHabitatAndMatchingClimate(GameTestHelper helper) {
+        withSettings(helper, () -> {
+            helper.setBiome(Biomes.PLAINS);
+            ServerLevel level = helper.getLevel();
+            BlockPos center = house(helper);
+            materials(level, center);
+            BlockPos crop = center.south();
+            BlockPos controller = center.north();
+            capacitySupport(level, center, controller.getX());
+            level.setBlock(controller, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState(), Block.UPDATE_ALL);
+            AirConditionerBlockEntity machine = (AirConditionerBlockEntity) level.getBlockEntity(controller);
+            machine.setClimate(CropClimate.HOT);
+            CropProfile hot = new CropProfile(Set.of(CropClimate.HOT),
+                    List.of(BiomeSelector.parse("minecraft:desert").orElseThrow()));
+            helper.assertTrue(GreenhouseEnvironment.hasSkyGlassAbove(level, crop), "Fixture lacks sky-exposed glass");
+            helper.assertFalse(CommonEvents.canGrow(level, crop, hot), "A greenhouse shell supplied the wrong climate");
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, crop).status().endsWith("wrong_climate"),
+                    "Unpowered fixture did not finish its habitat scan: " + GreenhouseEnvironment.inspect(level, crop));
+            charge(machine);
+            AirConditionerBlockEntity.serverTick(level, controller, level.getBlockState(controller), machine);
+            conditionFixtureAir(level, controller, CropClimate.HOT);
+            helper.assertTrue(CommonEvents.canGrow(level, crop, hot),
+                    "All three greenhouse requirements did not allow growth: " + GreenhouseEnvironment.inspect(level, crop));
+
+            BlockPos cover = crop.above(7);
+            level.setBlock(cover, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertFalse(GreenhouseEnvironment.hasSkyGlassAbove(level, crop), "Glass below an opaque roof counted as sky exposure");
+            helper.assertFalse(CommonEvents.canGrow(level, crop, hot), "Opaque cover above the glass allowed growth");
+            level.setBlock(cover, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(CommonEvents.canGrow(level, crop, hot), "Stacked transparent glass blocked sky exposure");
+            level.setBlock(cover, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+
+            BlockPos marker = center.offset(2, 1, 0);
+            level.setBlock(marker, Blocks.OBSIDIAN.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertFalse(CommonEvents.canGrow(level, crop, hot), "Correct climate replaced a missing biome habitat");
+            level.setBlock(marker, Blocks.LAPIS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            conditionFixtureAir(level, controller, CropClimate.COLD);
+            helper.assertFalse(CommonEvents.canGrow(level, crop, hot), "A cold room retained its hot biome");
+            helper.assertTrue(GreenhouseEnvironment.regionAt(level, crop) == null, "Wrong-climate habitat still existed as a biome");
+            conditionFixtureAir(level, controller, CropClimate.HOT);
+            helper.assertTrue(CommonEvents.canGrow(level, crop, hot), "Restoring the required climate did not recover growth");
+            level.setBlock(center.south(5), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            var leaking = GreenhouseEnvironment.inspect(level, crop);
+            helper.assertTrue(leaking.valid() && leaking.status().endsWith("leaking") && leaking.climate() == CropClimate.HOT,
+                    "A brief wall opening did not retain the known greenhouse climate: " + leaking);
+            helper.assertTrue(CommonEvents.canGrow(level, crop, hot), "Leak grace removed growth from the known greenhouse");
+            helper.assertFalse(CommonEvents.canGrow(level, center.east(7), hot), "An outdoor crop borrowed the leaking greenhouse");
+            level.setBlock(center.south(5), Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, crop).status().endsWith("valid"),
+                    "Resealing the wall did not recover the greenhouse");
+            CropProfile nativeCrop = new CropProfile(Set.of(CropClimate.NEUTRAL));
+            helper.assertTrue(CommonEvents.canGrow(level, center.east(7), nativeCrop), "A native-biome crop incorrectly required a greenhouse");
+        });
+    }
+
     @GameTest(template = "empty", skyAccess = true, batch = "auto_greenhouses")
     public static void detectsBiomeWithoutCoreAndGrowsExactBiomeCrop(GameTestHelper helper) {
         withSettings(helper, () -> {
@@ -40,7 +96,7 @@ public final class AutoGreenhouseGameTests {
             ServerLevel level = helper.getLevel();
             BlockPos center = house(helper);
             materials(level, center);
-            conditioner(level, center.north(), CropClimate.HOT);
+            conditioner(level, center, center.north(), CropClimate.HOT);
             BlockPos crop = center.south();
             plant(level, crop);
             Config.CROP_BIOME_RULES.set(List.of("wheat=minecraft:desert"));
@@ -76,6 +132,7 @@ public final class AutoGreenhouseGameTests {
             BlockPos center = house(helper);
             materials(level, center);
             BlockPos at = center.north();
+            capacitySupport(level, center, at.getX());
             level.setBlock(at, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState(), Block.UPDATE_ALL);
             AirConditionerBlockEntity machine = (AirConditionerBlockEntity) level.getBlockEntity(at);
             machine.setClimate(CropClimate.HOT);
@@ -86,18 +143,18 @@ public final class AutoGreenhouseGameTests {
             AirConditionerBlockEntity.serverTick(level, at, level.getBlockState(at), machine);
             helper.assertValueEqual(machine.energyStored(), before - machine.currentEnergyCost(), "paid AC climate tick");
             GreenhouseEnvironment.invalidateClimate();
-            helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "One paid tick instantly conditioned the entire house");
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "Paid categorical setting did not apply within controller coverage");
             conditionFixtureAir(level, at, CropClimate.HOT);
             helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "Conditioned air did not validate the house");
             // Replacing an existing solid floor block preserves the already conditioned air volume.
             level.setBlock(at.below(), Blocks.REDSTONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
             int poweredEnergy = machine.energyStored();
-            helper.runAfterDelay(1L, () -> {
+            helper.runAfterDelay(2L, () -> {
                 try {
                     AirConditionerBlockEntity.serverTick(level, at, level.getBlockState(at), machine);
                     GreenhouseEnvironment.invalidateClimate();
                     helper.assertFalse(machine.getBlockState().getValue(AirConditionerBlock.ACTIVE), "Redstone-disabled AC kept running");
-                    helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "Stopping power instantly erased the room's retained warm air");
+                    helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "Unpowered controller retained a non-native greenhouse climate");
                     helper.assertValueEqual(machine.energyStored(), poweredEnergy, "disabled AC energy conservation");
                 } finally {
                     restore.run();
@@ -125,8 +182,6 @@ public final class AutoGreenhouseGameTests {
             var unchanged = GreenhouseEnvironment.inspect(level, center);
             helper.assertTrue(unchanged.climate() == unchanged.baseClimate(), "Ambient blocks changed greenhouse climate without an AC");
             helper.assertFalse(unchanged.valid(), "Decorative thermal blocks emulated a desert");
-            helper.assertValueEqual(unchanged.heat(), 0, "decorative block heat contribution");
-            helper.assertValueEqual(unchanged.cooling(), 0, "decorative block cooling contribution");
             BlockPos outside = center.east(6);
             level.setBlock(outside.north(), Blocks.BLUE_ICE.defaultBlockState(), Block.UPDATE_ALL);
             GreenhouseEnvironment.invalidateClimate();
@@ -147,9 +202,35 @@ public final class AutoGreenhouseGameTests {
             var survey = GreenhouseEnvironment.inspect(level, center);
             helper.assertTrue(survey.valid(), "Natural cold baseline did not satisfy cold greenhouse: " + survey.status());
             helper.assertTrue(survey.baseClimate() == CropClimate.COLD && survey.climate() == CropClimate.COLD, "Natural cold baseline was changed");
-            helper.assertValueEqual(survey.heat(), 0, "natural cold house heaters");
-            helper.assertValueEqual(survey.cooling(), 0, "natural cold house coolers");
             helper.assertTrue(id("minecraft:taiga").equals(survey.targetBiome()), "Cold house needs an unnecessary binding block");
+        });
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "auto_greenhouses")
+    public static void customMaterialsMustBeInsideInsteadOfInTheFloorOrWalls(GameTestHelper helper) {
+        withSettings(helper, () -> {
+            helper.setBiome(Biomes.TAIGA);
+            setRecipe("minecraft:taiga");
+            ServerLevel level = helper.getLevel();
+            BlockPos center = house(helper);
+            List<Block> markers = List.of(Blocks.DIAMOND_BLOCK, Blocks.DIAMOND_BLOCK, Blocks.EMERALD_BLOCK, Blocks.LAPIS_BLOCK);
+            for (int i = 0; i < markers.size(); i++) {
+                level.setBlock(center.offset(i - 2, -1, 0), markers.get(i).defaultBlockState(), Block.UPDATE_ALL);
+                level.setBlock(center.offset(i - 2, 1, 5), markers.get(i).defaultBlockState(), Block.UPDATE_ALL);
+            }
+            // Reserve the interior specimen positions before scanning, so only material identity changes later.
+            for (int x : List.of(-2, -1, 1, 2)) {
+                level.setBlock(center.offset(x, 1, 0), Blocks.OBSIDIAN.defaultBlockState(), Block.UPDATE_ALL);
+            }
+            var boundaryOnly = GreenhouseEnvironment.inspectForBiome(level, center, id("minecraft:taiga"));
+            helper.assertFalse(boundaryOnly.valid(), "Floor and wall blocks supplied an inside-only custom habitat");
+            helper.assertValueEqual(boundaryOnly.requirements().size(), 3, "completed custom habitat requirement scan");
+            helper.assertTrue(boundaryOnly.requirements().stream().allMatch(progress -> progress.found() == 0),
+                    "Boundary blocks counted as interior specimens: " + boundaryOnly.requirements());
+            materials(level, center);
+            GreenhouseEnvironment.invalidateClimate();
+            var inside = GreenhouseEnvironment.inspect(level, center);
+            helper.assertTrue(inside.valid(), "Matching natural climate and interior specimens did not validate: " + inside);
         });
     }
 
@@ -159,10 +240,10 @@ public final class AutoGreenhouseGameTests {
             helper.setBiome(Biomes.PLAINS);
             ServerLevel level = helper.getLevel();
             BlockPos center = house(helper);
-            conditioner(level, center.north(), CropClimate.HOT);
             for (int x = -4; x <= 4; x++) {
-                level.setBlock(center.offset(x, -1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+                level.setBlock(center.offset(x, 1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
             }
+            conditioner(level, center, center.north(), CropClimate.HOT);
             GreenhouseEnvironment.invalidateClimate();
             var incomplete = GreenhouseEnvironment.inspect(level, center);
             helper.assertFalse(incomplete.valid(), "One repeated material satisfied unrelated requirements");
@@ -170,7 +251,7 @@ public final class AutoGreenhouseGameTests {
             materials(level, center);
             GreenhouseEnvironment.invalidateClimate();
             helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "Completing exact requirements did not validate");
-            level.setBlock(center.offset(2, -1, 0), Blocks.OBSIDIAN.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(center.offset(2, 1, 0), Blocks.OBSIDIAN.defaultBlockState(), Block.UPDATE_ALL);
             GreenhouseEnvironment.invalidateClimate();
             helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "Removing mandatory lapis preserved biome emulation");
         });
@@ -183,7 +264,7 @@ public final class AutoGreenhouseGameTests {
             ServerLevel level = helper.getLevel();
             BlockPos center = house(helper);
             materials(level, center);
-            conditioner(level, center.north(), CropClimate.HOT);
+            conditioner(level, center, center.north(), CropClimate.HOT);
             GreenhouseEnvironment.invalidateClimate();
             var west = GreenhouseEnvironment.inspect(level, center.west(4));
             GreenhouseEnvironment.invalidateClimate();
@@ -196,25 +277,32 @@ public final class AutoGreenhouseGameTests {
     }
 
     @GameTest(template = "empty", skyAccess = true, batch = "auto_greenhouses")
-    public static void roofOpeningOutsideCropsAndExteriorSourcesCannotBorrowRoom(GameTestHelper helper) {
+    public static void roofOpeningsPreserveKnownRoomsWithoutSharingWithOutsideCrops(GameTestHelper helper) {
         withSettings(helper, () -> {
             helper.setBiome(Biomes.PLAINS);
             ServerLevel level = helper.getLevel();
             BlockPos center = house(helper);
             materials(level, center);
-            conditioner(level, center.north(), CropClimate.HOT);
+            conditioner(level, center, center.north(), CropClimate.HOT);
             GreenhouseEnvironment.invalidateClimate();
             CropProfile desert = new CropProfile(Set.of(CropClimate.HOT), List.of(BiomeSelector.parse("minecraft:desert").orElseThrow()));
             helper.assertTrue(GreenhouseEnvironment.canSupport(level, center, desert), "Complete house did not support desert: " + GreenhouseEnvironment.inspect(level, center));
             helper.assertFalse(GreenhouseEnvironment.canSupport(level, center.east(6), desert), "Outdoor crop borrowed enclosed biome");
-            level.setBlock(center.north(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            conditioner(level, center.east(6), CropClimate.HOT);
-            GreenhouseEnvironment.invalidateClimate();
-            helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "Exterior air conditioner reached through wall");
-            conditioner(level, center.north(), CropClimate.HOT);
             level.setBlock(center.above(5), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             GreenhouseEnvironment.invalidateClimate();
-            helper.assertFalse(GreenhouseEnvironment.inspect(level, center).enclosed(), "Roof opening remained sealed");
+            var leaking = GreenhouseEnvironment.inspect(level, center);
+            helper.assertTrue(leaking.valid() && leaking.status().endsWith("leaking") && leaking.climate() == CropClimate.HOT,
+                    "A brief roof opening discarded the known greenhouse: " + leaking);
+            helper.assertTrue(level.getBiome(center).is(Biomes.DESERT), "Roof leak grace lost the existing biome overlay");
+            helper.assertFalse(GreenhouseEnvironment.canSupport(level, center.east(6), desert),
+                    "Exterior crop borrowed the retained leaking room");
+            level.setBlock(center.above(5), Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).status().endsWith("valid"),
+                    "Resealing the roof did not restore the known greenhouse");
+            level.setBlock(center.north(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            conditioner(level, center, center.east(6), CropClimate.HOT);
+            GreenhouseEnvironment.invalidateClimate();
+            helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "Exterior air conditioner reached through wall");
         });
     }
 
@@ -228,12 +316,12 @@ public final class AutoGreenhouseGameTests {
             for (int z = -4; z <= 4; z++) for (int y = 0; y < 5; y++) {
                 level.setBlock(center.offset(0, y, z), Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
             }
-            level.setBlock(center.offset(-2, -1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-            level.setBlock(center.offset(-3, -1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-            level.setBlock(center.offset(2, -1, 0), Blocks.EMERALD_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-            level.setBlock(center.offset(3, -1, 0), Blocks.LAPIS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-            conditioner(level, center.west(2), CropClimate.HOT);
-            conditioner(level, center.east(2), CropClimate.HOT);
+            level.setBlock(center.offset(-2, 1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(center.offset(-3, 1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(center.offset(2, 1, 0), Blocks.EMERALD_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(center.offset(3, 1, 0), Blocks.LAPIS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            conditioner(level, center, center.west(2), CropClimate.HOT);
+            conditioner(level, center, center.east(2), CropClimate.HOT);
             GreenhouseEnvironment.invalidateClimate();
             helper.assertFalse(GreenhouseEnvironment.inspect(level, center.west()).valid(), "Left room borrowed right-hand specimens");
             helper.assertFalse(GreenhouseEnvironment.inspect(level, center.east()).valid(), "Right room borrowed left-hand specimens");
@@ -254,7 +342,7 @@ public final class AutoGreenhouseGameTests {
     }
 
     @GameTest(template = "empty", skyAccess = true, batch = "auto_greenhouses")
-    public static void identicalBiomePalettesRemainValidAndSupportExactAliases(GameTestHelper helper) {
+    public static void identicalCustomBiomePalettesAreAmbiguousAndNeverSupportMultipleBiomes(GameTestHelper helper) {
         withSettings(helper, () -> {
             helper.setBiome(Biomes.PLAINS);
             String materials = "=minecraft:diamond_block*2,minecraft:emerald_block*1,minecraft:lapis_block*1";
@@ -263,16 +351,79 @@ public final class AutoGreenhouseGameTests {
             ServerLevel level = helper.getLevel();
             BlockPos center = house(helper);
             materials(level, center);
-            conditioner(level, center.north(), CropClimate.HOT);
+            conditioner(level, center, center.north(), CropClimate.HOT);
             GreenhouseEnvironment.invalidateClimate();
             var survey = GreenhouseEnvironment.inspect(level, center);
-            helper.assertTrue(survey.valid(), "Identical material palettes made a fully matched house invalid: " + survey);
+            helper.assertFalse(survey.valid(), "Identical custom recipes silently selected one biome: " + survey);
+            helper.assertTrue(survey.status().endsWith(".ambiguous"), "Duplicate custom plans were not reported as ambiguous: " + survey);
+            helper.assertTrue(GreenhouseEnvironment.regionAt(level, center) == null, "Ambiguous room advertised a biome overlay");
             for (String biome : List.of("minecraft:desert", "minecraft:badlands")) {
                 CropProfile profile = new CropProfile(Set.of(CropClimate.HOT), List.of(BiomeSelector.parse(biome).orElseThrow()));
-                helper.assertTrue(GreenhouseEnvironment.canSupport(level, center, profile), "Identical palette did not support alias " + biome);
+                helper.assertFalse(GreenhouseEnvironment.canSupport(level, center, profile), "Ambiguous room supported " + biome);
             }
             CropProfile unrelated = new CropProfile(Set.of(CropClimate.HOT), List.of(BiomeSelector.parse("minecraft:jungle").orElseThrow()));
-            helper.assertFalse(GreenhouseEnvironment.canSupport(level, center, unrelated), "Identical palette aliases included unrelated jungle");
+            helper.assertFalse(GreenhouseEnvironment.canSupport(level, center, unrelated), "Ambiguous room supported unrelated jungle");
+        });
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "auto_greenhouses")
+    public static void distinctFlowersIdentifyOneBiomeAndMixedMarkersDisableTheOverlay(GameTestHelper helper) {
+        withSettings(helper, () -> {
+            helper.setBiome(Biomes.PLAINS);
+            String common = "=minecraft:diamond_block*2,minecraft:emerald_block*1,minecraft:lapis_block*1";
+            GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of(
+                    "minecraft:desert" + common + ",minecraft:poppy*1",
+                    "minecraft:badlands" + common + ",minecraft:dandelion*1"));
+            ServerLevel level = helper.getLevel();
+            BlockPos center = house(helper);
+            materials(level, center);
+            BlockPos poppy = center.offset(-2, 0, 2), dandelion = center.offset(2, 0, 2);
+            level.setBlock(poppy.below(), Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(dandelion.below(), Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(poppy, Blocks.POPPY.defaultBlockState(), Block.UPDATE_ALL);
+            conditioner(level, center, center.north(), CropClimate.HOT);
+            var desert = new CropProfile(Set.of(CropClimate.HOT), List.of(BiomeSelector.parse("minecraft:desert").orElseThrow()));
+            var badlands = new CropProfile(Set.of(CropClimate.HOT), List.of(BiomeSelector.parse("minecraft:badlands").orElseThrow()));
+            var first = GreenhouseEnvironment.inspect(level, center);
+            helper.assertTrue(first.valid() && id("minecraft:desert").equals(first.targetBiome()), "Wrong flower-marked biome: " + first);
+            helper.assertTrue(GreenhouseEnvironment.canSupport(level, center, desert), "Poppy-marked desert crop could not grow");
+            helper.assertFalse(GreenhouseEnvironment.canSupport(level, center, badlands), "Desert layout also supported badlands");
+
+            level.setBlock(dandelion, Blocks.DANDELION.defaultBlockState(), Block.UPDATE_ALL);
+            GreenhouseEnvironment.invalidateClimate();
+            var mixed = GreenhouseEnvironment.inspect(level, center);
+            helper.assertTrue(mixed.status().endsWith(".ambiguous"), "Mixed complete palettes were accepted: " + mixed);
+            helper.assertTrue(GreenhouseEnvironment.regionAt(level, center) == null, "Mixed palette still provided a biome overlay");
+            helper.assertFalse(GreenhouseEnvironment.canSupport(level, center, desert), "Mixed palette supported desert");
+            helper.assertFalse(GreenhouseEnvironment.canSupport(level, center, badlands), "Mixed palette supported badlands");
+
+            level.removeBlock(poppy, false);
+            GreenhouseEnvironment.invalidateClimate();
+            var second = GreenhouseEnvironment.inspect(level, center);
+            helper.assertTrue(second.valid() && id("minecraft:badlands").equals(second.targetBiome()), "Removing extra marker did not select badlands: " + second);
+            helper.assertTrue(GreenhouseEnvironment.canSupport(level, center, badlands), "Dandelion-marked badlands crop could not grow");
+            helper.assertFalse(GreenhouseEnvironment.canSupport(level, center, desert), "Badlands layout retained desert support");
+        });
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "auto_greenhouses")
+    public static void extraIdentifyingMaterialsRefineASimplerBiomeWithoutKeepingItsCropSupport(GameTestHelper helper) {
+        withSettings(helper, () -> {
+            helper.setBiome(Biomes.PLAINS);
+            String common = "=minecraft:diamond_block*2,minecraft:emerald_block*1,minecraft:lapis_block*1";
+            GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of(
+                    "minecraft:desert" + common, "minecraft:badlands" + common + ",minecraft:poppy*1"));
+            ServerLevel level = helper.getLevel();
+            BlockPos center = house(helper);
+            materials(level, center);
+            BlockPos flower = center.offset(2, 0, 2);
+            level.setBlock(flower.below(), Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(flower, Blocks.POPPY.defaultBlockState(), Block.UPDATE_ALL);
+            conditioner(level, center, center.north(), CropClimate.HOT);
+            var survey = GreenhouseEnvironment.inspect(level, center);
+            helper.assertTrue(survey.valid() && id("minecraft:badlands").equals(survey.targetBiome()), "More specific marker did not refine the habitat: " + survey);
+            var desert = new CropProfile(Set.of(CropClimate.HOT), List.of(BiomeSelector.parse("minecraft:desert").orElseThrow()));
+            helper.assertFalse(GreenhouseEnvironment.canSupport(level, center, desert), "Refined layout retained its simpler biome identity");
         });
     }
 
@@ -297,9 +448,7 @@ public final class AutoGreenhouseGameTests {
             helper.assertTrue(survey.valid(), "Curated forest palette was invalid: " + survey);
             helper.assertTrue(id("minecraft:forest").equals(survey.targetBiome()), "Curated forest recognized as " + survey.targetBiome());
             helper.assertValueEqual(survey.requirements().size(), 3, "curated forest material types");
-            helper.assertValueEqual(survey.specimens(), 71, "curated forest matched percentage quotas for405habitat cells");
-            helper.assertValueEqual(survey.heat(), 0, "curated forest heat sources");
-            helper.assertValueEqual(survey.cooling(), 0, "curated forest cooling sources");
+            helper.assertValueEqual(survey.specimens(), 75, "curated forest matched whole percentage quotas for405habitat cells");
             helper.assertTrue(CommonEvents.canGrowNaturally(level, crop, level.getBlockState(crop)), "Curated forest could not satisfy exact crop biome");
             level.getBlockState(crop).randomTick(level, crop, new AlwaysGrowRandom());
             helper.assertValueEqual(level.getBlockState(crop).getValue(CropBlock.AGE), 1, "curated forest crop age");
@@ -307,7 +456,7 @@ public final class AutoGreenhouseGameTests {
     }
 
     @GameTest(template = "empty", skyAccess = true, batch = "auto_greenhouses_tan_warmup", timeoutTicks = 120)
-    public static void fueledThermoregulatorWarmsAirGraduallyAndRedstoneStopsItsOutput(GameTestHelper helper) {
+    public static void optionalFueledControllerSelectsClimateOnlyInsideMatchingGreenhouse(GameTestHelper helper) {
         if (!ModList.get().isLoaded("toughasnails")) {
             BiomeBasedCrops.LOGGER.info("Skipping optional automatic greenhouse thermoregulator test: Tough As Nails not installed");
             helper.succeed();
@@ -341,26 +490,25 @@ public final class AutoGreenhouseGameTests {
             inventory.setItem(1, coal);
             tickThermoregulator(level, at);
             GreenhouseEnvironment.invalidateClimate();
-            helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "TAN instantly warmed the entire room");
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "Active categorical controller did not select the greenhouse climate");
             CropProfile hotOnly = new CropProfile(Set.of(CropClimate.HOT));
-            helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, center, hotOnly)
-                            && !CommonEvents.canGrow(level, center, hotOnly),
-                    "Active TAN heating bypassed the still-cold physical room air for a climate-only crop");
+            helper.assertTrue(CommonEvents.canGrow(level, center, hotOnly),
+                    "Matching categorical greenhouse did not support its crop");
             helper.runAfterDelay(55L, () -> {
                 try {
                     var supported = GreenhouseEnvironment.inspect(level, center);
                     helper.assertTrue(supported.valid() && supported.climate() == CropClimate.HOT,
                             "Fueled TAN regulator did not warm the automatic desert house: " + supported);
                     helper.assertTrue(supported.baseClimate() == CropClimate.NEUTRAL, "Thermoregulator rewrote the native biome baseline");
-                    helper.assertValueEqual(supported.heat(), 0, "TAN should not count as a placed thermal source");
                     level.setBlock(at.below(), Blocks.REDSTONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
                     tickThermoregulator(level, at);
                     helper.assertFalse(level.getBlockState(at).getValue(BlockStateProperties.ENABLED), "Actual redstone did not disable TAN");
-                    helper.assertTrue(ThermoregulatorDetector.providedTemperatureAt(level, at, center).isEmpty(),
+                    helper.assertTrue(ThermoregulatorDetector.providedClimateAt(level, at, center).isEmpty(),
                             "Disabled TAN regulator continued to provide a heating drive");
                     GreenhouseEnvironment.invalidateClimate();
-                    helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(),
-                            "Stopping TAN instantly erased the already heated room air");
+                    level.removeBlock(at, false);
+                    helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(),
+                            "Stopped controller retained a non-native greenhouse climate");
                     helper.succeed();
                 } finally {
                     restore.run();
@@ -386,13 +534,16 @@ public final class AutoGreenhouseGameTests {
     }
 
     private static void materials(ServerLevel level, BlockPos center) {
-        level.setBlock(center.offset(-2, -1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-        level.setBlock(center.offset(-1, -1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-        level.setBlock(center.offset(1, -1, 0), Blocks.EMERALD_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-        level.setBlock(center.offset(2, -1, 0), Blocks.LAPIS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(center.offset(-2, 1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(center.offset(-1, 1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(center.offset(1, 1, 0), Blocks.EMERALD_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(center.offset(2, 1, 0), Blocks.LAPIS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
     }
 
-    private static AirConditionerBlockEntity conditioner(ServerLevel level, BlockPos at, CropClimate target) {
+    private static AirConditionerBlockEntity conditioner(ServerLevel level, BlockPos center, BlockPos at, CropClimate target) {
+        if (Math.abs(at.getX() - center.getX()) < 5 && Math.abs(at.getZ() - center.getZ()) < 5) {
+            capacitySupport(level, center, at.getX());
+        }
         level.setBlock(at, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState(), Block.UPDATE_ALL);
         AirConditionerBlockEntity machine = (AirConditionerBlockEntity) level.getBlockEntity(at);
         machine.setClimate(target);
@@ -400,6 +551,13 @@ public final class AutoGreenhouseGameTests {
         AirConditionerBlockEntity.serverTick(level, at, level.getBlockState(at), machine);
         conditionFixtureAir(level, at, target);
         return machine;
+    }
+
+    /** Two inward-facing units cover the fixture's 405 interior blocks; only the tested unit supplies power. */
+    private static void capacitySupport(ServerLevel level, BlockPos center, int x) {
+        BlockPos support = new BlockPos(x, center.getY() + 1, center.getZ() - 5);
+        level.setBlock(support, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState()
+                .setValue(AirConditionerBlock.FACING, net.minecraft.core.Direction.SOUTH), Block.UPDATE_ALL);
     }
 
     private static void charge(AirConditionerBlockEntity machine) {
@@ -410,16 +568,17 @@ public final class AutoGreenhouseGameTests {
         }
     }
 
-    /** These synchronous tests isolate crop/biome rules; real paid warm-up is tested separately. */
+    /** These synchronous tests isolate crop/biome rules; real paid climate output is tested separately. */
     static void conditionFixtureAir(ServerLevel level, BlockPos controller, CropClimate target) {
         RoomClimateState air = GreenhouseEnvironment.controllerAirState(level, controller, true);
         if (air == null) return; // An exterior controller has no connected air volume to condition.
         long now = level.getGameTime();
         for (int tick = 0; tick < 240; tick++) {
-            air.addPaidDrive(controller.asLong(), now + tick, GreenhouseEnvironment.temperatureForClimate(target), true);
-            air.advance(now + tick + 1, air.naturalTemperature(), air.naturalBreathable(), true);
+            air.addPaidDrive(controller.asLong(), now + tick, target, true);
+            air.advance(now + tick + 1, air.naturalClimate(), air.naturalBreathable(), true);
         }
-        air.advance(now, air.naturalTemperature(), air.naturalBreathable(), true);
+        air.advance(now, air.naturalClimate(), air.naturalBreathable(), true);
+        air.addPaidDrive(controller.asLong(), now, target, true);
         GreenhouseEnvironment.invalidateClimate();
     }
 

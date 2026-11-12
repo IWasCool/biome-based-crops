@@ -19,7 +19,7 @@ public final class GreenhouseClientBiomes {
         Long2ObjectOpenHashMap<GreenhouseBiomeNetwork.SectionMask> sections = new Long2ObjectOpenHashMap<>();
         for (var section : payload.sections()) sections.put(section.sectionKey(), section);
         room = new Snapshot(payload.dimension(), payload.biome(), Long2ObjectMaps.unmodifiable(sections),
-                payload.temperature(), payload.oxygenPercent());
+                payload.climate(), payload.oxygenPercent());
     }
 
     public static void clear() { room = null; }
@@ -36,13 +36,13 @@ public final class GreenhouseClientBiomes {
         return snapshot == null ? null : snapshot.biome;
     }
 
-    public static float temperatureAt(Level level, BlockPos pos, float fallback) {
-        return temperatureAt(level.dimension().location(), pos, fallback);
+    public static CropClimate climateAt(Level level, BlockPos pos, CropClimate fallback) {
+        return climateAt(level.dimension().location(), pos, fallback);
     }
 
-    static float temperatureAt(ResourceLocation dimension, BlockPos pos, float fallback) {
+    static CropClimate climateAt(ResourceLocation dimension, BlockPos pos, CropClimate fallback) {
         Snapshot snapshot = at(dimension, pos);
-        return snapshot == null ? fallback : snapshot.temperature;
+        return snapshot == null ? fallback : snapshot.climate;
     }
 
     public static float oxygenAt(Level level, BlockPos pos, float fallback) {
@@ -71,5 +71,5 @@ public final class GreenhouseClientBiomes {
     }
 
     private record Snapshot(ResourceLocation dimension, ResourceLocation biome,
-                            Long2ObjectMap<GreenhouseBiomeNetwork.SectionMask> sections, float temperature, float oxygen) { }
+                            Long2ObjectMap<GreenhouseBiomeNetwork.SectionMask> sections, CropClimate climate, float oxygen) { }
 }

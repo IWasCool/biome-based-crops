@@ -54,20 +54,20 @@ class GreenhouseScalingTest {
     }
 
     @Test
-    void defaultHabitatQuotasAreOnlyVolumePercentagesWithoutFlatOrFootprintMinimums() {
+    void defaultHabitatQuotasUseTheSameWholePercentagesAsTheGuide() {
         var cactus = new GreenhouseRecipes.MaterialRequirement(net.minecraft.resources.ResourceLocation.withDefaultNamespace("cactus"), 3, 16, 1);
         assertEquals(1, GreenhouseRecipes.scaledCount(cactus, 64, 16, 512));
-        assertEquals(3, GreenhouseRecipes.scaledCount(cactus, 512, 64, 512));
-        assertEquals(3, GreenhouseRecipes.scaledCount(cactus, 404, 81, 512));
-        assertEquals(12, GreenhouseRecipes.scaledCount(cactus, 2048, 64, 512));
+        assertEquals(6, GreenhouseRecipes.scaledCount(cactus, 512, 64, 512));
+        assertEquals(5, GreenhouseRecipes.scaledCount(cactus, 404, 81, 512));
+        assertEquals(21, GreenhouseRecipes.scaledCount(cactus, 2048, 64, 512));
         var canopy = new GreenhouseRecipes.MaterialRequirement(net.minecraft.resources.ResourceLocation.withDefaultNamespace("oak_leaves"), 64, 2, 2);
-        assertEquals(64, GreenhouseRecipes.scaledCount(canopy, 512, 64, 512));
-        assertEquals(64, GreenhouseRecipes.scaledCount(canopy, 512, 200, 512));
-        assertEquals(512, GreenhouseRecipes.scaledCount(canopy, 4096, 64, 512));
+        assertEquals(67, GreenhouseRecipes.scaledCount(canopy, 512, 64, 512));
+        assertEquals(67, GreenhouseRecipes.scaledCount(canopy, 512, 200, 512));
+        assertEquals(533, GreenhouseRecipes.scaledCount(canopy, 4096, 64, 512));
         assertEquals(1, GreenhouseRecipes.scaledCount(canopy, 1, 1, 512));
-        assertEquals(64, GreenhouseRecipes.scaledCount(canopy, 0, 64, 512));
-        assertEquals(12.5, GreenhouseRecipes.materialPercent(canopy, 512));
-        assertEquals(0.5859375, GreenhouseRecipes.materialPercent(cactus, 512));
+        assertEquals(67, GreenhouseRecipes.scaledCount(canopy, 0, 64, 512));
+        assertEquals(13, GreenhouseRecipes.materialPercent(canopy, 512));
+        assertEquals(1, GreenhouseRecipes.materialPercent(cactus, 512));
         var legacy = new GreenhouseRecipes.MaterialRequirement(cactus.block(), 3);
         org.junit.jupiter.api.Assertions.assertFalse(GreenhouseRecipes.isPercentageBased(legacy));
         assertEquals(3, GreenhouseRecipes.scaledCount(legacy, 1, 1, 512));
@@ -83,5 +83,14 @@ class GreenhouseScalingTest {
                 "minecraft:forest=90:", "minecraft:forest=90:minecraft:dirt,minecraft:dirt")) {
             org.junit.jupiter.api.Assertions.assertFalse(GreenhouseSettings.validateFloorRule(invalid), invalid);
         }
+    }
+
+    @Test
+    void habitatPercentagesAlwaysUseInteriorVolume() {
+        var magma = new GreenhouseRecipes.MaterialRequirement(net.minecraft.resources.ResourceLocation.withDefaultNamespace("magma_block"), 16, 16, 0);
+        assertEquals(3, GreenhouseRecipes.materialPercent(magma, 512));
+        assertEquals(13, GreenhouseRecipes.scaledCount(magma, 405, 81, 512));
+        assertEquals(13, GreenhouseRecipes.scaledCount(magma, 405, 405, 512));
+        assertEquals(122, GreenhouseRecipes.scaledCount(magma, 4050, 81, 512));
     }
 }

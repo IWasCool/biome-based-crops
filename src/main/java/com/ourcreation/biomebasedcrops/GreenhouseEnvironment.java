@@ -1,11 +1,12 @@
 package com.ourcreation.biomebasedcrops;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+
+import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public final class GreenhouseEnvironment {
+    public static final int INTERIOR_BLOCKS_PER_UNIT = 256;
     private static final TagKey<Block> GLASS = tag("greenhouse_glass");
     private static final Map<Level, Cache> CACHES = Collections.synchronizedMap(new WeakHashMap<>());
     private static final java.util.concurrent.atomic.AtomicLong CLIMATE_REVISION = new java.util.concurrent.atomic.AtomicLong();
@@ -42,58 +44,134 @@ public final class GreenhouseEnvironment {
 
     /** Controller pricing uses the room's common native baseline without starting a scan. */
     public static CropClimate naturalClimateForController(Level level, BlockPos pos) {
-        var geometry = GreenhouseRoomScanner.completedAroundController(level, pos);
-        BlockPos at = geometry == null ? pos : geometry.anchor;
-        return CropClimate.at(nativeBiome(level, at), at);
+        var geometry = controllerGeometry(level, pos, false);
+        BlockPos at = geometry == null ? controllerFront(level, pos) : geometry.anchor;
+        return naturalClimate(level, at);
     }
 
-    public static int temperatureForClimate(CropClimate climate) {
-        return switch (climate) { case ICY -> -10; case COLD -> 5; case NEUTRAL -> 20; case WARM -> 30; case HOT -> 45; };
-    }
-
-    public static float naturalTemperatureForController(Level level, BlockPos pos) {
-        var geometry = GreenhouseRoomScanner.completedAroundController(level, pos);
-        return naturalTemperature(level, geometry == null ? pos : geometry.anchor);
-    }
-
-    private static float naturalTemperature(Level level, BlockPos pos) {
-        var nativePlanet = NorthstarAtmosphere.naturalTemperature(level, pos);
-        return nativePlanet.isPresent() ? (float) nativePlanet.getAsDouble() : temperatureForClimate(CropClimate.at(nativeBiome(level, pos), pos));
+    private static CropClimate naturalClimate(Level level, BlockPos pos) {
+        return NorthstarAtmosphere.naturalClimate(level, pos).orElseGet(() -> CropClimate.at(nativeBiome(level, pos), pos));
     }
 
     /** Completed geometry only, with optional bounded discovery for a newly placed controller. */
     public static RoomClimateState controllerAirState(Level level, BlockPos pos, boolean discover) {
         if (level.isClientSide || !loaded(level, pos)) return null;
         return withoutOverlay(() -> {
-            var geometry = GreenhouseRoomScanner.completedAroundController(level, pos);
-            if (geometry == null && discover) {
-                roomAt(level, pos);
-                geometry = GreenhouseRoomScanner.completedAroundController(level, pos);
-            }
-            return geometry == null || !geometry.live ? null : airState(level, geometry, cache(level));
+            var geometry = controllerGeometry(level, pos, discover);
+            if (geometry == null) return null;
+            RoomClimateState air = airState(level, geometry, cache(level));
+            return roomCapacity(level, geometry).sufficient() ? air : null;
         });
     }
 
+    private static BlockPos controllerFront(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        return state.hasProperty(AirConditionerBlock.FACING) ? pos.relative(state.getValue(AirConditionerBlock.FACING)) : pos;
+    }
+
+    private static GreenhouseRoomScanner.Geometry controllerGeometry(Level level, BlockPos pos, boolean discover) {
+        BlockPos front = controllerFront(level, pos);
+        if (!loaded(level, front) || sealed(level, front)) return null;
+        var geometry = GreenhouseRoomScanner.completedAt(level, front);
+        if (geometry == null && discover) geometry = GreenhouseRoomScanner.find(level, front);
+        return geometry != null && geometry.live && geometry.ready && geometry.status.equals("closed")
+                && geometry.interior.contains(front.asLong()) ? geometry : null;
+    }
+
+    /** The inlet-side room is irrelevant: inspect only the air cell facing the outlet. */
+    public static Inspection controllerInspection(Level level, BlockPos pos) {
+        return controllerRoomInfo(level, pos).inspection();
+    }
+
+    public static ControllerRoomInfo controllerRoomInfo(Level level, BlockPos pos) {
+        if (!loaded(level, pos)) return controllerInfo(result(false, null, CropClimate.NEUTRAL, 0, 0, List.of(), "unloaded"));
+        BlockPos front = controllerFront(level, pos);
+        if (!loaded(level, front)) return controllerInfo(result(false, null, CropClimate.NEUTRAL, 0, 0, List.of(), "unloaded"));
+        if (!GreenhouseSettings.enabled()) return controllerInfo(inspect(level, front));
+        if (sealed(level, front)) return controllerInfo(result(false, null, naturalClimate(level, front), 0, 0, List.of(), "blocked_outlet"));
+        return withoutOverlay(() -> {
+            var geometry = GreenhouseRoomScanner.findForControllerInspection(level, front);
+            if (!geometry.live || !geometry.ready || !geometry.status.equals("closed"))
+                return controllerInfo(outdoorRoom(level, front, level.getGameTime(), geometry.status).inspection);
+            RoomCapacity capacity = roomCapacity(level, geometry);
+            Inspection inspection = evaluatedRoom(level, geometry, cache(level), front).inspection;
+            if (!capacity.changeRequested && inspection.climate() == naturalClimate(level, geometry.anchor)
+                    || inspection.valid() && (inspection.climate() == naturalClimate(level, geometry.anchor)
+                    || optionalControlMatches(level, geometry, inspection.climate())))
+                return new ControllerRoomInfo(inspection, capacity.units, 0, Math.max(capacity.interiorCapacity, inspection.roomVolume()));
+            return new ControllerRoomInfo(inspection, capacity.units, capacity.required, capacity.interiorCapacity);
+        });
+    }
+
+    private static ControllerRoomInfo controllerInfo(Inspection inspection) {
+        return new ControllerRoomInfo(inspection, 0, 0, INTERIOR_BLOCKS_PER_UNIT);
+    }
+
+    public record ControllerRoomInfo(Inspection inspection, int installedUnits, int requiredUnits, int interiorCapacity) { }
+
+    private static boolean servesRoom(Level level, GreenhouseRoomScanner.Geometry geometry, BlockPos machine) {
+        return loaded(level, machine) && level.getBlockEntity(machine) instanceof AirConditionerBlockEntity unit
+                && !unit.isRemoved() && geometry.interior.contains(controllerFront(level, machine).asLong());
+    }
+
+    private static RoomCapacity roomCapacity(Level level, GreenhouseRoomScanner.Geometry geometry) {
+        int units = 0;
+        boolean changeRequested = false;
+        CropClimate natural = naturalClimate(level, geometry.anchor);
+        for (long packed : geometry.machines) {
+            BlockPos at = BlockPos.of(packed);
+            if (servesRoom(level, geometry, at)) {
+                units++;
+                changeRequested |= ((AirConditionerBlockEntity) level.getBlockEntity(at)).selectedClimate() != natural;
+            }
+        }
+        int volume = geometry.habitatVolume();
+        int required = volume <= INTERIOR_BLOCKS_PER_UNIT ? 0
+                : (volume + INTERIOR_BLOCKS_PER_UNIT - 1) / INTERIOR_BLOCKS_PER_UNIT;
+        int capacity = (int) Math.min(Integer.MAX_VALUE, (long) INTERIOR_BLOCKS_PER_UNIT * Math.max(1, units));
+        return new RoomCapacity(units, required, capacity, changeRequested);
+    }
+
+    private record RoomCapacity(int units, int required, int interiorCapacity, boolean changeRequested) {
+        boolean sufficient() { return required <= units; }
+    }
+
+    private static boolean optionalControlMatches(Level level, GreenhouseRoomScanner.Geometry geometry, CropClimate climate) {
+        for (long packed : geometry.machines) {
+            BlockPos at = BlockPos.of(packed);
+            if (loaded(level, at) && !(level.getBlockEntity(at) instanceof AirConditionerBlockEntity)
+                    && ThermoregulatorDetector.providedClimateAt(level, at, geometry.anchor).orElse(null) == climate) return true;
+        }
+        return false;
+    }
+
     private static RoomClimateState airState(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache) {
-        float nativeTemperature = naturalTemperature(level, geometry.anchor);
+        CropClimate nativeClimate = naturalClimate(level, geometry.anchor);
         boolean breathable = NorthstarAtmosphere.naturalAtmosphereBreathable(level)
                 || NorthstarAtmosphere.nativeProviderBreathable(level, geometry.anchor);
         RoomClimateState state = cache.airStates.get(geometry);
         if (state == null) {
             RoomClimateState.Snapshot retained = cache.retainedAir.remove(geometry.key);
-            state = retained == null ? new RoomClimateState(geometry.interior.size(), nativeTemperature, breathable, level.getGameTime())
-                    : RoomClimateState.restore(retained, level.getGameTime(), nativeTemperature, breathable);
+            state = retained == null ? new RoomClimateState(geometry.interior.size(), nativeClimate, breathable, level.getGameTime())
+                    : RoomClimateState.restore(retained, level.getGameTime(), nativeClimate, breathable);
             cache.airStates.put(geometry, state);
         }
-        state.advance(level.getGameTime(), nativeTemperature, breathable, geometry.live);
+        state.setLeakStart(geometry.leaking() ? geometry.leakSince() : -1, level.getGameTime());
+        state.advance(level.getGameTime(), nativeClimate, breathable, geometry.live);
+        boolean sufficientCapacity = roomCapacity(level, geometry).sufficient();
+        for (long packed : geometry.machines) {
+            BlockPos at = BlockPos.of(packed);
+            if (loaded(level, at) && level.getBlockEntity(at) instanceof AirConditionerBlockEntity
+                    && (!sufficientCapacity || !servesRoom(level, geometry, at))) state.removeDrive(packed);
+        }
         Long providersTick = cache.providerTicks.get(geometry);
         if (providersTick == null || providersTick != level.getGameTime()) {
             cache.providerTicks.put(geometry, level.getGameTime());
             for (long packed : geometry.machines) {
                 BlockPos at = BlockPos.of(packed);
                 if (!loaded(level, at) || level.getBlockEntity(at) instanceof AirConditionerBlockEntity) continue;
-                var output = ThermoregulatorDetector.providedTemperatureAt(level, at, geometry.anchor);
-                if (output.isPresent()) state.addPaidDrive(packed, level.getGameTime(), (float) output.getAsDouble(), false);
+                var output = ThermoregulatorDetector.providedClimateAt(level, at, geometry.anchor);
+                if (output.isPresent()) state.addPaidDrive(packed, level.getGameTime(), output.get(), false);
             }
         }
         return state;
@@ -110,7 +188,7 @@ public final class GreenhouseEnvironment {
         if (cache == null || geometry.key == null) return;
         RoomClimateState state = cache.airStates.remove(geometry);
         if (state == null) return;
-        state.advance(level.getGameTime(), state.naturalTemperature(), state.naturalBreathable(), true);
+        state.advance(level.getGameTime(), state.naturalClimate(), state.naturalBreathable(), true);
         cache.retainedAir.put(geometry.key, state.snapshot());
         while (cache.retainedAir.size() > MAX_RETAINED_AIR) cache.retainedAir.pollFirstEntry();
         cache.rooms.remove(geometry);
@@ -130,21 +208,60 @@ public final class GreenhouseEnvironment {
             for (var entry : new java.util.ArrayList<>(cache.airStates.entrySet())) {
                 var geometry = entry.getKey();
                 if (geometry == null) continue;
-                if (geometry.live && loaded(level, geometry.anchor)) airState(level, geometry, cache);
+                if (geometry.live && loaded(level, geometry.anchor)) {
+                    RoomClimateState air = airState(level, geometry, cache);
+                    if (air.leakDissipated(level.getGameTime())) GreenhouseRoomScanner.expireLeak(level, geometry);
+                }
                 else {
                     RoomClimateState air = entry.getValue();
-                    air.advance(level.getGameTime(), air.naturalTemperature(), air.naturalBreathable(), false);
+                    air.advance(level.getGameTime(), air.naturalClimate(), air.naturalBreathable(), false);
                 }
             }
             return null;
         });
     }
 
-    public static float currentTemperature(Level level, BlockPos pos) {
-        float natural = loaded(level, pos) ? naturalTemperature(level, pos) : 20F;
-        if (level.isClientSide) return GreenhouseClientBiomes.temperatureAt(level, pos, natural);
+    /** Actual climate at this exact position; controller settings are never a growth bypass. */
+    public static CropClimate currentClimate(Level level, BlockPos pos) {
+        CropClimate natural = loaded(level, pos) ? naturalClimate(level, pos) : CropClimate.NEUTRAL;
+        if (!loaded(level, pos)) return natural;
+        if (level.isClientSide) {
+            CropClimate room = GreenhouseClientBiomes.climateAt(level, pos, null);
+            if (room != null) return room;
+        } else {
+            var air = physicalAirAt(level, pos);
+            if (air != null) return roomClimateAt(level, air, pos, level.getGameTime());
+        }
+        if (nativeQueryActive()) return natural;
+        CropClimate local = localControllerClimate(level, pos);
+        return local == null ? natural : local;
+    }
+
+    @Nullable
+    private static CropClimate localControllerClimate(Level level, BlockPos pos) {
+        CropClimate outlet = AirConditionerAirflow.climateAt(level, pos);
+        if (outlet != null) return outlet;
+        return withoutOverlay(() -> ThermoregulatorDetector.nearbyClimate(level, pos).orElse(null));
+    }
+
+    private static CropClimate roomClimateAt(Level level, RoomClimateState air, BlockPos pos, long tick) {
+        if (air.hasControlAt(pos, tick)) return air.climateAt(pos, tick);
+        CropClimate wind = localControllerClimate(level, pos);
+        return wind == null ? air.naturalClimate() : wind;
+    }
+
+    /** Optional integrations use categories too; Celsius is converted only at their API boundary. */
+    @Nullable
+    public static CropClimate controlledClimate(Level level, BlockPos pos) {
+        if (nativeQueryActive() || !loaded(level, pos) || !GreenhouseSettings.enabled()) return null;
+        if (level.isClientSide) {
+            CropClimate climate = GreenhouseClientBiomes.climateAt(level, pos, null);
+            return climate != null ? climate : localControllerClimate(level, pos);
+        }
+        if (level.getServer() != null && !level.getServer().isSameThread()) return null;
         var air = physicalAirAt(level, pos);
-        return air == null ? natural : air.currentTemperature();
+        return air != null && air.hasControlAt(pos, level.getGameTime())
+                ? air.climateAt(pos, level.getGameTime()) : localControllerClimate(level, pos);
     }
 
     public static float oxygenPercent(Level level, BlockPos pos) {
@@ -163,7 +280,7 @@ public final class GreenhouseEnvironment {
     public static boolean greenhouseProvidesOxygen(Level level, BlockPos pos) {
         if (level.isClientSide) return GreenhouseClientBiomes.hasOxygen(level, pos);
         var air = physicalAirAt(level, pos);
-        return air != null && air.breathable();
+        return air != null && !air.leaking() && air.breathable();
     }
 
     private static RoomClimateState physicalAirAt(Level level, BlockPos pos) {
@@ -182,7 +299,7 @@ public final class GreenhouseEnvironment {
             var geometry = GreenhouseRoomScanner.find(level, pos);
             if (!geometry.live || !geometry.status.equals("closed") || !geometry.interior.contains(pos.asLong())) return false;
             RoomClimateState state = airState(level, geometry, cache(level));
-            if (!state.breathable() || !state.consumeOxygen(millibuckets)) return false;
+            if (state.leaking() || !state.breathable() || !state.consumeOxygen(millibuckets)) return false;
             invalidateClimate();
             return true;
         });
@@ -196,17 +313,17 @@ public final class GreenhouseEnvironment {
             if (!geometry.live || !geometry.status.equals("closed") || !geometry.interior.contains(pos.asLong())) return null;
             Cache cache = cache(level);
             RoomClimateState air = airState(level, geometry, cache);
-            Room room = cache.rooms.get(geometry);
-            if (room == null || !fresh(room, level.getGameTime())) {
-                room = evaluate(level, geometry, cache, level.getGameTime());
-                cache.rooms.put(geometry, room);
-            }
-            return new AtmosphereRegion(geometry.interior, room.inspection.valid() ? room.inspection.targetBiome() : null,
-                    air.currentTemperature(), air.oxygenPercent());
+            Room room = evaluatedRoom(level, geometry, cache, pos);
+            CropClimate actual = roomClimateAt(level, air, pos, level.getGameTime());
+            ResourceLocation biome = room.inspection.valid() ? room.inspection.targetBiome() : null;
+            long tick = level.getGameTime();
+            java.util.function.Predicate<BlockPos> coverage = sample -> roomClimateAt(level, air, sample, tick) == actual;
+            return new AtmosphereRegion(geometry.interior, biome, actual, air.leaking() ? 0 : air.oxygenPercent(), coverage);
         });
     }
 
-    public record AtmosphereRegion(Set<Long> interior, ResourceLocation biome, float temperature, float oxygenPercent) { }
+    public record AtmosphereRegion(Set<Long> interior, ResourceLocation biome, CropClimate climate,
+                                   float oxygenPercent, java.util.function.Predicate<BlockPos> coverage) { }
 
     public static <T> T withoutOverlay(java.util.function.Supplier<T> action) {
         int previous = NATIVE_QUERY_DEPTH.get();
@@ -244,28 +361,47 @@ public final class GreenhouseEnvironment {
 
     public static Inspection inspect(Level level, BlockPos pos) {
         if (!loaded(level, pos)) {
-            return result(false, null, CropClimate.NEUTRAL, new Temperature(0, 0), 0, 0, List.of(), "unloaded");
+            return result(false, null, CropClimate.NEUTRAL, 0, 0, List.of(), "unloaded");
         }
         if (!GreenhouseSettings.enabled()) {
             CropClimate natural = CropClimate.at(nativeBiome(level, pos), pos);
-            return result(false, null, natural, new Temperature(0, 0), 0, 0, List.of(), "disabled", natural);
+            return result(false, null, natural, 0, 0, List.of(), "disabled", natural);
         }
         return roomAt(level, pos).inspection;
     }
 
-    /** Exact biome rules use the recognized biome and variants with an identical habitat recipe. */
+    /** Planning a different biome reports its deficits without changing the room's actual biome. */
+    public static Inspection inspectForBiome(Level level, BlockPos pos, ResourceLocation target) {
+        Inspection current = inspect(level, pos);
+        if (!current.enclosed() || !GreenhouseSettings.enabled() || level.isClientSide) return current;
+        var geometry = GreenhouseRoomScanner.completedAroundController(level, pos);
+        var recipe = GreenhouseRecipes.serverCatalog(level.registryAccess().registryOrThrow(Registries.BIOME)).get(target);
+        if (geometry == null || recipe == null) return current;
+        Match requested = match(new Definition(target, recipe), geometry);
+        String status;
+        if (current.status().equals(key("filling_air"))) status = "filling_air";
+        else if (requested.floor.found() < requested.floor.required()) status = "missing_floor";
+        else if (!requested.complete()) status = "missing_specimens";
+        else if (recipe.climate() != current.climate()) status = "wrong_climate";
+        else if (!current.valid() || !target.equals(current.targetBiome())) status = "ambiguous";
+        else status = geometry.leaking() ? "leaking" : "valid";
+        return new Inspection(true, target, current.climate(), geometry.glass,
+                requested.matched, requested.totalRequired, key(status), recipe.specimens(), requested.progress,
+                current.baseClimate(), current.roomVolume(), current.floorArea(), requested.floor, geometry.glassProgress());
+    }
+
+    /** Exact biome rules use only the single biome recognized inside this greenhouse. */
     public static boolean canSupport(Level level, BlockPos pos, CropProfile profile) {
         if (!loaded(level, pos) || !GreenhouseSettings.enabled()) return false;
         Room room = roomAt(level, pos);
-        if (!room.inspection.valid() || !room.interior.contains(pos.asLong())) return false;
+        if (!hasGrowingLight(level, pos) || !room.inspection.valid() || !room.interior.contains(pos.asLong())) return false;
         var biomes = level.registryAccess().registryOrThrow(Registries.BIOME);
-        return room.aliases.stream().anyMatch(id -> biomes.getHolder(id).map(biome -> profile.allows(biome, pos)).orElse(false));
+        return biomes.getHolder(room.inspection.targetBiome()).map(biome -> profile.allows(biome, pos)).orElse(false);
     }
 
     public static CropClimate effectiveClimate(Level level, BlockPos pos) {
         if (!loaded(level, pos)) return CropClimate.NEUTRAL;
-        if (level.isClientSide) return CropClimate.at(level.getBiome(pos), pos);
-        return inspect(level, pos).climate();
+        return currentClimate(level, pos);
     }
 
     public static void clearCache() {
@@ -300,11 +436,7 @@ public final class GreenhouseEnvironment {
                 candidate = outdoorRoom(level, start, level.getGameTime(), geometry.status);
             } else {
                 Cache cache = cache(level);
-                candidate = cache.rooms.get(geometry);
-                if (candidate == null || !fresh(candidate, level.getGameTime())) {
-                    candidate = evaluate(level, geometry, cache, level.getGameTime());
-                    cache.rooms.put(geometry, candidate);
-                }
+                candidate = evaluatedRoom(level, geometry, cache, start);
             }
             if (selected == null || candidate.inspection.valid() && !selected.inspection.valid()
                     || candidate.inspection.enclosed() && !selected.inspection.enclosed()) selected = candidate;
@@ -313,15 +445,24 @@ public final class GreenhouseEnvironment {
         return selected != null ? selected : outdoorRoom(level, pos, level.getGameTime(), "open");
     }
 
-    private static boolean fresh(Room room, long now) {
-        return room != null && now == room.tick;
+    private static Room evaluatedRoom(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache, BlockPos query) {
+        RoomClimateState air = airState(level, geometry, cache);
+        RoomInputs inputs = new RoomInputs(level.getGameTime(), query.asLong(), air.climateAt(query, level.getGameTime()),
+                air.breathable(), roomCapacity(level, geometry), geometry.materialRevision,
+                geometry.leaking() ? geometry.leakSince() : -1);
+        Room room = cache.rooms.get(geometry);
+        if (room == null || !inputs.equals(room.inputs)) {
+            room = evaluate(level, geometry, cache, level.getGameTime(), query, inputs);
+            cache.rooms.put(geometry, room);
+        }
+        return room;
     }
 
-    private static Room evaluate(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache, long tick) {
+    private static Room evaluate(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache, long tick, BlockPos query, RoomInputs inputs) {
         BlockPos anchor = geometry.anchor;
         RoomClimateState air = airState(level, geometry, cache);
         CropClimate baseClimate = CropClimate.at(nativeBiome(level, anchor), anchor);
-        CropClimate actual = ThermoregulatorDetector.northstarClimate(air.currentTemperature());
+        CropClimate actual = air.climateAt(query, tick);
         MaterialMatches materials = cache.materialMatches.get(geometry);
         if (materials == null || materials.materialRevision != geometry.materialRevision) {
             materials = materialMatches(level, geometry, cache);
@@ -345,19 +486,18 @@ public final class GreenhouseEnvironment {
         complete.sort(specificity);
         warmEnough.sort(specificity);
         Match chosen = !warmEnough.isEmpty() ? warmEnough.getFirst() : !complete.isEmpty() ? complete.getFirst() : closest;
-        Set<ResourceLocation> aliases = new HashSet<>();
-        if (!warmEnough.isEmpty()) {
-            Match top = warmEnough.getFirst();
-            for (Match match : warmEnough) {
-                if (sameSignature(top.definition.recipe, match.definition.recipe)) aliases.add(match.definition.id);
-            }
-        }
         String status;
-        if (!geometry.glassValid()) status = "no_glass";
+        boolean naturallySupported = actual == air.naturalClimate() && !warmEnough.isEmpty();
+        RoomCapacity capacity = inputs.capacity;
+        if (geometry.leakExpired(tick) && actual == air.naturalClimate()) status = "open";
+        else if (!naturallySupported && capacity.units > 0 && (capacity.changeRequested || actual != air.naturalClimate())
+                && !capacity.sufficient()
+                && !optionalControlMatches(level, geometry, actual)) status = "insufficient_capacity";
         else if (!air.breathable()) status = "filling_air";
-        else if (!warmEnough.isEmpty()) status = "valid";
+        else if (warmEnough.size() > 1) status = "ambiguous";
+        else if (!warmEnough.isEmpty()) status = geometry.leaking() ? "leaking" : "valid";
         else if (chosen != null && chosen.floor.found() < chosen.floor.required()) status = "missing_floor";
-        else if (!complete.isEmpty()) status = "wrong_temperature";
+        else if (!complete.isEmpty()) status = "wrong_climate";
         else status = "missing_specimens";
         // A room with no recognizable specimens has no plausible target to advertise.
         if (chosen != null && chosen.matched == 0 && chosen.floor.found() == 0) chosen = null;
@@ -365,11 +505,11 @@ public final class GreenhouseEnvironment {
         List<RequirementProgress> progress = chosen == null ? List.of() : chosen.progress;
         List<ResourceLocation> specimens = chosen == null ? List.of() : chosen.definition.recipe.specimens();
         Inspection inspection = new Inspection(true, target,
-                actual, 0, 0,
+                actual,
                 geometry.glass, chosen == null ? 0 : chosen.matched, chosen == null ? 0 : chosen.totalRequired,
                 key(status), specimens, progress, baseClimate, roomVolume, geometry.floorSamples.size(),
-                chosen == null ? FloorProgress.none() : chosen.floor);
-        return new Room(tick, inspection, geometry.interior, Set.copyOf(aliases));
+                chosen == null ? FloorProgress.none() : chosen.floor, geometry.glassProgress());
+        return new Room(tick, query.asLong(), inspection, geometry.interior, inputs);
     }
 
     private static MaterialMatches materialMatches(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache) {
@@ -380,13 +520,19 @@ public final class GreenhouseEnvironment {
             if (closest == null || compareProgress(match, closest) < 0) closest = match;
             if (match.complete()) complete.add(match);
         }
-        return new MaterialMatches(geometry.materialRevision, List.copyOf(complete), closest);
+        // Extra identifying vegetation can refine a simpler habitat (for example birch forest into
+        // old-growth birch forest). Separate complete layouts and identical overrides remain ambiguous.
+        List<Match> specific = complete.stream().filter(candidate -> complete.stream().noneMatch(other ->
+                candidate.definition.recipe.climate() == other.definition.recipe.climate()
+                        && other.definition.recipe.specimens().size() > candidate.definition.recipe.specimens().size()
+                        && other.definition.recipe.specimens().containsAll(candidate.definition.recipe.specimens()))).toList();
+        return new MaterialMatches(geometry.materialRevision, specific, closest);
     }
 
     private static List<Definition> definitions(Level level, Cache cache) {
         if (cache.definitions == null) {
-            cache.definitions = level.registryAccess().registryOrThrow(Registries.BIOME).holders()
-                    .map(biome -> new Definition(biome.key().location(), GreenhouseRecipes.forServerBiome(biome)))
+            cache.definitions = GreenhouseRecipes.serverCatalog(level.registryAccess().registryOrThrow(Registries.BIOME))
+                    .entrySet().stream().map(entry -> new Definition(entry.getKey(), entry.getValue()))
                     .sorted(java.util.Comparator.comparing(definition -> definition.id.toString())).toList();
         }
         return cache.definitions;
@@ -400,7 +546,7 @@ public final class GreenhouseEnvironment {
         for (var required : definition.recipe.requirements()) {
             Map<ResourceLocation, Integer> counts = required.minHeight() == 2 ? geometry.canopy
                     : required.minHeight() == 1 ? geometry.features
-                    : GreenhouseRecipes.isPercentageBased(required) ? geometry.inside : geometry.counts;
+                    : geometry.inside;
             int found = counts.getOrDefault(required.block(), 0);
             int scaled = GreenhouseRecipes.scaledCount(required, geometry.habitatVolume(), geometry.floorSamples.size(),
                     GreenhouseSettings.materialReferenceVolume());
@@ -430,23 +576,53 @@ public final class GreenhouseEnvironment {
         return distinct != 0 ? distinct : first.definition.id.toString().compareTo(second.definition.id.toString());
     }
 
-    private static boolean sameSignature(GreenhouseRecipes.Recipe first, GreenhouseRecipes.Recipe second) {
-        if (first.climate() != second.climate() || first.count() != second.count() || !first.floor().equals(second.floor())) return false;
-        return normalizedMaterials(first).equals(normalizedMaterials(second));
-    }
-
-    private static Set<GreenhouseRecipes.MaterialRequirement> normalizedMaterials(GreenhouseRecipes.Recipe recipe) {
-        Set<GreenhouseRecipes.MaterialRequirement> normalized = new HashSet<>();
-        for (var material : recipe.requirements()) normalized.add(new GreenhouseRecipes.MaterialRequirement(material.block(), material.count(),
-                GreenhouseRecipes.isPercentageBased(material) ? 1 : 0, material.minHeight()));
-        return normalized;
-    }
-
     private static Room outdoorRoom(Level level, BlockPos pos, long tick, String status) {
         CropClimate natural = CropClimate.at(nativeBiome(level, pos), pos);
-        return new Room(tick, result(false, null, natural, new Temperature(0, 0),
-                0, 0, List.of(), status, natural), Set.of(), Set.of());
+        return new Room(tick, pos.asLong(), result(false, null, natural,
+                0, 0, List.of(), status, natural), Set.of());
     }
+
+    /** Sky-exposed glass, including a brief opening in a known glass roof. */
+    public static boolean hasGrowingLight(Level level, BlockPos plant) {
+        if (hasSkyGlassAbove(level, plant)) return true;
+        if (level.isClientSide || !loaded(level, plant) || nativeQueryActive()) return false;
+        var geometry = GreenhouseRoomScanner.completedAt(level, plant);
+        return geometry != null && geometry.leaking()
+                && !geometry.leakExpired(level.getGameTime())
+                && geometry.hasRoofOpeningAbove(plant);
+    }
+
+    /** A transparent glass covering must have an unobstructed column all the way to the sky. */
+    public static boolean hasSkyGlassAbove(Level level, BlockPos plant) {
+        if (!loaded(level, plant) || !level.dimensionType().hasSkyLight()) return false;
+        Cache cache = cache(level);
+        if (cache.skyTick != level.getGameTime()) {
+            cache.skyTick = level.getGameTime();
+            cache.skyColumns.clear();
+        }
+        long key = BlockPos.asLong(plant.getX(), 0, plant.getZ());
+        int bottom = plant.getY() + 1;
+        SkyColumn column = cache.skyColumns.get(key);
+        if (column == null || bottom < column.fromY) {
+            int top = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE,
+                    plant.getX(), plant.getZ());
+            int glass = Integer.MIN_VALUE, opaque = Integer.MIN_VALUE;
+            BlockPos.MutableBlockPos sample = new BlockPos.MutableBlockPos(plant.getX(), bottom, plant.getZ());
+            for (int y = bottom; y < top; y++) {
+                sample.setY(y);
+                if (!loaded(level, sample)) return false;
+                BlockState state = level.getBlockState(sample);
+                if (state.isAir() || state.is(net.minecraft.tags.BlockTags.LEAVES)) continue;
+                if (isGlass(state) && state.getLightBlock(level, sample) == 0) glass = y;
+                else if (state.getLightBlock(level, sample) > 0 || state.isCollisionShapeFullBlock(level, sample)) opaque = y;
+            }
+            column = new SkyColumn(bottom, glass, opaque);
+            cache.skyColumns.put(key, column);
+        }
+        return column.highestGlass >= bottom && column.highestOpaque < bottom;
+    }
+
+    private record SkyColumn(int fromY, int highestGlass, int highestOpaque) { }
 
     static boolean sealed(Level level, BlockPos pos) {
         return sealedState(level, pos, level.getBlockState(pos));
@@ -474,20 +650,21 @@ public final class GreenhouseEnvironment {
         long revision = CLIMATE_REVISION.get();
         if (cache.revision != revision) {
             cache.rooms.clear();
+            cache.skyColumns.clear();
             cache.revision = revision;
         }
         return cache;
     }
 
-    private static Inspection result(boolean enclosed, ResourceLocation target, CropClimate climate, Temperature temperature,
+    private static Inspection result(boolean enclosed, ResourceLocation target, CropClimate climate,
             int glass, int specimens, List<ResourceLocation> materials, String status) {
-        return result(enclosed, target, climate, temperature, glass, specimens, materials, status, climate);
+        return result(enclosed, target, climate, glass, specimens, materials, status, climate);
     }
 
-    private static Inspection result(boolean enclosed, ResourceLocation target, CropClimate climate, Temperature temperature,
+    private static Inspection result(boolean enclosed, ResourceLocation target, CropClimate climate,
             int glass, int specimens, List<ResourceLocation> materials, String status, CropClimate baseClimate) {
-        return new Inspection(enclosed, target, climate, temperature.heat, temperature.cooling, glass, specimens,
-                GreenhouseSettings.requiredSpecimens(), key(status), materials, List.of(), baseClimate);
+        return new Inspection(enclosed, target, climate, glass, specimens,
+                GreenhouseSettings.requiredSpecimens(), key(status), materials, List.of(), baseClimate, 0, 0, FloorProgress.none(), GlassProgress.none());
     }
 
     private static TagKey<Block> tag(String path) {
@@ -498,53 +675,43 @@ public final class GreenhouseEnvironment {
         return "biome_based_crops.greenhouse.status." + status;
     }
 
-    public record Inspection(boolean enclosed, ResourceLocation targetBiome, CropClimate climate, int heat, int cooling,
+    public record Inspection(boolean enclosed, ResourceLocation targetBiome, CropClimate climate,
             int glass, int specimens, int requiredSpecimens, String status, List<ResourceLocation> specimenBlocks,
-            List<RequirementProgress> requirements, CropClimate baseClimate, int roomVolume, int floorArea, FloorProgress floor) {
+            List<RequirementProgress> requirements, CropClimate baseClimate, int roomVolume, int floorArea, FloorProgress floor,
+            GlassProgress glazing) {
         public Inspection {
             specimenBlocks = List.copyOf(specimenBlocks);
             requirements = List.copyOf(requirements);
             if (roomVolume < 0 || roomVolume > 1048576) throw new IllegalArgumentException("Invalid greenhouse room volume");
             if (floorArea < 0 || floorArea > 1048576) throw new IllegalArgumentException("Invalid greenhouse floor area");
             java.util.Objects.requireNonNull(floor, "floor");
-        }
-
-        public Inspection(boolean enclosed, ResourceLocation targetBiome, CropClimate climate, int heat, int cooling,
-                int glass, int specimens, int requiredSpecimens, String status, List<ResourceLocation> specimenBlocks,
-                List<RequirementProgress> requirements, CropClimate baseClimate, int roomVolume) {
-            this(enclosed, targetBiome, climate, heat, cooling, glass, specimens, requiredSpecimens, status,
-                    specimenBlocks, requirements, baseClimate, roomVolume, 0, FloorProgress.none());
-        }
-
-        public Inspection(boolean enclosed, ResourceLocation targetBiome, CropClimate climate, int heat, int cooling,
-                int glass, int specimens, int requiredSpecimens, String status, List<ResourceLocation> specimenBlocks,
-                List<RequirementProgress> requirements, CropClimate baseClimate) {
-            this(enclosed, targetBiome, climate, heat, cooling, glass, specimens, requiredSpecimens, status,
-                    specimenBlocks, requirements, baseClimate, 0);
-        }
-
-        public Inspection(boolean enclosed, ResourceLocation targetBiome, CropClimate climate, int heat, int cooling,
-                int glass, int specimens, int requiredSpecimens, String status, List<ResourceLocation> specimenBlocks) {
-            this(enclosed, targetBiome, climate, heat, cooling, glass, specimens, requiredSpecimens, status, specimenBlocks, List.of(), climate);
-        }
-
-        public Inspection(boolean enclosed, ResourceLocation targetBiome, CropClimate climate, int heat, int cooling,
-                int glass, int specimens, int requiredSpecimens, String status, List<ResourceLocation> specimenBlocks,
-                List<RequirementProgress> requirements) {
-            this(enclosed, targetBiome, climate, heat, cooling, glass, specimens, requiredSpecimens, status, specimenBlocks, requirements, climate);
+            java.util.Objects.requireNonNull(glazing, "glazing");
         }
 
         public boolean valid() {
-            return status.equals(key("valid"));
+            return status.equals(key("valid")) || status.equals(key("leaking"));
         }
     }
 
     public record RequirementProgress(ResourceLocation block, int found, int required) {
+        public int missing() { return Math.max(0, required - found); }
     }
 
     public record FloorProgress(List<ResourceLocation> blocks, int found, int required, int total) {
         public FloorProgress { blocks = List.copyOf(blocks); }
         public static FloorProgress none() { return new FloorProgress(List.of(), 0, 0, 0); }
+        public int missing() { return Math.max(0, required - found); }
+    }
+
+    public record GlassProgress(int roofFound, int roofRequired, int wallFound, int wallRequired,
+                                int wallBlocks, int entrances, int devices) {
+        public GlassProgress {
+            if (roofFound < 0 || roofRequired < 0 || wallFound < 0 || wallRequired < 0
+                    || wallBlocks < 0 || entrances < 0 || devices < 0) throw new IllegalArgumentException("Negative glass progress");
+        }
+        public static GlassProgress none() { return new GlassProgress(0, 0, 0, 0, 0, 0, 0); }
+        public int roofMissing() { return Math.max(0, roofRequired - roofFound); }
+        public int wallMissing() { return Math.max(0, wallRequired - wallFound); }
     }
 
     public record BiomeRegion(ResourceLocation biome, Set<Long> interior) {
@@ -567,17 +734,22 @@ public final class GreenhouseEnvironment {
     private record MaterialMatches(long materialRevision, List<Match> complete, Match closest) {
     }
 
-    private record Temperature(int heat, int cooling) {
-    }
+    private record RoomInputs(long tick, long query, CropClimate climate, boolean breathable, RoomCapacity capacity,
+                              long materialRevision, long leakSince) { }
 
-    private record Room(long tick, Inspection inspection, Set<Long> interior, Set<ResourceLocation> aliases, BiomeRegion region) {
-        Room(long tick, Inspection inspection, Set<Long> interior, Set<ResourceLocation> aliases) {
-            this(tick, inspection, interior, aliases, inspection.valid() ? new BiomeRegion(inspection.targetBiome(), interior) : null);
+    private record Room(long tick, long query, Inspection inspection, Set<Long> interior, RoomInputs inputs, BiomeRegion region) {
+        Room(long tick, long query, Inspection inspection, Set<Long> interior) {
+            this(tick, query, inspection, interior, null);
+        }
+        Room(long tick, long query, Inspection inspection, Set<Long> interior, RoomInputs inputs) {
+            this(tick, query, inspection, interior, inputs, inspection.valid() ? new BiomeRegion(inspection.targetBiome(), interior) : null);
         }
     }
 
     private static final class Cache {
         long revision = Long.MIN_VALUE;
+        long skyTick = Long.MIN_VALUE;
+        final Map<Long, SkyColumn> skyColumns = new java.util.HashMap<>();
         final Map<GreenhouseRoomScanner.Geometry, Room> rooms = new java.util.WeakHashMap<>();
         final Map<GreenhouseRoomScanner.Geometry, MaterialMatches> materialMatches = new java.util.WeakHashMap<>();
         final Map<GreenhouseRoomScanner.Geometry, RoomClimateState> airStates = new java.util.WeakHashMap<>();

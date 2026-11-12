@@ -32,25 +32,22 @@ public final class NorthstarAtmosphere {
 
     private NorthstarAtmosphere() {}
 
-    /** Exact completed-room air only; native planet sampling must never read this override. */
+    /** Room or direct outlet climate; native planet sampling must never read this override. */
     @Nullable
     public static Float controlledTemperature(Level level, Vec3i query) {
-        BlockPos pos = new BlockPos(query);
-        if (GreenhouseEnvironment.nativeQueryActive() || !loaded(level, pos)) return null;
-        if (level.isClientSide) {
-            float temperature = GreenhouseClientBiomes.temperatureAt(level, pos, Float.NaN);
-            return Float.isFinite(temperature) ? temperature : null;
-        }
-        if (level.getServer() != null && !level.getServer().isSameThread()) return null;
-        var geometry = GreenhouseRoomScanner.completedAroundController(level, pos);
-        if (geometry == null || !geometry.interior.contains(pos.asLong())) return null;
-        var atmosphere = GreenhouseEnvironment.atmosphereRegionAt(level, pos);
-        return atmosphere == null ? null : atmosphere.temperature();
+        CropClimate climate = GreenhouseEnvironment.controlledClimate(level, new BlockPos(query));
+        return climate == null ? null : LegacyClimate.toCelsius(climate);
     }
 
     @Nullable
     public static Float controlledTemperature(Level level, Vec3 query) {
         return controlledTemperature(level, BlockPos.containing(query));
+    }
+
+    /** Classify an optional planet's native ambient at its API boundary. */
+    public static Optional<CropClimate> naturalClimate(Level level, BlockPos pos) {
+        OptionalDouble value = naturalTemperature(level, pos);
+        return value.isPresent() ? Optional.of(LegacyClimate.fromCelsius((float) value.getAsDouble())) : Optional.empty();
     }
 
     /** Provider-free ambient Celsius for the actual planets shipped by the verified Northstar release. */

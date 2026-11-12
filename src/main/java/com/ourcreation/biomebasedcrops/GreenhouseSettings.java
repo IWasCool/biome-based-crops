@@ -16,24 +16,25 @@ public final class GreenhouseSettings {
             .define("enableGreenhouses", true);
     public static final ModConfigSpec.IntValue MAX_ROOM_BLOCKS = BUILDER
             .comment("Maximum connected interior cells in a greenhouse. Dimensions and shape are unrestricted within this volume.")
-            .defineInRange("maxRoomBlocks", 262144, 64, 1048576);
+            .defineInRange("maxRoomBlocks", 1048576, 64, 1048576);
     public static final ModConfigSpec.IntValue SCAN_BLOCKS_PER_TICK = BUILDER
             .comment("Background room-scan work per level tick. Large rooms finish over several ticks without a large synchronous flood fill.")
             .defineInRange("scanBlocksPerTick", 1024, 256, 16384);
     public static final ModConfigSpec.IntValue CONSTRUCTION_RULES_VERSION = BUILDER
-            .comment("Tracks migration of the original greenhouse glass defaults; customized ratios are preserved.")
-            .defineInRange("constructionRulesVersion", 0, 0, 1);
+            .comment("Tracks glass-roof and room-volume default migrations; customized settings are preserved.")
+            .defineInRange("constructionRulesVersion", 0, 0, 4);
     public static final ModConfigSpec.IntValue MATERIAL_REFERENCE_VOLUME = BUILDER
             .comment("Default habitat material percentages are the recipe amount divided by this reference volume.",
                     "Requirements round up proportionally for every room size, without a fixed minimum or floor-area density.",
                     "Explicit legacy biomeMaterialRules retain their configured minimum amount and proportional large-room scaling.")
             .defineInRange("materialReferenceVolume", GreenhouseRecipes.REFERENCE_VOLUME, 64, 1048576);
     public static final ModConfigSpec.DoubleValue MIN_ROOF_GLASS_RATIO = BUILDER
-            .comment("Minimum fraction of exterior ceiling faces made from glass. Internal habitat blocks do not count as enclosure faces.")
+            .comment("Legacy survey ratio retained for existing configs. Does not control biome registration or plant growth.",
+                    "Only each crop or sapling's column needs sky-exposed glass; the rest of the roof may be solid.")
             .defineInRange("minimumRoofGlassRatio", 1.0D, 0.0D, 1.0D);
     public static final ModConfigSpec.DoubleValue MIN_WALL_GLASS_RATIO = BUILDER
-            .comment("Minimum fraction of exposed wall faces made from glass; at least four wall glass blocks are also required.")
-            .defineInRange("minimumWallGlassRatio", 1.0D, 0.0D, 1.0D);
+            .comment("Legacy setting retained for existing configs. Ignored: sealed walls may use any suitable material.")
+            .defineInRange("minimumWallGlassRatio", 0.0D, 0.0D, 1.0D);
     public static final ModConfigSpec.IntValue REQUIRED_SPECIMENS = BUILDER
             .comment("Default count for EACH material in generated mod-biome recipes and bare-ID biomeMaterialRules entries.",
                     "All listed material types are required. Curated vanilla recipes and explicit *count entries keep their own counts.")
@@ -61,12 +62,17 @@ public final class GreenhouseSettings {
     }
 
     public static boolean migrateConstructionRules() {
-        if (!SPEC.isLoaded() || CONSTRUCTION_RULES_VERSION.get() >= 1) return false;
-        if (MIN_ROOF_GLASS_RATIO.get() == 0.5D && MIN_WALL_GLASS_RATIO.get() == 0.1D) {
-            MIN_ROOF_GLASS_RATIO.set(1.0D);
-            MIN_WALL_GLASS_RATIO.set(1.0D);
+        if (!SPEC.isLoaded() || CONSTRUCTION_RULES_VERSION.get() >= 4) return false;
+        if (CONSTRUCTION_RULES_VERSION.get() < 3) {
+            boolean originalDefaults = CONSTRUCTION_RULES_VERSION.get() == 0
+                    && MIN_ROOF_GLASS_RATIO.get() == 0.5D && MIN_WALL_GLASS_RATIO.get() == 0.1D;
+            boolean fullGlassDefaults = MIN_ROOF_GLASS_RATIO.get() == 1.0D && MIN_WALL_GLASS_RATIO.get() == 1.0D;
+            boolean decoratedGlassDefaults = MIN_ROOF_GLASS_RATIO.get() == 0.6D && MIN_WALL_GLASS_RATIO.get() == 0.6D;
+            if (originalDefaults || fullGlassDefaults || decoratedGlassDefaults) MIN_ROOF_GLASS_RATIO.set(1.0D);
+            MIN_WALL_GLASS_RATIO.set(0.0D);
         }
-        CONSTRUCTION_RULES_VERSION.set(1);
+        if (MAX_ROOM_BLOCKS.get() == 262144) MAX_ROOM_BLOCKS.set(1048576);
+        CONSTRUCTION_RULES_VERSION.set(4);
         return true;
     }
 
@@ -76,7 +82,8 @@ public final class GreenhouseSettings {
         return SPEC.isLoaded() ? MATERIAL_REFERENCE_VOLUME.get() : MATERIAL_REFERENCE_VOLUME.getDefault();
     }
     public static double roofGlassRatio() { return SPEC.isLoaded() ? MIN_ROOF_GLASS_RATIO.get() : MIN_ROOF_GLASS_RATIO.getDefault(); }
-    public static double wallGlassRatio() { return SPEC.isLoaded() ? MIN_WALL_GLASS_RATIO.get() : MIN_WALL_GLASS_RATIO.getDefault(); }
+    /** Retained for old callers; wall glazing no longer affects enclosure qualification. */
+    public static double wallGlassRatio() { return 0.0D; }
 
     public static int requiredSpecimens() {
         return SPEC.isLoaded() ? REQUIRED_SPECIMENS.get() : REQUIRED_SPECIMENS.getDefault();

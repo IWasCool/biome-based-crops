@@ -4,95 +4,95 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import io.netty.buffer.Unpooled;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
+import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(EphemeralTestServerProvider.class)
 class GreenhouseContentTest {
     @Test
-    void sampledCoreTargetSurvivesWorldSaveAndInvalidOldDataIsSafe(MinecraftServer server) {
-        BlockPos position = new BlockPos(12, 64, -8);
-        var state = GreenhouseContent.CORE.get().defaultBlockState();
-        GreenhouseCoreBlockEntity original = new GreenhouseCoreBlockEntity(position, state);
-        assertNull(original.targetBiome());
-        original.setTargetBiome(id("minecraft:mangrove_swamp"));
-        CompoundTag saved = original.saveWithFullMetadata(server.registryAccess());
+    void dedicatedCreativeTabContainsEveryModItemExactlyOnce(MinecraftServer server) {
+        var tab = GreenhouseContent.CREATIVE_TAB.get();
+        assertEquals(id("biome_based_crops:main"), BuiltInRegistries.CREATIVE_MODE_TAB.getKey(tab));
+        assertEquals("itemGroup.biome_based_crops",
+                assertInstanceOf(TranslatableContents.class, tab.getDisplayName().getContents()).getKey());
+        assertTrue(tab.getIconItem().is(GreenhouseContent.AIR_CONDITIONER_ITEM.get()));
+        tab.buildContents(new CreativeModeTab.ItemDisplayParameters(FeatureFlags.VANILLA_SET, false, server.registryAccess()));
+        var displayed = tab.getDisplayItems().stream().map(ItemStack::getItem).toList();
+        var expected = BuiltInRegistries.ITEM.stream()
+                .filter(item -> BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(BiomeBasedCrops.MODID))
+                .collect(Collectors.toSet());
+        assertEquals(Set.of(GreenhouseContent.GUIDE.get(), GreenhouseContent.THERMOMETER.get(),
+                GreenhouseContent.AIR_CONDITIONER_ITEM.get()), expected);
+        assertEquals(expected, new java.util.HashSet<>(displayed));
+        assertEquals(expected.size(), displayed.size(), "Creative tab contains duplicate mod items");
+        assertTrue(tab.getDisplayItems().stream().allMatch(tab::contains), "Mod items are missing from creative search");
+        var orderedTabs = CreativeModeTabRegistry.getSortedCreativeModeTabs();
+        int tabIndex = orderedTabs.indexOf(tab);
+        int spawnEggIndex = orderedTabs.indexOf(BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.SPAWN_EGGS));
+        assertTrue(spawnEggIndex >= 0 && tabIndex > spawnEggIndex,
+                "Dedicated mod tab should follow the vanilla tabs without an ordering cycle");
+    }
 
-        GreenhouseCoreBlockEntity loaded = assertInstanceOf(GreenhouseCoreBlockEntity.class,
-                BlockEntity.loadStatic(position, state, saved, server.registryAccess()));
-        assertEquals(original.targetBiome(), loaded.targetBiome());
-        assertEquals(position, loaded.getBlockPos());
-        assertEquals("minecraft:mangrove_swamp", loaded.getUpdateTag(server.registryAccess()).getString("TargetBiome"));
+    @Test
+    void scannerItemsBlocksAndRecipesAreRemoved(MinecraftServer server) {
+        for (String name : List.of("greenhouse_core", "greenhouse_probe")) {
+            var removed = id("biome_based_crops:" + name);
+            assertFalse(BuiltInRegistries.ITEM.containsKey(removed), "Removed scanner item is still registered");
+            assertFalse(BuiltInRegistries.BLOCK.containsKey(removed), "Removed scanner block is still registered");
+            assertFalse(BuiltInRegistries.BLOCK_ENTITY_TYPE.containsKey(removed), "Removed scanner entity is still registered");
+            assertTrue(server.getRecipeManager().byKey(removed).isEmpty(), "Removed scanner recipe is still craftable");
+        }
+    }
 
-        saved.putString("TargetBiome", "Removed Biome!");
-        loaded.loadWithComponents(saved, server.registryAccess());
-        assertNull(loaded.targetBiome());
-        saved.remove("TargetBiome");
-        loaded.loadWithComponents(saved, server.registryAccess());
-        assertNull(loaded.targetBiome());
+    @Test
+    void guideNetworkPreservesAutomaticRoomSizeAndFloorContext() {
+        var forest = id("minecraft:forest");
+        var recipe = new GreenhouseRecipes.Recipe(CropClimate.NEUTRAL, List.of(
+                new GreenhouseRecipes.MaterialRequirement(id("minecraft:oak_log"), 16, 8, 1),
+                new GreenhouseRecipes.MaterialRequirement(id("minecraft:oak_leaves"), 64, 2, 2)),
+                new GreenhouseRecipes.FloorRequirement(List.of(id("minecraft:grass_block"), id("minecraft:dirt")), 90));
+        var payload = new GreenhouseNetwork.ViewPayload(Map.of(forest, recipe), true, 512, 8192, 256);
+        assertEquals(payload, roundTrip(payload));
+        var large = new GreenhouseNetwork.ViewPayload(Map.of(), true, 64, 1_048_576, 1_048_576);
+        assertEquals(large, roundTrip(large));
+        assertThrows(IllegalArgumentException.class,
+                () -> new GreenhouseNetwork.ViewPayload(Map.of(), false, 512, 1_048_577, 0));
     }
 
     @Test
     void completeLoadedBiomeCatalogueSurvivesNetworkRoundTrip(MinecraftServer server) {
-        Map<ResourceLocation, GreenhouseRecipes.Recipe> catalogue = new LinkedHashMap<>();
-        server.registryAccess().registryOrThrow(Registries.BIOME).holders().forEach(biome ->
-                catalogue.put(biome.key().location(), GreenhouseRecipes.forBiome(biome)));
+        Map<ResourceLocation, GreenhouseRecipes.Recipe> catalogue = GreenhouseRecipes.serverCatalog(
+                server.registryAccess().registryOrThrow(Registries.BIOME));
         assertTrue(catalogue.containsKey(id("minecraft:the_end")));
         assertTrue(catalogue.containsKey(id("minecraft:deep_dark")));
-        GreenhouseNetwork.ViewPayload decoded = roundTrip(new GreenhouseNetwork.ViewPayload(catalogue, null));
+        GreenhouseNetwork.ViewPayload decoded = roundTrip(new GreenhouseNetwork.ViewPayload(catalogue));
         assertEquals(catalogue, decoded.recipes());
-        assertNull(decoded.inspection());
-    }
-
-    @Test
-    void surveyNetworkRoundTripPreservesSuccessAndMissingRequirements() {
-        var biome = id("minecraft:desert");
-        var materials = List.of(id("minecraft:sand"), id("minecraft:cactus"));
-        var recipes = Map.of(biome, new GreenhouseRecipes.Recipe(CropClimate.HOT, materials, 4));
-        for (String status : List.of("valid", "missing_specimens", "outside", "no_glass")) {
-            var report = new GreenhouseEnvironment.Inspection(true, biome, CropClimate.WARM,
-                    16, 8, 5, 2, 4, "biome_based_crops.greenhouse.status." + status, materials,
-                    List.of(new GreenhouseEnvironment.RequirementProgress(id("minecraft:sand"), 2, 8),
-                            new GreenhouseEnvironment.RequirementProgress(id("minecraft:cactus"), 0, 2)), CropClimate.COLD);
-            var decoded = roundTrip(new GreenhouseNetwork.ViewPayload(recipes, report));
-            assertEquals(report, decoded.inspection());
-            assertEquals(recipes, decoded.recipes());
-            assertEquals(status.equals("valid"), decoded.inspection().valid());
-        }
-        var outside = new GreenhouseEnvironment.Inspection(false, null, CropClimate.COLD,
-                0, 4, 0, 0, 4, "biome_based_crops.greenhouse.status.no_core", List.of());
-        assertEquals(outside, roundTrip(new GreenhouseNetwork.ViewPayload(recipes, outside)).inspection());
-    }
-
-    @Test
-    void largeRoomSurveyCountsAndDeferredUpdateFlagSurviveNetworkRoundTrip() {
-        var sand = id("minecraft:sand");
-        var report = new GreenhouseEnvironment.Inspection(true, id("minecraft:desert"), CropClimate.HOT,
-                0, 0, 250_000, 1_048_576, 1_048_576, "biome_based_crops.greenhouse.status.valid", List.of(sand),
-                List.of(new GreenhouseEnvironment.RequirementProgress(sand, 1_048_576, 1_048_576)), CropClimate.NEUTRAL, 1_048_576);
-        var payload = new GreenhouseNetwork.ViewPayload(Map.of(), report, true, 64, 1_048_576);
-        assertEquals(payload, roundTrip(payload));
+        assertEquals(0, decoded.contextVolume());
+        assertEquals(0, decoded.contextFloorArea());
     }
 
     @Test
@@ -107,41 +107,21 @@ class GreenhouseContentTest {
     }
 
     @Test
-    void nativeFloorAndLivingMaterialPlacementSurviveGuideNetworkRoundTrip() {
-        var forest = id("minecraft:forest");
-        var ground = List.of(id("minecraft:grass_block"), id("minecraft:dirt"));
-        var recipe = new GreenhouseRecipes.Recipe(CropClimate.NEUTRAL, List.of(
-                new GreenhouseRecipes.MaterialRequirement(id("minecraft:oak_log"), 16, 8, 1),
-                new GreenhouseRecipes.MaterialRequirement(id("minecraft:oak_leaves"), 64, 2, 2)),
-                new GreenhouseRecipes.FloorRequirement(ground, 90));
-        var report = new GreenhouseEnvironment.Inspection(true, forest, CropClimate.NEUTRAL,
-                0, 0, 100, 80, 80, "biome_based_crops.greenhouse.status.missing_floor", recipe.specimens(),
-                List.of(new GreenhouseEnvironment.RequirementProgress(id("minecraft:oak_log"), 16, 16),
-                        new GreenhouseEnvironment.RequirementProgress(id("minecraft:oak_leaves"), 64, 64)),
-                CropClimate.NEUTRAL, 512, 64, new GreenhouseEnvironment.FloorProgress(ground, 57, 58, 64));
-        var payload = new GreenhouseNetwork.ViewPayload(Map.of(forest, recipe), report, true, 512, 512, 64);
-        assertEquals(payload, roundTrip(payload));
-        var contextOnly = new GreenhouseNetwork.ViewPayload(Map.of(forest, recipe), null, true, 512, 8192, 256);
-        assertEquals(contextOnly, roundTrip(contextOnly), "Ordinary guide updates must retain the floor footprint");
-    }
-
-    @Test
     void survivalRecipesLoadAndCraftTheirRegisteredItems(MinecraftServer server) {
-        assertCrafts(server, "greenhouse_core", List.of(
-                new ItemStack(Items.GLASS), new ItemStack(Items.COPPER_INGOT), new ItemStack(Items.GLASS),
-                new ItemStack(Items.BRICKS), new ItemStack(Items.COMPASS), new ItemStack(Items.BRICKS),
-                new ItemStack(Items.OAK_PLANKS), new ItemStack(Items.COPPER_INGOT), new ItemStack(Items.OAK_PLANKS)),
-                new ItemStack(GreenhouseContent.CORE_ITEM.get()));
-        assertCrafts(server, "greenhouse_probe", List.of(
-                ItemStack.EMPTY, new ItemStack(Items.GLASS), ItemStack.EMPTY,
-                new ItemStack(Items.COPPER_INGOT), new ItemStack(Items.REDSTONE), new ItemStack(Items.COPPER_INGOT),
-                ItemStack.EMPTY, new ItemStack(Items.STICK), ItemStack.EMPTY),
-                new ItemStack(GreenhouseContent.PROBE.get()));
-        assertCrafts(server, "farmer_field_guide", List.of(
-                new ItemStack(Items.WHEAT), ItemStack.EMPTY, ItemStack.EMPTY,
-                ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY,
-                ItemStack.EMPTY, ItemStack.EMPTY, new ItemStack(Items.BOOK)),
-                new ItemStack(GreenhouseContent.GUIDE.get()));
+        for (var plant : List.of(Items.WHEAT, Items.CARROT, Items.WHEAT_SEEDS, Items.OAK_SAPLING)) {
+            assertCrafts(server, "farmer_field_guide", List.of(
+                    new ItemStack(plant), ItemStack.EMPTY, ItemStack.EMPTY,
+                    ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY,
+                    ItemStack.EMPTY, ItemStack.EMPTY, new ItemStack(Items.BOOK)),
+                    new ItemStack(GreenhouseContent.GUIDE.get()));
+        }
+        var guideRecipe = (CraftingRecipe) server.getRecipeManager()
+                .byKey(id("biome_based_crops:farmer_field_guide")).orElseThrow().value();
+        for (var invalid : List.of(List.of(new ItemStack(Items.BOOK)), List.of(new ItemStack(Items.CARROT)),
+                List.of(new ItemStack(Items.BOOK), new ItemStack(Items.STONE)))) {
+            assertFalse(guideRecipe.matches(CraftingInput.of(invalid.size(), 1, invalid), server.overworld()),
+                    "Guide crafting must require a book and a crop, seed, or sapling");
+        }
         assertCrafts(server, "air_conditioner", List.of(
                 new ItemStack(Items.IRON_INGOT), new ItemStack(Items.REDSTONE), new ItemStack(Items.IRON_INGOT),
                 new ItemStack(Items.COPPER_INGOT), new ItemStack(Items.PISTON), new ItemStack(Items.COPPER_INGOT),
@@ -150,9 +130,9 @@ class GreenhouseContentTest {
         assertCrafts(server, "thermometer", List.of(
                 new ItemStack(Items.GLASS), ItemStack.EMPTY, ItemStack.EMPTY,
                 new ItemStack(Items.REDSTONE), ItemStack.EMPTY, ItemStack.EMPTY,
-                new ItemStack(Items.COPPER_INGOT), ItemStack.EMPTY, ItemStack.EMPTY),
+                new ItemStack(Items.IRON_INGOT), ItemStack.EMPTY, ItemStack.EMPTY),
                 new ItemStack(GreenhouseContent.THERMOMETER.get()));
-        for (String recipe : List.of("greenhouse_core", "greenhouse_probe", "farmer_field_guide", "air_conditioner", "thermometer")) {
+        for (String recipe : List.of("farmer_field_guide", "air_conditioner", "thermometer")) {
             assertNotNull(server.getAdvancements().get(id("biome_based_crops:recipes/" + recipe)), "Missing recipe unlock " + recipe);
         }
     }

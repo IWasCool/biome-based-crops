@@ -92,7 +92,7 @@ public final class NorthstarOxygenGameTests {
         helper.assertFalse(access.oxygenAt(manager, inside), "Unfilled room was breathable to Northstar");
         helper.assertTrue(access.sealer(manager, inside) == null, "Unfilled room returned a breathing provider");
         helper.assertFalse(CommonEvents.canGrow(level, outside, anyClimate), "A climate-compatible crop grew in the airless planet exterior");
-        fixture.unit.setTargetTemperature(20);
+        fixture.unit.setClimate(CropClimate.NEUTRAL);
         advancePaidTicks(helper, fixture, 10, () -> {
             float partial = GreenhouseEnvironment.oxygenPercent(level, inside);
             helper.assertTrue(partial > 0F && partial < RoomClimateState.BREATHABLE_PERCENT,
@@ -101,7 +101,7 @@ public final class NorthstarOxygenGameTests {
             advancePaidTicks(helper, fixture, 45, () -> {
                 float filled = GreenhouseEnvironment.oxygenPercent(level, inside);
                 helper.assertTrue(filled >= RoomClimateState.BREATHABLE_PERCENT, "Paid room did not become breathable: " + filled);
-                helper.assertTrue(GreenhouseEnvironment.currentTemperature(level, inside) > nativeCelsius,
+                helper.assertTrue(GreenhouseEnvironment.currentClimate(level, inside) == CropClimate.NEUTRAL,
                         "Paid thermoregulator never warmed the planetary room");
                 Object provider = access.sealer(manager, inside);
                 helper.assertTrue(provider != null, "Northstar breathing lookup did not see the filled room");
@@ -109,11 +109,11 @@ public final class NorthstarOxygenGameTests {
                 helper.assertTrue(access.oxygenAt(manager, inside), "Northstar block oxygen query rejected the filled room");
                 helper.assertTrue(access.sealerAtEye(manager, Vec3.atCenterOf(inside)) != null,
                         "Northstar entity eye-position lookup rejected the filled room");
-                float actual = GreenhouseEnvironment.currentTemperature(level, inside);
+                float actual = LegacyClimate.toCelsius(GreenhouseEnvironment.currentClimate(level, inside));
                 helper.assertTrue(Math.abs(access.temperatureAt(temperatureManager, inside) - actual) < 0.001F,
-                        "Northstar block temperature did not match the room's physical air");
+                        "Northstar block API did not map the room climate category");
                 helper.assertTrue(Math.abs(access.temperatureAtEye(temperatureManager, Vec3.atCenterOf(inside)) - actual) < 0.001F,
-                        "Northstar entity temperature did not match the room's physical air");
+                        "Northstar entity API did not map the room climate category");
                 helper.assertTrue(access.temperatureAt(temperatureManager, outside) == nativeCelsius,
                         "Controlled temperature leaked into the native planet exterior");
                 helper.assertTrue(GreenhouseEnvironment.withoutOverlay(() -> access.temperatureAt(temperatureManager, inside)) == nativeCelsius,
@@ -139,12 +139,29 @@ public final class NorthstarOxygenGameTests {
                     helper.assertTrue(access.sealer(manager, inside) == null, "Broken room retained its provider");
                     helper.assertFalse(access.sealed(provider, inside), "A cached provider survived the roof leak");
                     helper.assertFalse(access.nativeOxygen(manager), "Roof change changed native planet atmosphere");
-                    helper.assertTrue(access.temperatureAt(temperatureManager, inside) == nativeCelsius,
-                            "Broken room retained its Northstar temperature override");
+                    helper.assertTrue(fixture.unit.hasPaidAirflow(), "Opening the roof unexpectedly stopped the paid local controller");
+                    helper.assertTrue(access.temperatureAt(temperatureManager, inside) == LegacyClimate.toCelsius(CropClimate.NEUTRAL),
+                            "Opening a known room discarded its climate before the leak grace expired");
+                    BlockPos wind = fixture.unit.getBlockPos().relative(fixture.unit.getBlockState().getValue(AirConditionerBlock.FACING));
+                    helper.assertTrue(access.temperatureAt(temperatureManager, wind) == LegacyClimate.toCelsius(CropClimate.NEUTRAL),
+                            "Paid outlet wind did not affect the position directly in front");
                     helper.assertFalse(CommonEvents.canGrow(level, inside, anyClimate), "A crop kept growing after its oxygenated room opened");
-                    fixture.restore();
-                    fixtures.remove(fixture);
-                    done.run();
+                    level.setBlock(fixture.unit.getBlockPos().below(), Blocks.REDSTONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+                    helper.runAfterDelay(2L, () -> {
+                        try {
+                            AirConditionerBlockEntity.serverTick(level, fixture.unit.getBlockPos(), fixture.unit.getBlockState(), fixture.unit);
+                            helper.assertFalse(fixture.unit.hasPaidAirflow(), "Redstone-disabled local controller remained active");
+                            helper.assertTrue(access.temperatureAt(temperatureManager, inside) == LegacyClimate.toCelsius(CropClimate.NEUTRAL),
+                                    "Stopping the controller discarded the leaking room's captured climate");
+                            helper.assertFalse(access.oxygenAt(manager, inside), "Disabled controller restored oxygen to the open room");
+                            fixture.restore();
+                            fixtures.remove(fixture);
+                            done.run();
+                        } catch (RuntimeException | Error error) {
+                            cleanup.run();
+                            throw error;
+                        }
+                    });
                 }, cleanup);
             }, cleanup);
         }, cleanup);

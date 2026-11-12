@@ -1,0 +1,31 @@
+{
+  "locales": 137,
+  "fallback_locales": [
+    "io_en",
+    "isv",
+    "jbo_en",
+    "nah",
+    "pls",
+    "qya_aa",
+    "tlh_aa",
+    "tok",
+    "tzo_mx",
+    "vp_vl"
+  ],
+  "parent_language_inheritance": {
+    "ast": "es",
+    "bar": "de",
+    "nn": "no",
+    "ksh": "de",
+    "kw": "cy",
+    "lzh": "zh-TW",
+    "nds": "de",
+    "ovd": "sv",
+    "rue": "uk",
+    "sxu": "de"
+  },
+  "writing_system_fallbacks": {
+    "zlm_arab": "Malay Latin script for new text; existing Jawi text preserved"
+  },
+  "fallback_policy": "Existing authored translations are retained. Unsupported new strings use English; regional variants may inherit their parent language."
+}

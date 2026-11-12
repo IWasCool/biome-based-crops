@@ -16,6 +16,10 @@ public final class ConfigEvents {
             GreenhouseRecipes.clearCache();
         }
         if (event.getConfig().getSpec() == Config.SPEC) {
+            if ((event instanceof ModConfigEvent.Loading || event instanceof ModConfigEvent.Reloading)
+                    && Config.migrateClimateRules()) {
+                event.getConfig().getLoadedConfig().save();
+            }
             GreenhouseEnvironment.invalidateClimate();
             CropClimateRules.clearCache();
             CropMatcher.clearCaches();

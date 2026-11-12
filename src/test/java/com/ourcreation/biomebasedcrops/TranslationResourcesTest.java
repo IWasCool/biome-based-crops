@@ -2,6 +2,7 @@ package com.ourcreation.biomebasedcrops;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -41,6 +42,12 @@ class TranslationResourcesTest {
         }
 
         JsonObject english = read("en_us");
+        assertTrue(english.keySet().containsAll(Set.of(
+                "biome_based_crops.guide.title", "biome_based_crops.guide.find_biome_hint",
+                "biome_based_crops.guide.required_climate", "biome_based_crops.guide.floor_blocks",
+                "biome_based_crops.guide.interior_requirements", "biome_based_crops.guide.setup_text",
+                "biome_based_crops.ac.previous_climate", "biome_based_crops.ac.next_climate",
+                "biome_based_crops.ac.selector_usage")), "Guide and climate controls need translatable text");
         for (String locale : expected) {
             JsonObject translated = read(locale);
             assertEquals(english.keySet(), translated.keySet(), locale + " translation keys");
@@ -67,6 +74,45 @@ class TranslationResourcesTest {
 
     private static JsonObject read(String locale) throws IOException {
         return JsonParser.parseString(Files.readString(LANG.resolve(locale + ".json"), StandardCharsets.UTF_8)).getAsJsonObject();
+    }
+
+    @Test
+    void recentGuideAndClimateMessagesUseLocalizedText() throws IOException {
+        JsonObject english = read("en_us");
+        for (String locale : List.of("de_de", "es_es", "fr_fr", "it_it", "pt_br", "ru_ru",
+                "ja_jp", "ko_kr", "zh_cn", "ar_sa", "hi_in", "tr_tr")) {
+            JsonObject language = read(locale);
+            for (String key : List.of("biome_based_crops.guide.setup_text", "biome_based_crops.ac.selector_usage",
+                    "biome_based_crops.ac.capacity_hint", "biome_based_crops.message.blocked")) {
+                assertNotEquals(english.get(key).getAsString(), language.get(key).getAsString(),
+                        locale + ": " + key + " should not fall back to English");
+            }
+        }
+    }
+
+    @Test
+    void growthAndInstrumentMessagesUseClimateCategoriesWithoutDependencyHints() throws IOException {
+        try (var paths = Files.list(LANG)) {
+            for (Path path : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
+                var language = JsonParser.parseString(Files.readString(path, StandardCharsets.UTF_8)).getAsJsonObject();
+                assertFalse(language.has("biome_based_crops.message.blocked_with_thermoregulator"), path.toString());
+                assertFalse(language.has("biome_based_crops.message.thermoregulator_nearby"), path.toString());
+                assertFalse(language.has("biome_based_crops.message.temperature_reading"), path.toString());
+                String reading = language.get("biome_based_crops.message.climate_reading").getAsString();
+                assertFalse(reading.contains("Celsius") || reading.contains("Fahrenheit") || reading.contains("\u00B0"), path.toString());
+            }
+        }
+        JsonObject english = read("en_us");
+        for (String key : List.of("biome_based_crops.message.blocked", "biome_based_crops.message.blocked_biomes")) {
+            String text = english.get(key).getAsString().toLowerCase(Locale.ROOT);
+            assertTrue(text.contains("greenhouse"), key);
+            assertFalse(text.contains("glass") || text.contains("sky"), key);
+            assertFalse(text.contains("thermoregulator") || text.contains("tough as nails"), key);
+        }
+        assertEquals("Needs %s climate or a greenhouse.", english.get("biome_based_crops.message.blocked").getAsString());
+        assertEquals("Needs a matching biome or greenhouse. See Field Guide.",
+                english.get("biome_based_crops.message.blocked_biomes").getAsString());
+        assertTrue(arguments(english.get("biome_based_crops.message.blocked_biomes").getAsString()).isEmpty());
     }
 
     private static List<Integer> arguments(String text) {
