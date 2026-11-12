@@ -51,6 +51,10 @@ hs_err_pid*
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
 __pycache__/
+*.py
+*.pyc
+*.pyo
+*.class
 
 ### Local validation and asset-authoring tools ###
 /src/test/

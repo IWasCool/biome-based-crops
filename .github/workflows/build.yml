@@ -50,4 +50,4 @@ jobs:
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             exit 0
           fi
-          gh release create "$GITHUB_REF_NAME" release/*.jar --verify-tag --title "Biome Based Crops $GITHUB_REF_NAME" --notes-file CHANGELOG.md
+          gh release create "$GITHUB_REF_NAME" release/*.jar --verify-tag --title "Biome Based Crops $GITHUB_REF_NAME" --notes-file README.md

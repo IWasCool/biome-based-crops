@@ -12,10 +12,6 @@ tasks.named('wrapper', Wrapper).configure {
 version = mod_version
 group = mod_group_id
 
-if (providers.gradleProperty('compatBuildDir').isPresent()) {
-    layout.buildDirectory = file(providers.gradleProperty('compatBuildDir').get())
-}
-
 sourceSets.main.resources {
     srcDir('src/generated/resources')
 
@@ -26,13 +22,6 @@ sourceSets.main.resources {
 tasks.named('processResources', ProcessResources).configure {
     from(['LICENSE', 'TEMPLATE_LICENSE.txt']) {
         into 'META-INF'
-    }
-}
-
-sourceSets {
-    gameTest {
-        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
-        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
     }
 }
 
@@ -73,25 +62,11 @@ neoForge {
             if (providers.gradleProperty('previewWorld').isPresent()) {
                 programArguments.addAll '--quickPlaySingleplayer', providers.gradleProperty('previewWorld').get(), '--width', '1280', '--height', '800'
             }
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         server {
             server()
             programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        gameTestServer {
-            type = "gameTestServer"
-            gameDirectory = file(providers.gradleProperty('compatGameDir').getOrElse('build/gametest'))
-            if (providers.gradleProperty('compatModsDir').isPresent()) {
-                jvmArgument '-Xmx4G'
-                jvmArgument '-XX:ActiveProcessorCount=2'
-                systemProperty 'log4j.configurationFile', layout.buildDirectory.file('moddev/gameTestServerLog4j2.xml').get().asFile.toURI().toString()
-                systemProperty 'log4j2.configurationFile', layout.buildDirectory.file('moddev/gameTestServerLog4j2.xml').get().asFile.toURI().toString()
-            }
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         data {
@@ -110,21 +85,12 @@ neoForge {
     mods {
         "${mod_id}" {
             sourceSet(sourceSets.main)
-            if (providers.gradleProperty('enableGameTests').getOrElse('false').toBoolean()) {
-                sourceSet(sourceSets.gameTest)
-            }
         }
-    }
-
-    unitTest {
-        enable()
-        testedMod = mods."${mod_id}"
     }
 }
 
 configurations {
     runtimeClasspath.extendsFrom localRuntime
-    testRuntimeClasspath.extendsFrom localRuntime
 }
 
 dependencies {
@@ -144,21 +110,6 @@ dependencies {
     } else if (providers.gradleProperty('includeLocalMods').getOrElse('true').toBoolean()) {
         localRuntime fileTree(dir: 'libs', include: ['*.jar'])
     }
-
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation "net.neoforged:testframework:${neo_version}"
-}
-
-tasks.named('test', Test).configure {
-    useJUnitPlatform()
-    maxHeapSize = providers.gradleProperty('compatModsDir').isPresent() ? '4G' : '2G'
-    if (providers.gradleProperty('compatGameDir').isPresent()) {
-        workingDir = file(providers.gradleProperty('compatGameDir').get())
-        systemProperty 'log4j.configurationFile', layout.buildDirectory.file('moddev/junit/log4j2.xml').get().asFile.toURI().toString()
-        systemProperty 'log4j2.configurationFile', layout.buildDirectory.file('moddev/junit/log4j2.xml').get().asFile.toURI().toString()
-    }
-    systemProperty 'biomeBasedCrops.projectDir', layout.projectDirectory.asFile.absolutePath
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
@@ -218,14 +169,6 @@ abstract class VerifyReleaseJar extends DefaultTask {
     @PathSensitive(PathSensitivity.RELATIVE)
     abstract ConfigurableFileCollection getMainResourceDirectories()
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
-    abstract ConfigurableFileCollection getTestResourceDirectories()
-
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
-    abstract ConfigurableFileCollection getTestSourceDirectories()
-
     @Input
     abstract ListProperty<String> getRequiredEntries()
 
@@ -245,19 +188,14 @@ abstract class VerifyReleaseJar extends DefaultTask {
     void verify() {
         Set<String> classes = filesBelow(mainClassDirectories.files).findAll { it.endsWith('.class') } as Set
         Set<String> resources = filesBelow(mainResourceDirectories.files)
-        Set<String> testResources = filesBelow(testResourceDirectories.files)
-        Set<String> testClasses = filesBelow(testSourceDirectories.files).findAll { it.endsWith('.java') }
-                .collect { it.substring(0, it.length() - 5) } as Set
         List<String> problems = []
         new java.util.zip.ZipFile(releaseJar.get().asFile).withCloseable { archive ->
             Set<String> entries = Collections.list(archive.entries()).findAll { !it.directory }.collect { it.name } as Set
             entries.each { name ->
-                String className = name.endsWith('.class') ? name.substring(0, name.length() - 6).tokenize('$').first() : null
-                if (testResources.contains(name)) {
-                    problems.add("test resource: ${name}")
-                } else if (className != null && testClasses.contains(className)) {
-                    problems.add("test class: ${name}")
-                } else if (name ==~ /(?i).*\.(java|kt|scala|groovy|py|bbmodel|snbt|psd|xcf|blend|log|jfr|hprof)$/
+                if (name ==~ /(?i).*(GameTests?|Tests?|Harness)(\$[^\/]*)?\.class$/
+                        || name ==~ /(?i).*(^|\/)(tests?|gametest|tools)(\/|$).*/) {
+                    problems.add("test or development file: ${name}")
+                } else if (name ==~ /(?i).*\.(java|kt|scala|groovy|py|pyc|pyo|bbmodel|snbt|psd|xcf|blend|log|jfr|hprof)$/
                         || name ==~ /.*(^|\/)(\.git|\.gradle|\.idea|\.vscode|__pycache__|\.cache)(\/|$).*/
                         || name.tokenize('/').last() in ['.DS_Store', 'Thumbs.db']) {
                     problems.add("development file: ${name}")
@@ -286,8 +224,6 @@ var verifyReleaseJar = tasks.register('verifyReleaseJar', VerifyReleaseJar) {
     releaseJar.set(tasks.named('jar', Jar).flatMap { it.archiveFile })
     mainClassDirectories.from(sourceSets.main.output.classesDirs)
     mainResourceDirectories.from(sourceSets.main.resources.srcDirs)
-    testResourceDirectories.from(sourceSets.test.resources.srcDirs, sourceSets.gameTest.resources.srcDirs)
-    testSourceDirectories.from(sourceSets.test.java.srcDirs, sourceSets.gameTest.java.srcDirs)
     requiredEntries.set(['META-INF/LICENSE', 'META-INF/TEMPLATE_LICENSE.txt', 'META-INF/neoforge.mods.toml', "${mod_id}.mixins.json".toString()])
 }
 
