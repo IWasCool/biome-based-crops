@@ -40,6 +40,63 @@ public final class GreenhouseBiomeGameTests {
     }
 
     @GameTest(template = "empty", skyAccess = true, batch = "greenhouse_biome_overlay")
+    public static void matchingNativeClimateRegistersOnlyWithAnInwardControllerAndRemovalRevokesAllBiomeQueries(GameTestHelper helper) {
+        Settings settings = new Settings();
+        try {
+            BlockPos center = prepareDesertRoom(helper);
+            ServerLevel level = helper.getLevel();
+            level.removeBlock(center.north(2), false);
+            BlockPos marker = center.west(5).above(2);
+            level.setBlock(marker, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+            helper.setBiome(Biomes.NETHER_WASTES);
+            GreenhouseEnvironment.clearCache();
+            var desert = level.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.DESERT);
+            CropClimate required = CropClimate.at(desert, center);
+            helper.assertTrue(CropClimate.at(GreenhouseEnvironment.nativeBiome(level, center), center) == required,
+                    "Native fixture must match the target biome's climate without conditioning");
+            helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "A matching house registered without an AC or TAN controller");
+            helper.assertTrue(GreenhouseEnvironment.regionAt(level, center) == null && level.getBiome(center).is(Biomes.NETHER_WASTES),
+                    "An ordinary house changed its F3 biome");
+            helper.assertFalse(hasHuskSpawn(level, center), "An ordinary house acquired the foreign biome's spawn table");
+            assertNoRegisteredClientBiome(helper, level, center);
+
+            level.setBlock(marker, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState()
+                    .setValue(AirConditionerBlock.FACING, Direction.WEST), Block.UPDATE_ALL);
+            helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "An outward-facing controller registered its rear room");
+            level.setBlock(marker, level.getBlockState(marker).setValue(AirConditionerBlock.FACING, Direction.EAST), Block.UPDATE_ALL);
+            var unit = (AirConditionerBlockEntity) level.getBlockEntity(marker);
+            unit.setClimate(required);
+            unit.setEnabled(false);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "An idle installed controller did not mark intentional biome registration");
+            helper.assertValueEqual(unit.energyStored(), 0, "Presence-only marker unexpectedly received energy");
+            helper.assertTrue(level.getBiome(center).is(Biomes.DESERT) && hasHuskSpawn(level, center),
+                    "A registered habitat did not supply its exact biome and spawn table");
+            assertClientBiomeProvider(helper, level, center);
+
+            level.setBlock(marker, level.getBlockState(marker).setValue(AirConditionerBlock.FACING, Direction.WEST), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.regionAt(level, center) == null && level.getBiome(center).is(Biomes.NETHER_WASTES),
+                    "Rotating the only controller away retained a cached biome");
+            helper.assertFalse(hasHuskSpawn(level, center), "Rotating away retained the foreign spawn table");
+            level.setBlock(marker, level.getBlockState(marker).setValue(AirConditionerBlock.FACING, Direction.EAST), Block.UPDATE_ALL);
+            helper.assertTrue(level.getBiome(center).is(Biomes.DESERT), "Restoring the inward marker did not recover registration");
+            level.setBlock(marker, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.regionAt(level, center) == null && level.getBiome(center).is(Biomes.NETHER_WASTES),
+                    "Removing the only controller retained a cached biome");
+            helper.assertFalse(hasHuskSpawn(level, center), "Removing the controller retained the foreign spawn table");
+            assertNoRegisteredClientBiome(helper, level, center);
+            helper.succeed();
+        } finally {
+            settings.restore();
+        }
+    }
+
+    private static void assertNoRegisteredClientBiome(GameTestHelper helper, ServerLevel level, BlockPos inside) {
+        var atmosphere = GreenhouseEnvironment.atmosphereRegionAt(level, inside);
+        helper.assertTrue(atmosphere == null || atmosphere.biome() == null,
+                "An unregistered room still advertised a biome in its client atmosphere snapshot");
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "greenhouse_biome_overlay")
     public static void actualBiomeQueriesChangeOnlyTheEnclosedInterior(GameTestHelper helper) {
         Settings settings = new Settings();
         try {

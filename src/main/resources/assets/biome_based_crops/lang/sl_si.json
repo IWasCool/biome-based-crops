@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biom rastlinjaka ni veljaven",
   "biome_based_crops.ac.room_climate": "Klima v prostoru: %s",
   "biome_based_crops.ac.unit_capacity": "klimatske naprave: %s nameščene, %s potrebne",
-  "biome_based_crops.ac.capacity_hint": "Vsaka klimatska naprava podpira 256 zaprtih notranjih blokov pri spreminjanju podnebja. Naravno usklajena soba ne potrebuje klimatske naprave.",
+  "biome_based_crops.ac.capacity_hint": "Vsaka klimatska naprava podpira 256 notranjih blokov pri spreminjanju klime. Za registracijo bioma je vedno potreben električni ali Tough As Nails termoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Sprednja odprtina je blokirana",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Prostor potrebuje več klimatskih naprav za svojo notranjo prostornino",
   "biome_based_crops.greenhouse.status.too_large": "Prostor presega največjo notranjo prostornino",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Notranje zahteve:",
   "biome_based_crops.guide.scroll_materials": "Pomaknite se za več materialov.",
   "biome_based_crops.guide.setup": "Postavitev rastlinjaka:",
-  "biome_based_crops.guide.setup_text": "Ko soba doseže zahtevano temperaturo in izpolnjuje zahteve glede tal in notranjih blokov, se bo registrirala kot ta biom, kar bo omogočilo drstenje mafij in drugih bitij tudi v njej. Posevki in sadike potrebujejo nebu izpostavljeno steklo neposredno nad vsako rastlino. Ostala streha je lahko trdna. Klimatska naprava ni potrebna, če naravna klima ustreza zahtevam. Za spremembo klime usmerite izhode zraka klimatskih naprav v prostor. Uporabite eno klimatsko napravo na 256 zaprtih notranjih blokov. Šibki delci zraka kažejo na odprtine. Zaprite jih v eni minuti, preden se klima začne vračati v svoje naravno stanje.",
+  "biome_based_crops.guide.setup_text": "Ko bo soba dosegla zahtevano temperaturo in izpolnjevala zahteve glede tal in notranjih blokov, se bo registrirala kot ta biom, kar bo omogočilo drstenje mafij in drugih bitij tudi v njej. Posevki in sadike potrebujejo nebu izpostavljeno steklo neposredno nad vsako rastlino. Ostala streha je lahko trdna. Za registracijo bioma je potreben električni ali Tough As Nails termoregulator, obrnjen v prostor. Spreminjajoče se podnebje potrebuje eno klimatsko napravo na 256 notranjih blokov. Šibki delci zraka kažejo na odprtine. Zaprite jih v eni minuti, preden se klima začne vračati v svoje naravno stanje.",
   "biome_based_crops.guide.block_count": "%s blokov",
   "biome_based_crops.ac.climate_label": "Podnebje",
   "biome_based_crops.ac.previous_climate": "Prejšnje podnebje",
   "biome_based_crops.ac.next_climate": "Naslednje podnebje",
   "biome_based_crops.ac.selector_usage": "Kliknite za premikanje naprej. Za premikanje nazaj držite tipko Shift ali uporabite levo puščično tipko.",
-  "biome_based_crops.ac.energy_room": "Soba: %s blokov"
+  "biome_based_crops.ac.energy_room": "Soba: %s blokov",
+  "biome_based_crops.greenhouse.status.missing_controller": "Namestite električni ali Tough As Nails termoregulator za registracijo bioma rastlinjaka."
 }

@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Kasvihuonebiomi ei kelpaa",
   "biome_based_crops.ac.room_climate": "Huoneilmasto: %s",
   "biome_based_crops.ac.unit_capacity": "ilmastointilaitteet: %s asennettu, %s tarvitaan",
-  "biome_based_crops.ac.capacity_hint": "Jokainen ilmastointilaite tukee 256:ta suljettua sisälohkoa ilmaston muuttuessa. Luonnollisesti yhteensopiva huone ei tarvitse ilmastointia.",
+  "biome_based_crops.ac.capacity_hint": "Jokainen ilmastointilaite tukee 256 sisälohkoa ilmaston muuttuessa. Biomin rekisteröinti vaatii aina sähköisen tai Tough As Nails lämmönsäätimen.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Etuliitäntä on tukossa",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Huone tarvitsee lisää ilmastointilaitteita sisätilavuuteensa nähden",
   "biome_based_crops.greenhouse.status.too_large": "Huone ylittää suurimman sallitun sisätilavuuden",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Sisustusvaatimukset:",
   "biome_based_crops.guide.scroll_materials": "Selaa lisää materiaaleja.",
   "biome_based_crops.guide.setup": "Kasvihuoneen kokoonpano:",
-  "biome_based_crops.guide.setup_text": "Kun huone saavuttaa vaaditun lämpötilan ja täyttää lattia- ja sisätilojen vaatimukset, se rekisteröityy biomiksi, jolloin myös väkijoukot ja muut olennot voivat kutea siihen. Viljelykasvit ja taimet tarvitsevat taivaalle altistavaa lasia suoraan jokaisen kasvin yläpuolelle. Muu katto voi olla kiinteää. Ilmastointilaitetta ei tarvita, kun luonnonilmasto vastaa vaatimuksia. Ilmaston muuttamiseksi suuntaa ilmastointilaitteiden ilmanpoistoaukot huoneeseen. Käytä yhtä ilmastointilaitetta 256 suljettua sisälohkoa kohden. Heikot ilmahiukkaset osoittavat aukkoja. Sulje ne minuutin sisällä, ennen kuin ilmasto alkaa palata luonnolliseen tilaan.",
+  "biome_based_crops.guide.setup_text": "Kun huone saavuttaa vaaditun lämpötilan ja täyttää lattia- ja sisätilojen vaatimukset, se rekisteröidään biomiksi, jolloin myös väkijoukot ja muut olennot voivat kutea siihen. Viljelykasvit ja taimet tarvitsevat taivaalle altistavaa lasia suoraan jokaisen kasvin yläpuolelle. Muu katto voi olla kiinteää. Biomin rekisteröinti vaatii sähköisen tai Tough As Nails lämpösäätimen huoneeseen päin. Muuttuva ilmasto tarvitsee yhden ilmastointilaitteen 256 sisälohkoa kohden. Heikot ilmahiukkaset osoittavat aukkoja. Sulje ne minuutin sisällä, ennen kuin ilmasto alkaa palata luonnolliseen tilaan.",
   "biome_based_crops.guide.block_count": "%s lohkoa",
   "biome_based_crops.ac.climate_label": "Ilmasto",
   "biome_based_crops.ac.previous_climate": "Edellinen ilmasto",
   "biome_based_crops.ac.next_climate": "Seuraava ilmasto",
   "biome_based_crops.ac.selector_usage": "Siirry eteenpäin napsauttamalla. Paina vaihtonäppäintä tai käytä vasenta nuolinäppäintä siirtyäksesi taaksepäin.",
-  "biome_based_crops.ac.energy_room": "Huone: %s korttelia"
+  "biome_based_crops.ac.energy_room": "Huone: %s korttelia",
+  "biome_based_crops.greenhouse.status.missing_controller": "Asenna sähköinen tai Tough As Nails lämpösäädin kasvihuonebiomin rekisteröimiseksi."
 }

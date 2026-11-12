@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Kweekhuisbioom nie geldig nie",
   "biome_based_crops.ac.room_climate": "Kamerklimaat: %s",
   "biome_based_crops.ac.unit_capacity": "lugversorgers: %s geïnstalleer, %s benodig",
-  "biome_based_crops.ac.capacity_hint": "Elke lugversorger ondersteun 256 ingeslote binneblokke wanneer klimaat verander. 'n Natuurlik bypassende kamer het geen lugversorger nodig nie.",
+  "biome_based_crops.ac.capacity_hint": "Elke lugversorger ondersteun 256 binneblokke wanneer klimaat verander. Bioomregistrasie benodig altyd 'n Elektriese of Tough As Nails termoreguleerder.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Die voorste uitlaat is geblokkeer",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Die kamer benodig meer lugversorgers vir sy binnevolume",
   "biome_based_crops.greenhouse.status.too_large": "Die kamer oorskry die maksimum binnevolume",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Binne-vereistes:",
   "biome_based_crops.guide.scroll_materials": "Blaai vir meer materiaal.",
   "biome_based_crops.guide.setup": "Kweekhuisopstelling:",
-  "biome_based_crops.guide.setup_text": "Sodra die kamer die vereiste temperatuur bereik en aan die vloer- en binneblokvereistes voldoen, sal dit as daardie bioom registreer, wat skares en ander wesens ook in staat stel om daarin te kuit. Gewasse en boompies benodig lugblootgestelde glas direk bo elke plant. Die res van die dak kan solied wees. Geen lugversorger is nodig wanneer die natuurlike klimaat aan die vereiste voldoen nie. Om die klimaat te verander, wys luguitlate van die lugversorgers in die kamer. Gebruik een lugversorger per 256 ingeslote binneblokke. Dowwe lugdeeltjies dui openinge aan. Verseël hulle binne een minuut, voordat die klimaat na sy natuurlike toestand begin terugkeer.",
+  "biome_based_crops.guide.setup_text": "Sodra die kamer die vereiste temperatuur bereik en aan die vloer- en binneblokvereistes voldoen, sal dit as daardie bioom registreer, wat skares en ander wesens in staat stel om ook daarin te kuit. Gewasse en boompies benodig lugblootgestelde glas direk bo elke plant. Die res van die dak kan solied wees. Bioomregistrasie benodig 'n Elektriese of Tough As Nails termoreguleerder wat na die kamer kyk. Veranderende klimaat benodig een lugversorger per 256 binneblokke. Dowwe lugdeeltjies dui openinge aan. Verseël hulle binne een minuut, voordat die klimaat na sy natuurlike toestand begin terugkeer.",
   "biome_based_crops.guide.block_count": "%s blokke",
   "biome_based_crops.ac.climate_label": "Klimaat",
   "biome_based_crops.ac.previous_climate": "Vorige klimaat",
   "biome_based_crops.ac.next_climate": "Volgende klimaat",
   "biome_based_crops.ac.selector_usage": "Klik om vorentoe te ry. Hou Shift of gebruik die linkerpyltjie sleutel om terug te ry.",
-  "biome_based_crops.ac.energy_room": "Kamer: %s blokke"
+  "biome_based_crops.ac.energy_room": "Kamer: %s blokke",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installeer 'n Elektriese of Tough As Nails termoreguleerder om 'n kweekhuisbioom te registreer."
 }

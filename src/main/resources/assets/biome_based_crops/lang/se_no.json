@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Dálkkádatbioma ii leat dohkálaš",
   "biome_based_crops.ac.room_climate": "Ruovttu dálkkádat: %s",
   "biome_based_crops.ac.unit_capacity": "klimatihkkarusttegat: %s biddjon, %s dárbbašuvvo",
-  "biome_based_crops.ac.capacity_hint": "Juohke klimatihkkár doarju 256 giddejuvvon sisáibmolohkki go dálkkádat rievdá. Luonddulaččat heivehuvvon latnjii ii dárbbaš klimatihkka.",
+  "biome_based_crops.ac.capacity_hint": "Juohke klimatihkkár doarju 256 sisáibmolohkki go rievdá dálkkádat. Bioma registreremii dárbbašuvvo álo elrávnnji dahje Tough As Nails termoreguláhtor.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ovddabeale čujuhus lea giddejuvvon",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Latnja dárbbaša eanet klimatihkkarusttegiid dan sisáibmovoluma várás",
   "biome_based_crops.greenhouse.status.too_large": "Ruovttus lea badjel alimus sisáibmovoluma",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Sisáibmogáibádusat:",
   "biome_based_crops.guide.scroll_materials": "Geahča eanet materiálaid.",
   "biome_based_crops.guide.setup": "Dálkkádatviesu ordnen:",
-  "biome_based_crops.guide.setup_text": "Go latnja juksá gáibiduvvon temperatuvrra ja deavdá latnja- ja sisáibmolohku gáibádusaid, de dat registrerejuvvo dan bioman, nu ahte mobbat ja eará eallit sáhttet maiddái riegádahttit das. Šattut ja šattut dárbbašit albmái čájehuvvon glássa njuolga juohke šattu badjel. Muđui sáhttá leat čavga. Ii dárbbaš klimatihkkarusttega go lunddolaš dálkkádat heive gáibádussii. Go galggat rievdadit dálkkádaga, de čujuhit klimatihkkarusttegiid luftačuozáhagaid latnjii. Geavat ovtta klimatihkkára juohke 256 giddejuvvon sisáibmolohkkii. Váilevaš luonddupartihkkalat čájehit rahpamiid. Gidde daid ovtta minuhta siste, ovdal go dálkkádat álgá máhccat iežas lunddolaš dillái.",
+  "biome_based_crops.guide.setup_text": "Go latnja juksá gáibiduvvon temperatuvrra ja deavdá latnja- ja sisáibmolohkki gáibádusaid, de dat registrerejuvvo dan bioman, nu ahte mobbat ja eará eallit sáhttet maiddái riegádahttit das. Šattut ja šattut dárbbašit albmái čájehuvvon glássa njuolga juohke šattu badjel. Muđui sáhttá leat čavga. Bioma registreremii dárbbašuvvo elrávnnji dahje Tough As Nails termoreguláhtor mii lea čujuhuvvon latnjii. Rievddadeaddji dálkkádat gáibida ovtta klimatihkkára juohke 256 sisáibmovisttis. Váilevaš luonddupartihkkalat čájehit rahpamiid. Gidde daid ovtta minuhta siste, ovdal go dálkkádat álgá máhccat iežas lunddolaš dillái.",
   "biome_based_crops.guide.block_count": "%s blokka",
   "biome_based_crops.ac.climate_label": "Dálkkádat",
   "biome_based_crops.ac.previous_climate": "Ovddeš dálkkádat",
   "biome_based_crops.ac.next_climate": "Boahtte dálkkádat",
   "biome_based_crops.ac.selector_usage": "Deaddilat vai beasat ovddosguvlui. Doala Shift dahje geavat olgeš čuoggá vai beasat maŋosguvlui.",
-  "biome_based_crops.ac.energy_room": "Latnja: %s blokka"
+  "biome_based_crops.ac.energy_room": "Latnja: %s blokka",
+  "biome_based_crops.greenhouse.status.missing_controller": "Bija elrávnnji dahje Tough As Nails termoreguláhtora registreret dálkkádatbioma."
 }

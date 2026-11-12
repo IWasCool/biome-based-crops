@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Parnikovy biiom niesapraŭdny",
   "biome_based_crops.ac.room_climate": "Pakaiovy klimat: %s",
   "biome_based_crops.ac.unit_capacity": "kandycyianiery: %s ustaliavany, %s patrebny",
-  "biome_based_crops.ac.capacity_hint": "Kožny kandycyianier padtrymlivaie 256 zakrytych unutranych blokaŭ pry zmienie klimatu. Naturalna spalučaiecca pakoj nie patrabuie kandycyianiera.",
+  "biome_based_crops.ac.capacity_hint": "Kožny kandycyianier padtrymlivaie 256 ŭnutranych blokaŭ pry zmienie klimatu. Dlia rehistracyi biiama zaŭsiody patrebny eliektryčny abo Tough As Nails termarehuliatar.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Piaredni vychad zablakavany",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Pakoj maie patrebu ŭ bolšaj kolkasci kandycyianieraŭ dlia ŭnutranaha ab'iomu",
   "biome_based_crops.greenhouse.status.too_large": "Pakoj pieravyšaie maksimalny ŭnutrany ab'iom",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Unutranyia patrabavanni:",
   "biome_based_crops.guide.scroll_materials": "Prahartajcie dadatkovyia materyialy.",
   "biome_based_crops.guide.setup": "Nalada ciaplicy:",
-  "biome_based_crops.guide.setup_text": "Iak tolki pakoj dasiahnie nieabchodnaj tempieratury i adpaviadaie patrabavanniam da padlohi i ŭnutranych blokaŭ, ion budzie zarehistravany iak hety biiom, dazvaliaiučy mobam i inšym istotam taksama z'iavicca ŭ im. Pasievy i sadžancy maiuc patrebu ŭ adkrytym šklie niepasredna nad kožnaj raslinaj. Astatniaia častka dachu moža byc sucelnaj. Kandycyianier nie patrebny, kali naturalny klimat adpaviadaie patrabavanniam. Kab zmianic klimat, nakirujcie pavietraadvody kandycyianieraŭ u pamiaškannie. Vykarystoŭvajcie adzin kandycyianier na 256 zakrytych unutranych blokaŭ. Slabyia čascicy pavietra pakazvaiuc adtuliny. Začynicie ich na praciahu adnoj chviliny, pierš čym klimat pačnie viartacca da svajho naturalnaha stanu.",
+  "biome_based_crops.guide.setup_text": "Paslia taho, iak pakoj dasiahnie patrabavanaj tempieratury i adpaviadaie patrabavanniam da padlohi i ŭnutranych blokaŭ, ion budzie zarehistravany iak hety biiom, dazvaliaiučy mobam i inšym istotam taksama z'iavicca ŭ im. Pasievy i sadžancy maiuc patrebu ŭ adkrytym šklie niepasredna nad kožnaj raslinaj. Astatniaia častka dachu moža byc sucelnaj. Dlia rehistracyi biiama nieabchodny eliektryčny abo Tough As Nails termarehuliatar, nakiravany ŭ bok pakoia. Zmienlivy klimat patrabuie adnaho kandycyianiera na 256 unutranych blokaŭ. Slabyia čascicy pavietra pakazvaiuc adtuliny. Začynicie ich na praciahu adnoj chviliny, pierš čym klimat pačnie viartacca da svajho naturalnaha stanu.",
   "biome_based_crops.guide.block_count": "%s blokaŭ",
   "biome_based_crops.ac.climate_label": "Klimat",
   "biome_based_crops.ac.previous_climate": "Papiaredni klimat",
   "biome_based_crops.ac.next_climate": "Nastupny klimat",
   "biome_based_crops.ac.selector_usage": "Nacisnicie, kab pierajsci napierad. Utrymlivajcie Shift abo vykarystoŭvajcie klavišu sa strelkaj ulieva, kab pierajsci nazad.",
-  "biome_based_crops.ac.energy_room": "Pakoj: %s blokaŭ"
+  "biome_based_crops.ac.energy_room": "Pakoj: %s blokaŭ",
+  "biome_based_crops.greenhouse.status.missing_controller": "Ustaliujcie eliektryčny abo Tough As Nails termarehuliatar, kab zarehistravac parnikovy biiom."
 }

@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Kasbioom niet geldig",
   "biome_based_crops.ac.room_climate": "Kamerklimaat: %s",
   "biome_based_crops.ac.unit_capacity": "airconditioners: %s geïnstalleerd, %s nodig",
-  "biome_based_crops.ac.capacity_hint": "Elke airconditioner ondersteunt 256 gesloten binnenblokken bij klimaatverandering. Een natuurlijk bijpassende kamer heeft geen airconditioning nodig.",
+  "biome_based_crops.ac.capacity_hint": "Elke airconditioner ondersteunt 256 binnenblokken bij klimaatverandering. Voor bioomregistratie is altijd een elektrische of Tough As Nails thermoregulator vereist.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "De uitlaat aan de voorkant is geblokkeerd",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "De kamer heeft meer airconditioners nodig vanwege het binnenvolume",
   "biome_based_crops.greenhouse.status.too_large": "De kamer overschrijdt het maximale binnenvolume",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Interieurvereisten:",
   "biome_based_crops.guide.scroll_materials": "Scroll voor meer materialen.",
   "biome_based_crops.guide.setup": "Kasopstelling:",
-  "biome_based_crops.guide.setup_text": "Zodra de kamer de vereiste temperatuur heeft bereikt en voldoet aan de vereisten voor de vloer en het interieur, wordt deze geregistreerd als dat bioom, waardoor mobs en andere wezens er ook in kunnen spawnen. Gewassen en jonge boompjes hebben glas aan de hemel nodig, direct boven elke plant. De rest van het dak kan massief zijn. Er is geen airconditioning nodig als het natuurlijke klimaat aan de eisen voldoet. Om het klimaat te veranderen, richt u de luchtuitlaten van de airconditioners de kamer in. Gebruik één airconditioner per 256 gesloten binnenblokken. Zwakke luchtdeeltjes duiden op openingen. Sluit ze binnen één minuut af, voordat het klimaat terugkeert naar zijn natuurlijke staat.",
+  "biome_based_crops.guide.setup_text": "Zodra de kamer de vereiste temperatuur heeft bereikt en voldoet aan de vereisten voor de vloer en het interieur, wordt deze geregistreerd als dat bioom, waardoor mobs en andere wezens er ook in kunnen spawnen. Gewassen en jonge boompjes hebben glas aan de hemel nodig, direct boven elke plant. De rest van het dak kan massief zijn. Voor bioomregistratie is een elektrische of Tough As Nails thermoregulator nodig die naar de kamer gericht is. Bij een veranderend klimaat is één airconditioner per 256 binnenblokken nodig. Zwakke luchtdeeltjes duiden op openingen. Sluit ze binnen één minuut af, voordat het klimaat terugkeert naar zijn natuurlijke staat.",
   "biome_based_crops.guide.block_count": "%s blokken",
   "biome_based_crops.ac.climate_label": "Klimaat",
   "biome_based_crops.ac.previous_climate": "Vorig klimaat",
   "biome_based_crops.ac.next_climate": "Volgende klimaat",
   "biome_based_crops.ac.selector_usage": "Klik om vooruit te fietsen. Houd Shift ingedrukt of gebruik de pijl-links om achteruit te bladeren.",
-  "biome_based_crops.ac.energy_room": "Kamer: %s blokken"
+  "biome_based_crops.ac.energy_room": "Kamer: %s blokken",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installeer een elektrische of Tough As Nails thermoregulator om een ​​kasbioom te registreren."
 }

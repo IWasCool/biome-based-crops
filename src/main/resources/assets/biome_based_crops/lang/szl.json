@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biōm cieplarni niy ważny",
   "biome_based_crops.ac.room_climate": "Klimat w pokoju: %s",
   "biome_based_crops.ac.unit_capacity": "klimatyzatory: %s zainstalowane, %s potrzebne",
-  "biome_based_crops.ac.capacity_hint": "Kożdo klimatyzacyjo ôbsługuje 256 zawrzitych blokōw wnyntrznych przi zmianie klimatu. Naturalnie sztimujōnco pokōj niy potrzebuje klimatyzacyje.",
+  "biome_based_crops.ac.capacity_hint": "Kożdo klimatyzacyjo ôbsługuje 256 blokōw wnyntrznych przi zmianie klimatu. Registracyjo biōmu dycki wymogo termoregulatora elektrycznego abo Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Gniazdo przednie je zablokowane",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Pokōj potrzebuje wiyncyj klimatyzatorōw do jego ôbjyntości wnyntrznyj",
   "biome_based_crops.greenhouse.status.too_large": "Pokōj przekroczo maksymalno ôbjyntość wnyntrzno",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Wymogania do wnyntrza:",
   "biome_based_crops.guide.scroll_materials": "Przejdź, coby zoboczyć wiyncyj materyji.",
   "biome_based_crops.guide.setup": "Ustawiynie cieplarni:",
-  "biome_based_crops.guide.setup_text": "Kej pōmiyszkanie ôsiōngnie wymogano tymperatura i społni wymogania zoły i wnyntrznych blokōw, zaregistruje sie za tyn biōm, co przizwoli tyż na trōństwo w nim mobom i inkszym stworōm. Uprawy i sadōnki potrzebujōm szkła wystawiōnego na niebo dyrekt nad kożdōm roślinōm. Reszta dachu może być solidno. Klimatyzacyjo niy ma potrzebno, kej naturalny klimat ôdpowiado wymoganiōm. Coby zmiynić klimat, skerować ôdpływy luftu klimatyzatorōw do pōmiyszkanio. Użyj jednyj klimatyzacyje na 256 zawrzitych blokōw wnyntrznych. Slabe tajleczki luftu skazujōm na ôtwory. Uszczelnij je w czasie jednyj minuty, zanim klimat zacznie wracać do swojigo naturalnego stanu.",
+  "biome_based_crops.guide.setup_text": "Kej pōmiyszkanie ôsiōngnie wymogano tymperatura i społni wymogania zoły i wnyntrznych blokōw, zaregistruje sie za tyn biōm, co przizwoli tyż na trōństwo w nim mobom i inkszym stworōm. Uprawy i sadōnki potrzebujōm szkła wystawiōnego na niebo dyrekt nad kożdōm roślinōm. Reszta dachu może być solidno. Registracyjo biōmu wymogo termoregulatora elektrycznego abo Tough As Nails skerowanego na pōmiyszkanie. Zmiyniajōncy sie klimat potrzebuje jednyj klimatyzacyje na 256 blokōw wnyntrznych. Slabe tajleczki luftu skazujōm na ôtwory. Uszczelnij je w czasie jednyj minuty, zanim klimat zacznie wracać do swojigo naturalnego stanu.",
   "biome_based_crops.guide.block_count": "%s",
   "biome_based_crops.ac.climate_label": "Klimat",
   "biome_based_crops.ac.previous_climate": "Piyrwyjszy klimat",
   "biome_based_crops.ac.next_climate": "Dalszy klimat",
   "biome_based_crops.ac.selector_usage": "Kliknij, coby przejść do przodka. Przitrzymaj Shift abo użyj lewyj strzałki, coby przejść do tyłu.",
-  "biome_based_crops.ac.energy_room": "Pokōj: bloki %s"
+  "biome_based_crops.ac.energy_room": "Pokōj: bloki %s",
+  "biome_based_crops.greenhouse.status.missing_controller": "Zainstalować termoregulatōr elektryczny abo Tough As Nails do zaregistrowanio biōmu cieplarnianego."
 }

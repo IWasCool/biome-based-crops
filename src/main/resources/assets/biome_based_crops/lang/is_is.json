@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Gróðurhúsalíffræði ekki gild",
   "biome_based_crops.ac.room_climate": "Loftslag í herbergi: %s",
   "biome_based_crops.ac.unit_capacity": "loftræstitæki: %s uppsett, %s þarf",
-  "biome_based_crops.ac.capacity_hint": "Hver loftkæling styður 256 lokaðar innri blokkir þegar loftslagsbreytingar eru breyttar. Náttúrulega samsvarandi herbergi þarf ekki loftræstingu.",
+  "biome_based_crops.ac.capacity_hint": "Hver loftkæling styður 256 innri blokkir þegar loftslag er breytt. Biome skráningu þarf alltaf rafmagns eða Tough As Nails hitastillir.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Úttakið að framan er stíflað",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Herbergið þarf fleiri loftræstitæki fyrir innra rúmmál þess",
   "biome_based_crops.greenhouse.status.too_large": "Herbergið fer yfir hámarks innra rúmmál",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Innri kröfur:",
   "biome_based_crops.guide.scroll_materials": "Skrunaðu til að fá meira efni.",
   "biome_based_crops.guide.setup": "Gróðurhúsauppsetning:",
-  "biome_based_crops.guide.setup_text": "Þegar herbergið hefur náð tilskildu hitastigi og uppfyllir kröfur um gólf og innri blokk mun það skrá sig sem það lífvera, sem gerir múgum og öðrum verum kleift að hrogna í því líka. Uppskera og ungplöntur þurfa himinbeint gler beint fyrir ofan hverja plöntu. Restin af þakinu getur verið solid. Engin loftræsting er nauðsynleg þegar náttúrulegt loftslag passar við kröfurnar. Til að breyta loftslagi skaltu beina loftúttökum loftræstitækja inn í herbergið. Notaðu eina loftræstingu fyrir hverja 256 lokaða innri blokkir. Daufar loftagnir gefa til kynna op. Innsiglaðu þau innan einnar mínútu áður en loftslagið fer aftur í náttúrulegt ástand.",
+  "biome_based_crops.guide.setup_text": "Þegar herbergið hefur náð tilskildu hitastigi og uppfyllir kröfur um gólf og innri blokk mun það skrá sig sem það lífvera, sem gerir múgum og öðrum verum kleift að hrogna í því líka. Uppskera og ungplöntur þurfa himinbeint gler beint fyrir ofan hverja plöntu. Restin af þakinu getur verið solid. Biome skráningu þarf rafmagns eða Tough As Nails hitastillir sem snýr inn í herbergið. Breytt loftslag þarf eina loftræstingu fyrir hverja 256 innri blokkir. Daufar loftagnir gefa til kynna op. Innsiglaðu þau innan einnar mínútu áður en loftslagið fer aftur í náttúrulegt ástand.",
   "biome_based_crops.guide.block_count": "%s blokkir",
   "biome_based_crops.ac.climate_label": "Loftslag",
   "biome_based_crops.ac.previous_climate": "Fyrra loftslag",
   "biome_based_crops.ac.next_climate": "Næsta loftslag",
   "biome_based_crops.ac.selector_usage": "Smelltu til að hjóla áfram. Haltu Shift inni eða notaðu vinstri örvatakkann til að hjóla afturábak.",
-  "biome_based_crops.ac.energy_room": "Herbergi: %s blokkir"
+  "biome_based_crops.ac.energy_room": "Herbergi: %s blokkir",
+  "biome_based_crops.greenhouse.status.missing_controller": "Settu upp rafmagns- eða Tough As Nails hitastillir til að skrá lífveru gróðurhúsalofttegunda."
 }

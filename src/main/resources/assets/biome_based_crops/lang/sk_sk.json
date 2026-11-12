@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Skleníkový bióm nie je platný",
   "biome_based_crops.ac.room_climate": "Izbová klíma: %s",
   "biome_based_crops.ac.unit_capacity": "klimatizácie: %s nainštalované, %s potrebné",
-  "biome_based_crops.ac.capacity_hint": "Každá klimatizácia podporuje 256 uzavretých vnútorných blokov pri zmene klímy. Prirodzene zladená miestnosť nepotrebuje žiadnu klimatizáciu.",
+  "biome_based_crops.ac.capacity_hint": "Každá klimatizácia podporuje 256 vnútorných blokov pri zmene klímy. Registrácia Biome vždy vyžaduje elektrický alebo Tough As Nails termoregulátor.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Predný výstup je zablokovaný",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Miestnosť potrebuje pre svoj vnútorný objem viac klimatizácií",
   "biome_based_crops.greenhouse.status.too_large": "Miestnosť presahuje maximálny vnútorný objem",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Požiadavky na interiér:",
   "biome_based_crops.guide.scroll_materials": "Prejdite na ďalšie materiály.",
   "biome_based_crops.guide.setup": "Nastavenie skleníka:",
-  "biome_based_crops.guide.setup_text": "Keď miestnosť dosiahne požadovanú teplotu a splní požiadavky na podlahu a vnútorný blok, zaregistruje sa ako tento bióm, čo umožní aj davom a iným tvorom, aby sa v nej rozmnožili. Plodiny a sadenice potrebujú sklo vystavené oblohe priamo nad každou rastlinou. Zvyšok strechy môže byť pevný. Keď prirodzená klíma vyhovuje požiadavkám, nie je potrebná žiadna klimatizácia. Ak chcete zmeniť klímu, nasmerujte výstupy vzduchu z klimatizácií do miestnosti. Použite jednu klimatizáciu na 256 uzavretých vnútorných blokov. Slabé častice vzduchu označujú otvory. Utesnite ich do jednej minúty, kým sa klíma začne vracať do svojho prirodzeného stavu.",
+  "biome_based_crops.guide.setup_text": "Keď miestnosť dosiahne požadovanú teplotu a splní požiadavky na podlahu a vnútorný blok, zaregistruje sa ako tento bióm, čo umožní aj davom a iným tvorom, aby sa v nej rozmnožili. Plodiny a sadenice potrebujú sklo vystavené oblohe priamo nad každou rastlinou. Zvyšok strechy môže byť pevný. Registrácia Biome vyžaduje elektrický alebo Tough As Nails termoregulátor smerujúci do miestnosti. Zmena klímy si vyžaduje jednu klimatizáciu na 256 vnútorných blokov. Slabé častice vzduchu označujú otvory. Utesnite ich do jednej minúty, kým sa klíma začne vracať do svojho prirodzeného stavu.",
   "biome_based_crops.guide.block_count": "%s blokov",
   "biome_based_crops.ac.climate_label": "Podnebie",
   "biome_based_crops.ac.previous_climate": "Predchádzajúca klíma",
   "biome_based_crops.ac.next_climate": "Ďalšia klíma",
   "biome_based_crops.ac.selector_usage": "Kliknutím prejdete dopredu. Podržte stlačený kláves Shift alebo použite kláves so šípkou doľava, aby ste prešli späť.",
-  "biome_based_crops.ac.energy_room": "Miestnosť: %s blokov"
+  "biome_based_crops.ac.energy_room": "Miestnosť: %s blokov",
+  "biome_based_crops.greenhouse.status.missing_controller": "Nainštalujte elektrický alebo Tough As Nails termoregulátor na registráciu skleníkového biomu."
 }

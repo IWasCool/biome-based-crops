@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biomul de seră nu este valid",
   "biome_based_crops.ac.room_climate": "Clima camerei: %s",
   "biome_based_crops.ac.unit_capacity": "aparate de aer condiționat: %s instalate, %s necesar",
-  "biome_based_crops.ac.capacity_hint": "Fiecare aparat de aer condiționat acceptă 256 de blocuri interioare închise atunci când se schimbă climatul. O cameră care se potrivește natural nu are nevoie de aer condiționat.",
+  "biome_based_crops.ac.capacity_hint": "Fiecare aparat de aer condiționat acceptă 256 de blocuri interioare atunci când se schimbă climatul. Înregistrarea biomului necesită întotdeauna un termoregulator electric sau Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Priza frontală este blocată",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Camera are nevoie de mai multe aparate de aer condiționat pentru volumul interior",
   "biome_based_crops.greenhouse.status.too_large": "Camera depășește volumul interior maxim",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Cerințe interioare:",
   "biome_based_crops.guide.scroll_materials": "Derulați pentru mai multe materiale.",
   "biome_based_crops.guide.setup": "Configurarea serei:",
-  "biome_based_crops.guide.setup_text": "Odată ce camera atinge temperatura necesară și îndeplinește cerințele pentru podea și blocul interior, se va înregistra ca acel biom, permițând și mafioților și altor creaturi să apară în ea. Culturile și puieții au nevoie de sticlă expusă la cer direct deasupra fiecărei plante. Restul acoperișului poate fi solid. Nu este nevoie de aer condiționat atunci când climatul natural corespunde cerințelor. Pentru a schimba climatul, îndreptați ieșirile de aer ale aparatelor de aer condiționat în cameră. Utilizați un aparat de aer condiționat la 256 de blocuri interioare închise. Particulele slabe de aer indică deschideri. Sigilați-le în decurs de un minut, înainte ca clima să înceapă să revină la starea sa naturală.",
+  "biome_based_crops.guide.setup_text": "Odată ce camera atinge temperatura necesară și îndeplinește cerințele pentru podea și blocul interior, se va înregistra ca acel biom, permițând și mafioților și altor creaturi să apară în ea. Culturile și puieții au nevoie de sticlă expusă la cer direct deasupra fiecărei plante. Restul acoperișului poate fi solid. Înregistrarea biomului necesită un termoregulator electric sau Tough As Nails orientat spre cameră. Schimbarea climatului necesită un aparat de aer condiționat la 256 de blocuri interioare. Particulele slabe de aer indică deschideri. Sigilați-le în decurs de un minut, înainte ca clima să înceapă să revină la starea sa naturală.",
   "biome_based_crops.guide.block_count": "%s blocuri",
   "biome_based_crops.ac.climate_label": "Clima",
   "biome_based_crops.ac.previous_climate": "Clima anterioară",
   "biome_based_crops.ac.next_climate": "Clima următoare",
   "biome_based_crops.ac.selector_usage": "Faceți clic pentru a merge înainte. Țineți apăsată Shift sau utilizați tasta săgeată stânga pentru a merge înapoi.",
-  "biome_based_crops.ac.energy_room": "Cameră: %s blocuri"
+  "biome_based_crops.ac.energy_room": "Cameră: %s blocuri",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instalați un termoregulator electric sau Tough As Nails pentru a înregistra un biom de seră."
 }

@@ -59,10 +59,18 @@ public final class ControllerRoomCapacityGameTests {
             // Complete the natural-room baseline before installing machines or
             // requesting another room: explicit surveys share a bounded queue.
             afterRoomScan(helper, nativeRoom, 40, restore, natural -> {
-                helper.assertTrue(natural.inspection().valid(), "A naturally matching 1024-block interior required a unit: " + natural);
+                helper.assertTrue(natural.inspection().status().endsWith("missing_controller"),
+                        "A naturally matching room registered without an intentional controller: " + natural);
                 helper.assertValueEqual(natural.inspection().floorArea(), 512, "base room floor area");
                 helper.assertValueEqual(natural.inspection().roomVolume(), 1024, "base room enclosed interior");
                 helper.assertValueEqual(natural.installedUnits(), 0, "natural room installed units");
+                BlockPos marker = base.offset(2, 0, -1);
+                level.setBlock(marker, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState()
+                        .setValue(AirConditionerBlock.FACING, Direction.SOUTH), Block.UPDATE_ALL);
+                ((AirConditionerBlockEntity) level.getBlockEntity(marker)).setEnabled(false);
+                var markedNatural = GreenhouseEnvironment.controllerRoomInfo(level, nativeRoom);
+                helper.assertTrue(markedNatural.inspection().valid(), "One idle marker did not register the naturally matching large room: " + markedNatural);
+                helper.assertValueEqual(markedNatural.installedUnits(), 1, "natural room marker count");
                 BlockPos controller = expanded.offset(2, 0, -1), extra = expanded.offset(10, 0, -1);
                 BlockPos third = expanded.offset(6, 0, -1);
                 level.setBlock(controller, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState()

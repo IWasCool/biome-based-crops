@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Il-bijoma tas-serra mhux validu",
   "biome_based_crops.ac.room_climate": "Klima tal-kamra: %s",
   "biome_based_crops.ac.unit_capacity": "air conditioners: %s installati, %s meħtieġa",
-  "biome_based_crops.ac.capacity_hint": "Kull arja kondizzjonata tappoġġja 256 blokka ta 'ġewwa magħluqa meta tbiddel il-klima. Kamra li taqbel b'mod naturali ma teħtieġ l-ebda arja kondizzjonata.",
+  "biome_based_crops.ac.capacity_hint": "Kull arja kondizzjonata tappoġġja 256 blokka ta 'ġewwa meta tbiddel il-klima. Ir-reġistrazzjoni tal-bijoma dejjem teħtieġ termoregolatur Elettriku jew Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "L-iżbokk ta’ quddiem huwa mblukkat",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Il-kamra teħtieġ aktar arja kondizzjonata għall-volum ta 'ġewwa tagħha",
   "biome_based_crops.greenhouse.status.too_large": "Il-kamra taqbeż il-volum massimu intern",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Rekwiżiti Interni:",
   "biome_based_crops.guide.scroll_materials": "Skrollja għal aktar materjali.",
   "biome_based_crops.guide.setup": "Setup tas-Serra:",
-  "biome_based_crops.guide.setup_text": "Ladarba l-kamra tilħaq it-temperatura meħtieġa u tissodisfa r-rekwiżiti tal-art u tal-blokka ta 'ġewwa, se tirreġistra bħala dik il-bijoma, u tippermetti lill-mobs u ħlejjaq oħra li jbid fiha wkoll. L-uċuħ tar-raba 'u ż-żriegħa jeħtieġu ħġieġ espost għas-sema direttament fuq kull pjanta. Il-bqija tas-saqaf jista 'jkun solidu. L-ebda arja kondizzjonata mhi meħtieġa meta l-klima naturali taqbel mar-rekwiżit. Biex tbiddel il-klima, ippunta l-iżbokki tal-arja tal-kondizzjonaturi tal-arja fil-kamra. Uża arja kondizzjonata waħda għal kull 256 blokka ġewwa magħluqa. Partiċelli ħfief ta' l-arja jindikaw fetħiet. Issiġillahom fi żmien minuta, qabel ma l-klima tibda terġa 'lura għall-istat naturali tagħha.",
+  "biome_based_crops.guide.setup_text": "Ladarba l-kamra tilħaq it-temperatura meħtieġa u tissodisfa r-rekwiżiti tal-art u tal-blokki ta 'ġewwa, se tirreġistra bħala dik il-bijoma, u tippermetti li mobs u ħlejjaq oħra jbiddlu fiha wkoll. L-uċuħ tar-raba 'u ż-żriegħa jeħtieġu ħġieġ espost għas-sema direttament fuq kull pjanta. Il-bqija tas-saqaf jista 'jkun solidu. Ir-reġistrazzjoni tal-bijoma teħtieġ termoregolatur Elettriku jew Tough As Nails li jħares lejn il-kamra. Il-klima li qed tinbidel teħtieġ arja kondizzjonata waħda għal kull 256 blokka ta’ ġewwa. Partiċelli ħfief ta' l-arja jindikaw fetħiet. Issiġillahom fi żmien minuta, qabel ma l-klima tibda terġa 'lura għall-istat naturali tagħha.",
   "biome_based_crops.guide.block_count": "%s blokki",
   "biome_based_crops.ac.climate_label": "Klima",
   "biome_based_crops.ac.previous_climate": "Klima preċedenti",
   "biome_based_crops.ac.next_climate": "Klima li jmiss",
   "biome_based_crops.ac.selector_usage": "Ikklikkja biex iċċekkja 'l quddiem. Żomm Shift jew uża ċ-ċavetta tal-vleġġa tax-xellug biex iċċekkja lura.",
-  "biome_based_crops.ac.energy_room": "Kamra: %s blokki"
+  "biome_based_crops.ac.energy_room": "Kamra: %s blokki",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installa termoregolatur Elettriku jew Tough As Nails biex tirreġistra bijoma serra."
 }

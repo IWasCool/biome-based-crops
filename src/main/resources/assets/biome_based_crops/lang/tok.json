@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Greenhouse biome not valid",
   "biome_based_crops.ac.room_climate": "Room climate: %s",
   "biome_based_crops.ac.unit_capacity": "AC units: %s installed, %s needed",
-  "biome_based_crops.ac.capacity_hint": "Each AC supports 256 enclosed interior blocks when changing climate. A naturally matching room needs no AC.",
+  "biome_based_crops.ac.capacity_hint": "Each AC supports 256 interior blocks when changing climate. Biome registration always needs an Electrical or Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "The front outlet is blocked",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "The room needs more AC units for its interior volume",
   "biome_based_crops.greenhouse.status.too_large": "The room exceeds the maximum interior volume",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Interior Requirements:",
   "biome_based_crops.guide.scroll_materials": "Scroll for more materials.",
   "biome_based_crops.guide.setup": "Greenhouse Setup:",
-  "biome_based_crops.guide.setup_text": "Once the room reaches the required temperature and meets the floor and interior block requirements, it will register as that biome, enabling mobs and other creatures to spawn in it too. Crops and saplings need sky-exposed glass directly above each plant. The rest of the roof can be solid. No AC is needed when the natural climate matches the requirement. To change the climate, point an AC into the room. Use one AC unit per 256 enclosed interior blocks. Faint air wisps indicate openings. Seal them within one minute, before the climate starts returning to its natural state.",
+  "biome_based_crops.guide.setup_text": "Once the room reaches the required temperature and meets the floor and interior block requirements, it will register as that biome, enabling mobs and other creatures to spawn in it too. Crops and saplings need sky-exposed glass directly above each plant. The rest of the roof can be solid. Biome registration needs an Electrical or Tough As Nails thermoregulator facing into the room. Changing climate needs one AC per 256 interior blocks. Faint air wisps indicate openings. Seal them within one minute, before the climate starts returning to its natural state.",
   "biome_based_crops.guide.block_count": "%s blocks",
   "biome_based_crops.ac.climate_label": "Climate",
   "biome_based_crops.ac.previous_climate": "Previous climate",
   "biome_based_crops.ac.next_climate": "Next climate",
   "biome_based_crops.ac.selector_usage": "Click to cycle forward. Hold Shift or use the left arrow key to cycle backward.",
-  "biome_based_crops.ac.energy_room": "Room: %s blocks"
+  "biome_based_crops.ac.energy_room": "Room: %s blocks",
+  "biome_based_crops.greenhouse.status.missing_controller": "Install an Electrical or Tough As Nails thermoregulator to register a greenhouse biome."
 }

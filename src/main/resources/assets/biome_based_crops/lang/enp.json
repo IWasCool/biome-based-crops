@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Glasshouse landkind not valid",
   "biome_based_crops.ac.room_climate": "Room weather: %s",
   "biome_based_crops.ac.unit_capacity": "AC units: %s installed, %s needed",
-  "biome_based_crops.ac.capacity_hint": "Each AC supports 256 enclosed inside blocks when changing weather. A naturally matching room needs no AC.",
+  "biome_based_crops.ac.capacity_hint": "Each AC supports 256 inside blocks when changing weather. Landkind registration always needs an Electrical or Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "The front outlet is blocked",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "The room needs more AC units for its inside volume",
   "biome_based_crops.greenhouse.status.too_large": "The room exceeds the maximum inside volume",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Inside Needs:",
   "biome_based_crops.guide.scroll_materials": "Scroll for more materials.",
   "biome_based_crops.guide.setup": "Glasshouse Setup:",
-  "biome_based_crops.guide.setup_text": "Once the room reaches the required warmth and meets the floor and inside block needs, it will register as that landkind, enabling mobs and other creatures to spawn in it too. Crops and saplings need sky-exposed glass directly above each plant. The rest of the roof can be solid. No AC is needed when the natural weather matches the requirement. To change the weather, point an AC into the room. Use one AC unit per 256 enclosed inside blocks. Faint air wisps indicate openings. Seal them within one minute, before the weather starts returning to its natural state.",
+  "biome_based_crops.guide.setup_text": "Once the room reaches the required warmth and meets the floor and inside block needs, it will register as that landkind, enabling mobs and other creatures to spawn in it too. Crops and saplings need sky-exposed glass directly above each plant. The rest of the roof can be solid. Landkind registration needs an Electrical or Tough As Nails thermoregulator facing into the room. Changing weather needs one AC per 256 inside blocks. Faint air wisps indicate openings. Seal them within one minute, before the weather starts returning to its natural state.",
   "biome_based_crops.guide.block_count": "%s blocks",
   "biome_based_crops.ac.climate_label": "Weather",
   "biome_based_crops.ac.previous_climate": "Previous weather",
   "biome_based_crops.ac.next_climate": "Next weather",
   "biome_based_crops.ac.selector_usage": "Click to cycle forward. Hold Shift or use the left arrow key to cycle backward.",
-  "biome_based_crops.ac.energy_room": "Room: %s blocks"
+  "biome_based_crops.ac.energy_room": "Room: %s blocks",
+  "biome_based_crops.greenhouse.status.missing_controller": "Install an Electrical or Tough As Nails thermoregulator to register a glasshouse landkind."
 }

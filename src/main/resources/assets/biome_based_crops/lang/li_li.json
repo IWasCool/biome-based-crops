@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Broeikasbioom neet geldig",
   "biome_based_crops.ac.room_climate": "Kamerklimaat: %s",
   "biome_based_crops.ac.unit_capacity": "airconditioners: %s geïnstalleerd, %s nuudig",
-  "biome_based_crops.ac.capacity_hint": "Iedere airconditioner ondersteunt 256 geslote binneblokke bij ‘t verandere vaan ‘t klimaat. ‘n Natuurlik bijpassende kamer heet gein airconditioner nuudig.",
+  "biome_based_crops.ac.capacity_hint": "Iedere airconditioner ondersteunt 256 binneblokke bij ‘t verandere vaan ‘t klimaat. Bioomregistratie heet altied un elektrische of Tough As Nails thermoregulator nuudig.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "De veurste stopcontact is geblokkeerd",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "De kamer heet mie airconditioners nuudig veur ‘t volume binne",
   "biome_based_crops.greenhouse.status.too_large": "De kamer euvertref ‘t maximale binnenvolume",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Interieurvereiste:",
   "biome_based_crops.guide.scroll_materials": "Scroll veur mie materiale.",
   "biome_based_crops.guide.setup": "Broeikasopstelling:",
-  "biome_based_crops.guide.setup_text": "Es de kamer de vereiste temperatuur heet bereik en aon de vereiste veur de vloer en de binneblokke voldeit, zal ‘t zich registrere es dat bioom, boedoor mobs en aandere wezes d’r ouch kinne spawn. Gewasse en boomkes höbbe nao de loch blootgesteld glaas direk baove eder plant nuudig. De res vaan ‘t daak kin solide zien. D’r is gein airconditioner nuudig es ‘t natuurleke klimaat aan de vereiste voldeit. Um ‘t klimaat te verandere, riech de lochtoetlaote vaan de airconditioners in de kamer. Gebruuk ein airconditioner per 256 geslote binneblokke. Zwachte lochdeilkes geve openinge aan. Zet ze binne ein minuut aaf, veurtot ‘t klimaat trök begint te gaon nao zien natuurleke sjtaot.",
+  "biome_based_crops.guide.setup_text": "Es de kamer de vereiste temperatuur heet bereik en aon de vereiste veur de vloer en de binneblokke voldeit, zal ‘t zich registrere es dat bioom, boedoor mobs en aandere wezens d’r ouch in kinne spawn. Gewasse en boomkes höbbe nao de loch blootgesteld glaas direk baove eder plant nuudig. De res vaan ‘t daak kin solide zien. Bioomregistratie heet ‘n elektrische of Tough As Nails thermoregulator nuudig die nao de kamer kiek. ‘t Veranderende klimaat heet ein airconditioner per 256 interieurblokke nuudig. Zwachte lochdeilkes geve openinge aan. Zet ze binne ein minuut aaf, veurtot ‘t klimaat trök begint te gaon nao zien natuurleke sjtaot.",
   "biome_based_crops.guide.block_count": "%s blokke",
   "biome_based_crops.ac.climate_label": "Klimaat",
   "biome_based_crops.ac.previous_climate": "Veurege klimaat",
   "biome_based_crops.ac.next_climate": "Volgende klimaat",
   "biome_based_crops.ac.selector_usage": "Klik um veurwaarts te fietse. Houw Shift ingedruk of gebruuk de pijltoets linker um achteroet te fietse.",
-  "biome_based_crops.ac.energy_room": "Kamer: %s blokke"
+  "biome_based_crops.ac.energy_room": "Kamer: %s blokke",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installeer un elektrische of Tough As Nails thermoregulator um un broeikasbioom te registrere."
 }

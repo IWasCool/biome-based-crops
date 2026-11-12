@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "溫室生物群落無效",
   "biome_based_crops.ac.room_climate": "室內氣候：%s",
   "biome_based_crops.ac.unit_capacity": "空調：已安裝%s，需要%s",
-  "biome_based_crops.ac.capacity_hint": "當氣候變遷時，每台空調支援 256 個封閉的內部模組。自然搭配的房間不需要空調。",
+  "biome_based_crops.ac.capacity_hint": "每台空調在氣候變遷時支援 256 個室內模組。生物群系註冊始終需要電氣或 Tough As Nails 溫度調節器。",
   "biome_based_crops.greenhouse.status.blocked_outlet": "前出口被堵塞",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "房間內部空間需要更多空調",
   "biome_based_crops.greenhouse.status.too_large": "房間超出最大內部容積",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "內部要求：",
   "biome_based_crops.guide.scroll_materials": "捲動查看更多資料。",
   "biome_based_crops.guide.setup": "溫室設置：",
-  "biome_based_crops.guide.setup_text": "一旦房間達到所需的溫度並滿足地板和內部方塊的要求，它將註冊為該生物群系，使小怪和其他生物也能夠在其中生成。農作物和樹苗需要在每株植物的正上方安裝暴露在天空中的玻璃。屋頂的其餘部分可以是實心的。當自然氣候符合要求時，無需使用空調。若要改變氣候，請將空調的出風口指向房間。每 256 個封閉的內部區塊使用一台空調。微弱的空氣顆粒表示有開口。在氣候開始恢復自然狀態之前的一分鐘內將它們密封。",
+  "biome_based_crops.guide.setup_text": "一旦房間達到所需的溫度並滿足地板和內部方塊的要求，它將註冊為該生物群落，使小怪和其他生物也能夠在其中生成。農作物和樹苗需要在每株植物的正上方安裝暴露在天空中的玻璃。屋頂的其餘部分可以是實心的。生物群系註冊需要一個面向房間的電氣或 Tough As Nails 溫度調節器。不斷變化的氣候需要每 256 個室內街區配備一台空調。微弱的空氣顆粒表示有開口。在氣候開始恢復自然狀態之前的一分鐘內將它們密封。",
   "biome_based_crops.guide.block_count": "%s 區塊",
   "biome_based_crops.ac.climate_label": "氣候",
   "biome_based_crops.ac.previous_climate": "以前的氣候",
   "biome_based_crops.ac.next_climate": "下一個氣候",
   "biome_based_crops.ac.selector_usage": "按一下可向前循環。按住 Shift 或使用向左箭頭鍵向後循環。",
-  "biome_based_crops.ac.energy_room": "房間：%s 塊"
+  "biome_based_crops.ac.energy_room": "房間：%s 塊",
+  "biome_based_crops.greenhouse.status.missing_controller": "安裝電氣或 Tough As Nails 溫度調節器來註冊溫室生物群落。"
 }

@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Il biome de sere nol è valit",
   "biome_based_crops.ac.room_climate": "Clima de cjamare: %s",
   "biome_based_crops.ac.unit_capacity": "climatizadôrs: %s instalâts, %s necessaris",
-  "biome_based_crops.ac.capacity_hint": "Ogni climatizadôr al supuarte 256 blocs internis sierâts cuant che si cambie il clime. Une cjamare che e corispuint in mût naturâl e no à bisugne di climatizadôr.",
+  "biome_based_crops.ac.capacity_hint": "Ogni climatizadôr al supuarte 256 blocs internis cuant che si cambie il clime. La regjistrazion dal biome e à simpri bisugne di un termoregoladôr eletric o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La prese di prin e je blocade",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La cjamare e à bisugne di plui climatizadôrs pal so volum interni",
   "biome_based_crops.greenhouse.status.too_large": "La cjamare e supere il volum massim interni",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Recuisîts internis:",
   "biome_based_crops.guide.scroll_materials": "Scrolâ par plui materiâi.",
   "biome_based_crops.guide.setup": "Configurazion de sere:",
-  "biome_based_crops.guide.setup_text": "Cuant che la cjamare e rive ae temperadure necessarie e e sodisfe i recuisîts dal paviment e dal bloc interni, e si regjistrarà come chel biome, permetint ancje aes mobis e a altris creaturis di sgjavâ dentri. Lis culturis e i arbui a àn bisugne di veri esponût al cîl drets parsore di ogni plante. Il rest dal cuviert al pues jessi solid. Nissun climatizadôr al è necessari cuant che il clime naturâl al corispuint al recuisît. Par cambiâ il clime, pontâ lis jessis di aiar dai climatizadôrs dentri de cjamare. Utilizâ un climatizadôr par ogni 256 blocs internis sierâts. Lis particulis di aiar debilis a indichin viertiduris. Sielziju dentri di un minût, prin che il clime al scomenci a tornâ al so stât naturâl.",
+  "biome_based_crops.guide.setup_text": "Cuant che la cjamare e rive ae temperadure necessarie e e sodisfe i recuisîts dal paviment e dal bloc interni, e si regjistrarà come chel biome, permetint ancje aes mobis e a altris creaturis di sgjavâ dentri. Lis culturis e i arbui a àn bisugne di veri esponût al cîl drets parsore di ogni plante. Il rest dal cuviert al pues jessi solid. La regjistrazion dal biome e à bisugne di un termoregoladôr eletric o Tough As Nails che al cjale dentri de cjamare. Il cambiament dal clime al à bisugne di un climatizadôr par 256 blocs internis. Lis particulis di aiar debilis a indichin viertiduris. Sielziju dentri di un minût, prin che il clime al scomenci a tornâ al so stât naturâl.",
   "biome_based_crops.guide.block_count": "blocs %s",
   "biome_based_crops.ac.climate_label": "Clime",
   "biome_based_crops.ac.previous_climate": "Clima precedent",
   "biome_based_crops.ac.next_climate": "Clime sucessîf",
   "biome_based_crops.ac.selector_usage": "Clicâ par ciclâ indenant. Mantignî premut Maiusc o doprâ la frece a çampe par ciclâ indaûr.",
-  "biome_based_crops.ac.energy_room": "Cjamare: blocs %s"
+  "biome_based_crops.ac.energy_room": "Cjamare: blocs %s",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instalâ un termoregoladôr eletric o Tough As Nails par regjistrâ un biome sere."
 }

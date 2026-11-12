@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "pılɐʌ ʇou ǝɯoıq ǝsnoɥuǝǝɹפ",
   "biome_based_crops.ac.room_climate": "%1$s :ǝʇɐɯılɔ ɯooᴚ",
   "biome_based_crops.ac.unit_capacity": "pǝpǝǝu %2$s 'pǝllɐʇsuı %1$s :sʇıun Ɔ∀",
-  "biome_based_crops.ac.capacity_hint": "˙Ɔ∀ ou spǝǝu ɯooɹ ƃuıɥɔʇɐɯ ʎllɐɹnʇɐu ∀ ˙ǝʇɐɯılɔ ƃuıƃuɐɥɔ uǝɥʍ sʞɔolq ɹoıɹǝʇuı pǝsolɔuǝ 9ϛᄅ sʇɹoddns Ɔ∀ ɥɔɐƎ",
+  "biome_based_crops.ac.capacity_hint": "˙ɹoʇɐlnƃǝɹoɯɹǝɥʇ Tough As Nails ɹo lɐɔıɹʇɔǝlƎ uɐ spǝǝu sʎɐʍlɐ uoıʇɐɹʇsıƃǝɹ ǝɯoıꓭ ˙ǝʇɐɯılɔ ƃuıƃuɐɥɔ uǝɥʍ sʞɔolq ɹoıɹǝʇuı 9ϛᄅ sʇɹoddns Ɔ∀ ɥɔɐƎ",
   "biome_based_crops.greenhouse.status.blocked_outlet": "pǝʞɔolq sı ʇǝlʇno ʇuoɹɟ ǝɥ⊥",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "ǝɯnloʌ ɹoıɹǝʇuı sʇı ɹoɟ sʇıun Ɔ∀ ǝɹoɯ spǝǝu ɯooɹ ǝɥ⊥",
   "biome_based_crops.greenhouse.status.too_large": "ǝɯnloʌ ɹoıɹǝʇuı ɯnɯıxɐɯ ǝɥʇ spǝǝɔxǝ ɯooɹ ǝɥ⊥",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": ":sʇuǝɯǝɹınbǝᴚ ɹoıɹǝʇuI",
   "biome_based_crops.guide.scroll_materials": "˙slɐıɹǝʇɐɯ ǝɹoɯ ɹoɟ lloɹɔS",
   "biome_based_crops.guide.setup": ":dnʇǝS ǝsnoɥuǝǝɹפ",
-  "biome_based_crops.guide.setup_text": "˙ǝʇɐʇs lɐɹnʇɐu sʇı oʇ ƃuıuɹnʇǝɹ sʇɹɐʇs ǝʇɐɯılɔ ǝɥʇ ǝɹoɟǝq 'ǝʇnuıɯ ǝuo uıɥʇıʍ ɯǝɥʇ lɐǝS ˙sƃuıuǝdo ǝʇɐɔıpuı sdsıʍ ɹıɐ ʇuıɐℲ ˙sʞɔolq ɹoıɹǝʇuı pǝsolɔuǝ 9ϛᄅ ɹǝd ʇıun Ɔ∀ ǝuo ǝs∩ ˙ɯooɹ ǝɥʇ oʇuı Ɔ∀ uɐ ʇuıod 'ǝʇɐɯılɔ ǝɥʇ ǝƃuɐɥɔ o⊥ ˙ʇuǝɯǝɹınbǝɹ ǝɥʇ sǝɥɔʇɐɯ ǝʇɐɯılɔ lɐɹnʇɐu ǝɥʇ uǝɥʍ pǝpǝǝu sı Ɔ∀ oN ˙pılos ǝq uɐɔ ɟooɹ ǝɥʇ ɟo ʇsǝɹ ǝɥ⊥ ˙ʇuɐld ɥɔɐǝ ǝʌoqɐ ʎlʇɔǝɹıp ssɐlƃ pǝsodxǝ-ʎʞs pǝǝu sƃuıldɐs puɐ sdoɹƆ ˙ooʇ ʇı uı uʍɐds oʇ sǝɹnʇɐǝɹɔ ɹǝɥʇo puɐ sqoɯ ƃuılqɐuǝ 'ǝɯoıq ʇɐɥʇ sɐ ɹǝʇsıƃǝɹ llıʍ ʇı 'sʇuǝɯǝɹınbǝɹ ʞɔolq ɹoıɹǝʇuı puɐ ɹoolɟ ǝɥʇ sʇǝǝɯ puɐ ǝɹnʇɐɹǝdɯǝʇ pǝɹınbǝɹ ǝɥʇ sǝɥɔɐǝɹ ɯooɹ ǝɥʇ ǝɔuO",
+  "biome_based_crops.guide.setup_text": "˙ǝʇɐʇs lɐɹnʇɐu sʇı oʇ ƃuıuɹnʇǝɹ sʇɹɐʇs ǝʇɐɯılɔ ǝɥʇ ǝɹoɟǝq 'ǝʇnuıɯ ǝuo uıɥʇıʍ ɯǝɥʇ lɐǝS ˙sƃuıuǝdo ǝʇɐɔıpuı sdsıʍ ɹıɐ ʇuıɐℲ ˙sʞɔolq ɹoıɹǝʇuı 9ϛᄅ ɹǝd Ɔ∀ ǝuo spǝǝu ǝʇɐɯılɔ ƃuıƃuɐɥƆ ˙ɯooɹ ǝɥʇ oʇuı ƃuıɔɐɟ ɹoʇɐlnƃǝɹoɯɹǝɥʇ Tough As Nails ɹo lɐɔıɹʇɔǝlƎ uɐ spǝǝu uoıʇɐɹʇsıƃǝɹ ǝɯoıꓭ ˙pılos ǝq uɐɔ ɟooɹ ǝɥʇ ɟo ʇsǝɹ ǝɥ⊥ ˙ʇuɐld ɥɔɐǝ ǝʌoqɐ ʎlʇɔǝɹıp ssɐlƃ pǝsodxǝ-ʎʞs pǝǝu sƃuıldɐs puɐ sdoɹƆ ˙ooʇ ʇı uı uʍɐds oʇ sǝɹnʇɐǝɹɔ ɹǝɥʇo puɐ sqoɯ ƃuılqɐuǝ 'ǝɯoıq ʇɐɥʇ sɐ ɹǝʇsıƃǝɹ llıʍ ʇı 'sʇuǝɯǝɹınbǝɹ ʞɔolq ɹoıɹǝʇuı puɐ ɹoolɟ ǝɥʇ sʇǝǝɯ puɐ ǝɹnʇɐɹǝdɯǝʇ pǝɹınbǝɹ ǝɥʇ sǝɥɔɐǝɹ ɯooɹ ǝɥʇ ǝɔuO",
   "biome_based_crops.guide.block_count": "sʞɔolq %1$s",
   "biome_based_crops.ac.climate_label": "ǝʇɐɯılƆ",
   "biome_based_crops.ac.previous_climate": "ǝʇɐɯılɔ snoıʌǝɹԀ",
   "biome_based_crops.ac.next_climate": "ǝʇɐɯılɔ ʇxǝN",
   "biome_based_crops.ac.selector_usage": "˙pɹɐʍʞɔɐq ǝlɔʎɔ oʇ ʎǝʞ ʍoɹɹɐ ʇɟǝl ǝɥʇ ǝsn ɹo ʇɟıɥS ploH ˙pɹɐʍɹoɟ ǝlɔʎɔ oʇ ʞɔılƆ",
-  "biome_based_crops.ac.energy_room": "sʞɔolq %1$s :ɯooᴚ"
+  "biome_based_crops.ac.energy_room": "sʞɔolq %1$s :ɯooᴚ",
+  "biome_based_crops.greenhouse.status.missing_controller": "˙ǝɯoıq ǝsnoɥuǝǝɹƃ ɐ ɹǝʇsıƃǝɹ oʇ ɹoʇɐlnƃǝɹoɯɹǝɥʇ Tough As Nails ɹo lɐɔıɹʇɔǝlƎ uɐ llɐʇsuI"
 }

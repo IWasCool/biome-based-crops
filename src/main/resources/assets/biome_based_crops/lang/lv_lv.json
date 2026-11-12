@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Siltumnīcas bioms nav derīgs",
   "biome_based_crops.ac.room_climate": "Telpas klimats: %s",
   "biome_based_crops.ac.unit_capacity": "gaisa kondicionieri: %s uzstādīts, %s nepieciešams",
-  "biome_based_crops.ac.capacity_hint": "Katrs gaisa kondicionieris atbalsta 256 slēgtus iekšējos blokus, mainot klimatu. Dabiski saskaņotai telpai nav nepieciešams gaisa kondicionieris.",
+  "biome_based_crops.ac.capacity_hint": "Katrs gaisa kondicionieris atbalsta 256 iekšējos blokus, mainot klimatu. Bioma reģistrācijai vienmēr ir nepieciešams elektriskais vai Tough As Nails termoregulators.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Priekšējā izeja ir bloķēta",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Telpā ir nepieciešams vairāk gaisa kondicionētāju tās iekšējam apjomam",
   "biome_based_crops.greenhouse.status.too_large": "Telpa pārsniedz maksimālo iekšējo tilpumu",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Interjera prasības:",
   "biome_based_crops.guide.scroll_materials": "Ritiniet, lai skatītu citus materiālus.",
   "biome_based_crops.guide.setup": "Siltumnīcas uzstādīšana:",
-  "biome_based_crops.guide.setup_text": "Tiklīdz telpa sasniegs vajadzīgo temperatūru un atbilst grīdas un iekšējā bloka prasībām, tā tiks reģistrēta kā bioms, ļaujot tajā nārstot arī pūļiem un citām radībām. Kultūraugiem un stādiem ir nepieciešams stikls, kas ir pakļauts debesīm tieši virs katra auga. Pārējais jumts var būt ciets. Gaisa kondicionieris nav nepieciešams, ja dabiskais klimats atbilst prasībām. Lai mainītu klimatu, novietojiet gaisa kondicionētāju gaisa izvadus telpā. Izmantojiet vienu gaisa kondicionieri uz 256 slēgtiem iekšējiem blokiem. Vājās gaisa daļiņas norāda uz atverēm. Aizzīmogojiet tos vienas minūtes laikā, pirms klimats sāk atgriezties savā dabiskajā stāvoklī.",
+  "biome_based_crops.guide.setup_text": "Kad telpa sasniegs vajadzīgo temperatūru un atbilst grīdas un iekšējā bloka prasībām, tā tiks reģistrēta kā bioms, ļaujot tajā nārstot arī pūļiem un citām radībām. Kultūraugiem un stādiem ir nepieciešams stikls, kas ir pakļauts debesīm tieši virs katra auga. Pārējais jumts var būt ciets. Bioma reģistrācijai nepieciešams elektriskais vai Tough As Nails termoregulators, kas vērsts uz telpu. Mainīgam klimatam ir nepieciešams viens gaisa kondicionieris uz 256 interjera blokiem. Vājās gaisa daļiņas norāda uz atverēm. Aizzīmogojiet tos vienas minūtes laikā, pirms klimats sāk atgriezties savā dabiskajā stāvoklī.",
   "biome_based_crops.guide.block_count": "%s bloki",
   "biome_based_crops.ac.climate_label": "Klimats",
   "biome_based_crops.ac.previous_climate": "Iepriekšējais klimats",
   "biome_based_crops.ac.next_climate": "Nākamais klimats",
   "biome_based_crops.ac.selector_usage": "Noklikšķiniet, lai pārvietotos uz priekšu. Turiet nospiestu taustiņu Shift vai izmantojiet kreiso bulttaustiņu, lai pārvietotos atpakaļ.",
-  "biome_based_crops.ac.energy_room": "Telpa: %s bloki"
+  "biome_based_crops.ac.energy_room": "Telpa: %s bloki",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instalējiet elektrisko vai Tough As Nails termoregulatoru, lai reģistrētu siltumnīcas biomu."
 }

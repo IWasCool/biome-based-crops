@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "온실 생물 군계가 유효하지 않습니다.",
   "biome_based_crops.ac.room_climate": "실내 온도: %s",
   "biome_based_crops.ac.unit_capacity": "에어컨: %s 설치됨, %s 필요",
-  "biome_based_crops.ac.capacity_hint": "각 에어컨은 기후 변화 시 256개의 밀폐된 내부 블록을 지원합니다. 자연스럽게 어울리는 방에는 에어컨이 필요하지 않습니다.",
+  "biome_based_crops.ac.capacity_hint": "각 에어컨은 기후 변화 시 256개의 내부 블록을 지원합니다. 생물 군계 등록에는 항상 전기 또는 Tough As Nails 온도 조절기가 필요합니다.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "앞쪽 콘센트가 막혔어요",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "방의 내부 용적에 비해 더 많은 에어컨이 필요합니다.",
   "biome_based_crops.greenhouse.status.too_large": "방이 최대 내부 용적을 초과합니다.",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "인테리어 요구사항:",
   "biome_based_crops.guide.scroll_materials": "더 많은 자료를 보려면 스크롤하세요.",
   "biome_based_crops.guide.setup": "온실 설치:",
-  "biome_based_crops.guide.setup_text": "방이 필요한 온도에 도달하고 바닥 및 내부 블록 요구 사항을 충족하면 해당 생물 군계로 등록되어 몹과 다른 생물도 생성될 수 있습니다. 작물과 묘목은 각 식물 바로 위에 하늘에 노출된 유리가 필요합니다. 나머지 지붕은 단단할 수 있습니다. 자연 기후가 요구 사항과 일치하면 에어컨이 필요하지 않습니다. 기후를 바꾸려면 에어컨의 공기 배출구를 실내로 향하게 하십시오. 밀폐된 내부 블록 256개당 에어컨 1개를 사용합니다. 희미한 공기 입자는 개구부를 나타냅니다. 기후가 자연 상태로 돌아오기 시작하기 전에 1분 이내에 밀봉하세요.",
+  "biome_based_crops.guide.setup_text": "방이 필요한 온도에 도달하고 바닥 및 내부 블록 요구 사항을 충족하면 해당 생물 군계로 등록되어 몹과 다른 생물도 생성될 수 있습니다. 작물과 묘목은 각 식물 바로 위에 하늘에 노출된 유리가 필요합니다. 나머지 지붕은 단단할 수 있습니다. 생물 군계를 등록하려면 방을 향한 전기 또는 Tough As Nails 온도 조절기가 필요합니다. 기후 변화에 따라 내부 블록 256개당 에어컨 1개가 필요합니다. 희미한 공기 입자는 개구부를 나타냅니다. 기후가 자연 상태로 돌아오기 시작하기 전에 1분 이내에 밀봉하세요.",
   "biome_based_crops.guide.block_count": "%s 블록",
   "biome_based_crops.ac.climate_label": "기후",
   "biome_based_crops.ac.previous_climate": "이전 기후",
   "biome_based_crops.ac.next_climate": "다음 기후",
   "biome_based_crops.ac.selector_usage": "앞으로 순환하려면 클릭하세요. 뒤로 순환하려면 Shift를 누르거나 왼쪽 화살표 키를 사용하세요.",
-  "biome_based_crops.ac.energy_room": "방: %s 블록"
+  "biome_based_crops.ac.energy_room": "방: %s 블록",
+  "biome_based_crops.greenhouse.status.missing_controller": "온실 생물군계를 등록하려면 전기 또는 Tough As Nails 온도 조절기를 설치하세요."
 }

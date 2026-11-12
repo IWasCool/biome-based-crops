@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Växthusbiomet är inte giltigt",
   "biome_based_crops.ac.room_climate": "Rumsklimat: %s",
   "biome_based_crops.ac.unit_capacity": "luftkonditioneringsapparater: %s installerade, %s behövs",
-  "biome_based_crops.ac.capacity_hint": "Varje luftkonditioneringsapparat stöder 256 slutna inre block vid klimatbyte. Ett naturligt matchande rum behöver ingen luftkonditionering.",
+  "biome_based_crops.ac.capacity_hint": "Varje luftkonditioneringsapparat stöder 256 inre block vid klimatbyte. Biomregistrering kräver alltid en elektrisk eller Tough As Nails termoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Det främre utloppet är blockerat",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Rummet behöver fler luftkonditioneringsapparater för sin inre volym",
   "biome_based_crops.greenhouse.status.too_large": "Rummet överskrider den maximala inre volymen",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Inredningskrav:",
   "biome_based_crops.guide.scroll_materials": "Bläddra för mer material.",
   "biome_based_crops.guide.setup": "Växthusinställning:",
-  "biome_based_crops.guide.setup_text": "När rummet når den önskade temperaturen och uppfyller kraven på golv och inre block, kommer det att registreras som den biomen, vilket gör att mobbar och andra varelser kan leka i det också. Grödor och plantor behöver sky-exponerat glas direkt ovanför varje planta. Resten av taket kan vara massivt. Ingen luftkonditionering behövs när det naturliga klimatet matchar kravet. För att ändra klimatet, rikta luftutloppen från luftkonditioneringsapparaterna in i rummet. Använd en luftkonditionering per 256 inneslutna inre block. Svaga luftpartiklar indikerar öppningar. Försegla dem inom en minut, innan klimatet börjar återgå till sitt naturliga tillstånd.",
+  "biome_based_crops.guide.setup_text": "När rummet når den önskade temperaturen och uppfyller kraven på golv och inre block, kommer det att registreras som den biomen, vilket gör att mobbar och andra varelser kan leka i det också. Grödor och plantor behöver sky-exponerat glas direkt ovanför varje planta. Resten av taket kan vara massivt. Biomeregistrering kräver en elektrisk eller Tough As Nails termoregulator som är vänd in i rummet. För att förändra klimatet krävs en luftkonditionering per 256 inre block. Svaga luftpartiklar indikerar öppningar. Försegla dem inom en minut, innan klimatet börjar återgå till sitt naturliga tillstånd.",
   "biome_based_crops.guide.block_count": "%s block",
   "biome_based_crops.ac.climate_label": "Klimat",
   "biome_based_crops.ac.previous_climate": "Tidigare klimat",
   "biome_based_crops.ac.next_climate": "Nästa klimat",
   "biome_based_crops.ac.selector_usage": "Klicka för att cykla framåt. Håll ned Shift eller använd vänsterpilen för att cykla bakåt.",
-  "biome_based_crops.ac.energy_room": "Rum: %s block"
+  "biome_based_crops.ac.energy_room": "Rum: %s block",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installera en elektrisk eller Tough As Nails termoregulator för att registrera ett växthusbiom."
 }

@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Treibhausebiome net valabel",
   "biome_based_crops.ac.room_climate": "Raumklima: %s",
   "biome_based_crops.ac.unit_capacity": "Klimaanlagen: %s installéiert, %s néideg",
-  "biome_based_crops.ac.capacity_hint": "All Klimaanlag ënnerstëtzt 256 zouenen Interieurblocken beim Klimawandel. En natierlech passende Raum brauch kee Klimaanlag.",
+  "biome_based_crops.ac.capacity_hint": "All Klimaanlag ënnerstëtzt 256 Interieurblocken beim Klimawandel. Biome Registréierung brauch ëmmer en elektreschen oder Tough As Nails Thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Déi viischt Outlet ass blockéiert",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "De Raum brauch méi Klimaanlagen fir säin Interieurvolumen",
   "biome_based_crops.greenhouse.status.too_large": "De Raum iwwerschreift de maximalen Interieurvolumen",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Interieur Ufuerderunge:",
   "biome_based_crops.guide.scroll_materials": "Scroll fir méi Materialien.",
   "biome_based_crops.guide.setup": "Treibhauseopstellung:",
-  "biome_based_crops.guide.setup_text": "Wann de Raum déi erfuerderlech Temperatur erreecht an de Buedem- an Interieurblock Ufuerderunge entsprécht, wäert et sech als dat Biome registréieren, sou datt Mobs an aner Kreaturen och dran kënne spawnen. Crops a Saplings brauchen Himmel ausgesat Glas direkt iwwer all Planz. De Rescht vum Dach kann zolidd sinn. Kee Klimaanlag ass gebraucht wann dat natierlecht Klima der Ufuerderung entsprécht. Fir d'Klima z'änneren, weisen d'Loftausgab vun de Klimaanlagen an de Raum. Benotzt eng Klimaanlag pro 256 zouenen Interieurblocken. Schwaach Loftpartikelen weisen Ouverture un. Seel se bannent enger Minutt, ier d'Klima an hiren natierlechen Zoustand zréckkënnt.",
+  "biome_based_crops.guide.setup_text": "Wann de Raum déi erfuerderlech Temperatur erreecht an de Buedem- an Interieurblock Ufuerderunge entsprécht, registréiert en sech als dat Biome, wat et erlaabt datt Mobs an aner Kreaturen och an et spawnen. Crops a Saplings brauchen Himmel ausgesat Glas direkt iwwer all Planz. De Rescht vum Dach kann zolidd sinn. Biome Aschreiwung brauch en elektreschen oder Tough As Nails Thermoregulator vis-à-vis an de Raum. Klimawandel brauch ee Klimaanlag pro 256 Interieurblocken. Schwaach Loftpartikelen weisen Ouverture un. Seel se bannent enger Minutt, ier d'Klima an hiren natierlechen Zoustand zréckkënnt.",
   "biome_based_crops.guide.block_count": "%s spären",
   "biome_based_crops.ac.climate_label": "Klima",
   "biome_based_crops.ac.previous_climate": "Virdrun Klima",
   "biome_based_crops.ac.next_climate": "Nächst Klima",
   "biome_based_crops.ac.selector_usage": "Klickt fir no vir ze fueren. Halt Shift oder benotzt de lénksen Pfeiltast fir zréck ze fueren.",
-  "biome_based_crops.ac.energy_room": "Sall: %s spären"
+  "biome_based_crops.ac.energy_room": "Sall: %s spären",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installéiert en elektreschen oder Tough As Nails Thermoregulator fir en Treibhausebiome ze registréieren."
 }

@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Hindi wasto ang biome ng greenhouse",
   "biome_based_crops.ac.room_climate": "Klima ng silid: %s",
   "biome_based_crops.ac.unit_capacity": "mga air conditioner: %s naka-install, %s kailangan",
-  "biome_based_crops.ac.capacity_hint": "Ang bawat air conditioner ay sumusuporta sa 256 na nakapaloob na panloob na mga bloke kapag nagbabago ang klima. Ang isang natural na katugmang silid ay hindi nangangailangan ng air conditioner.",
+  "biome_based_crops.ac.capacity_hint": "Ang bawat air conditioner ay sumusuporta sa 256 panloob na bloke kapag nagbabago ang klima. Ang pagpaparehistro ng biome ay palaging nangangailangan ng isang Electrical o Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ang labasan sa harap ay nakaharang",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ang silid ay nangangailangan ng mas maraming air conditioner para sa panloob na volume nito",
   "biome_based_crops.greenhouse.status.too_large": "Ang silid ay lumampas sa maximum na panloob na volume",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Mga Kinakailangan sa Panloob:",
   "biome_based_crops.guide.scroll_materials": "Mag-scroll para sa higit pang mga materyales.",
   "biome_based_crops.guide.setup": "Pag-setup ng Greenhouse:",
-  "biome_based_crops.guide.setup_text": "Kapag naabot na ng silid ang kinakailangang temperatura at natugunan ang mga kinakailangan sa sahig at panloob na bloke, ito ay magrerehistro bilang biome na iyon, na magbibigay-daan sa mga mandurumog at iba pang mga nilalang na mangitlog din dito. Ang mga pananim at mga sapling ay nangangailangan ng salamin na nakalantad sa langit nang direkta sa itaas ng bawat halaman. Ang natitirang bahagi ng bubong ay maaaring maging solid. Walang air conditioner ang kailangan kapag ang natural na klima ay tumutugma sa kinakailangan. Upang baguhin ang klima, ituro ang mga saksakan ng hangin ng mga air conditioner sa silid. Gumamit ng isang air conditioner sa bawat 256 na nakapaloob na mga bloke sa loob. Ang mahinang mga particle ng hangin ay nagpapahiwatig ng mga pagbubukas. I-seal ang mga ito sa loob ng isang minuto, bago magsimulang bumalik ang klima sa natural nitong estado.",
+  "biome_based_crops.guide.setup_text": "Kapag naabot na ng silid ang kinakailangang temperatura at natugunan ang mga kinakailangan sa sahig at panloob na bloke, ito ay magrerehistro bilang biome na iyon, na magbibigay-daan sa mga mandurumog at iba pang mga nilalang na mangitlog din dito. Ang mga pananim at mga sapling ay nangangailangan ng salamin na nakalantad sa langit nang direkta sa itaas ng bawat halaman. Ang natitirang bahagi ng bubong ay maaaring maging solid. Ang pagpaparehistro ng biome ay nangangailangan ng isang Electrical o Tough As Nails thermoregulator na nakaharap sa silid. Ang pagbabago ng klima ay nangangailangan ng isang air conditioner sa bawat 256 na panloob na bloke. Ang mahinang mga particle ng hangin ay nagpapahiwatig ng mga pagbubukas. I-seal ang mga ito sa loob ng isang minuto, bago magsimulang bumalik ang klima sa natural nitong estado.",
   "biome_based_crops.guide.block_count": "%s block",
   "biome_based_crops.ac.climate_label": "Klima",
   "biome_based_crops.ac.previous_climate": "Nakaraang klima",
   "biome_based_crops.ac.next_climate": "Susunod na klima",
   "biome_based_crops.ac.selector_usage": "I-click upang umikot pasulong. Pindutin ang Shift o gamitin ang kaliwang arrow key upang umikot pabalik.",
-  "biome_based_crops.ac.energy_room": "Kwarto: %s bloke"
+  "biome_based_crops.ac.energy_room": "Kwarto: %s bloke",
+  "biome_based_crops.greenhouse.status.missing_controller": "Mag-install ng Electrical o Tough As Nails thermoregulator para magrehistro ng greenhouse biome."
 }

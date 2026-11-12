@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biom an ti-gwer n'eo ket reizh",
   "biome_based_crops.ac.room_climate": "Hin ar sal : %s",
   "biome_based_crops.ac.unit_capacity": "aergelc'hioù : %s staliet, %s ezhomm",
-  "biome_based_crops.ac.capacity_hint": "Pep aergelc'h a zalc'h 256 bloc'h diabarzh serret pa cheñch an hin. Ur sal a glot gant an natur n'he deus ket ezhomm eus aergelc'h.",
+  "biome_based_crops.ac.capacity_hint": "Pep aergelc'h a zalc'h 256 bloc'h diabarzh pa cheñch an hin. Evit enrollañ ar biom e ranker bepred kaout un termoreoler tredanel pe Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Stanket eo ar prenestr a-raok",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ezhomm en deus ar sal eus muioc'h a aergelc'hioù evit he volum diabarzh",
   "biome_based_crops.greenhouse.status.too_large": "Tremen a ra ar sal ar volum diabarzh uhelañ",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Reolennoù diabarzh :",
   "biome_based_crops.guide.scroll_materials": "Skrammit evit muioc'h a dafar.",
   "biome_based_crops.guide.setup": "Kefluniadur an ti-gwer :",
-  "biome_based_crops.guide.setup_text": "Ur wech ma vo tizhet an temperadur ret gant ar sal ha ma vo tizhet ar c'houlennoù evit al leur hag ar bloc'hoù diabarzh e vo enrollet evel ar biom-se, ar pezh a ro tu d'ar mobs ha d'ar c'hrouadurioù all da c'henel ennañ ivez. Ret eo d'ar plant ha d'ar plant bezañ gwer diskouezet d'an oabl, war-eeun a-us da bep plant. Ar peurrest eus an doenn a c'hell bezañ kalet. N'eus ezhomm eus aergelc'h ebet pa glot an hin naturel gant ar pezh a vez ezhomm. Evit cheñch an hin, lakait an aergelc'hioù da vont e-barzh ar sal. Implijit un aergelc'h evit pep 256 bloc'h diabarzh serret. Rannigoù aer gwan a ziskouez digoradurioù. Siellañ anezho dindan ur vunutenn, a-raok ma krogo an hin da zistreiñ d'e stad naturel.",
+  "biome_based_crops.guide.setup_text": "Ur wech ma vo tizhet an temperadur ret gant ar sal ha ma vo tizhet ar c'houlennoù evit al leur hag ar bloc'hoù diabarzh e vo enrollet evel ar biom-se, ar pezh a ro tu d'ar mobs ha d'ar c'hrouadurioù all da c'henel ennañ ivez. Ret eo d'ar plant ha d'ar plant bezañ gwer diskouezet d'an oabl, war-eeun a-us da bep plant. Ar peurrest eus an doenn a c'hell bezañ kalet. Ret eo kaout un termoreoler tredanel pe Tough As Nails o sellout ouzh ar sal evit enskrivañ ar biom. Evit cheñch an hin e ranker kaout un aergelc'h evit pep 256 bloc'h diabarzh. Rannigoù aer gwan a ziskouez digoradurioù. Siellañ anezho dindan ur vunutenn, a-raok ma krogo an hin da zistreiñ d'e stad naturel.",
   "biome_based_crops.guide.block_count": "%s bloc'hoù",
   "biome_based_crops.ac.climate_label": "Hin",
   "biome_based_crops.ac.previous_climate": "Hin a-raok",
   "biome_based_crops.ac.next_climate": "Hin war-lerc'h",
   "biome_based_crops.ac.selector_usage": "Klikit evit mont war-raok. Dalc'hit Shift pe implijit ar stokell saezh kleiz evit mont en-dro.",
-  "biome_based_crops.ac.energy_room": "Sal : %s bloc'hoù"
+  "biome_based_crops.ac.energy_room": "Sal : %s bloc'hoù",
+  "biome_based_crops.greenhouse.status.missing_controller": "Staliañ un termoreoler tredanel pe Tough As Nails evit enrollañ ur biom ti-gwer."
 }

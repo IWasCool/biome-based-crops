@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biomi i serrës nuk është i vlefshëm",
   "biome_based_crops.ac.room_climate": "Klima e dhomës: %s",
   "biome_based_crops.ac.unit_capacity": "kondicionerët: %s të instaluar, %s nevojiten",
-  "biome_based_crops.ac.capacity_hint": "Çdo kondicioner mbështet 256 blloqe të brendshme të mbyllura kur ndryshon klima. Një dhomë që përputhet natyrshëm nuk ka nevojë për kondicioner.",
+  "biome_based_crops.ac.capacity_hint": "Çdo kondicioner mbështet 256 blloqe të brendshme kur ndryshon klimën. Regjistrimi i biomes ka nevojë gjithmonë për një termoregulator elektrik ose Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Priza e përparme është e bllokuar",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Dhoma ka nevojë për më shumë kondicionerë për vëllimin e saj të brendshëm",
   "biome_based_crops.greenhouse.status.too_large": "Dhoma e tejkalon volumin maksimal të brendshëm",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Kërkesat e brendshme:",
   "biome_based_crops.guide.scroll_materials": "Lëvizni për më shumë materiale.",
   "biome_based_crops.guide.setup": "Vendosja e serrës:",
-  "biome_based_crops.guide.setup_text": "Pasi dhoma të arrijë temperaturën e kërkuar dhe të plotësojë kërkesat e dyshemesë dhe blloqeve të brendshme, ajo do të regjistrohet si ajo biome, duke u mundësuar turmave dhe krijesave të tjera të pjellin gjithashtu në të. Të lashtat dhe fidanët kanë nevojë për xhami të ekspozuar ndaj qiellit direkt mbi çdo bimë. Pjesa tjetër e çatisë mund të jetë e fortë. Asnjë kondicioner nuk nevojitet kur klima natyrore përputhet me kërkesat. Për të ndryshuar klimën, drejtoni daljet e ajrit të kondicionerëve në dhomë. Përdorni një kondicioner për 256 blloqe të brendshme të mbyllura. Grimcat e dobëta të ajrit tregojnë hapje. Mbyllni ato brenda një minute, përpara se klima të fillojë të kthehet në gjendjen e saj natyrore.",
+  "biome_based_crops.guide.setup_text": "Pasi dhoma të arrijë temperaturën e kërkuar dhe të plotësojë kërkesat e dyshemesë dhe të blloqeve të brendshme, ajo do të regjistrohet si ajo biome, duke u mundësuar turmave dhe krijesave të tjera të pjellin edhe në të. Të lashtat dhe fidanët kanë nevojë për xhami të ekspozuar ndaj qiellit direkt mbi çdo bimë. Pjesa tjetër e çatisë mund të jetë e fortë. Regjistrimi i biomes ka nevojë për një termoregulator elektrik ose Tough As Nails me pamje nga dhoma. Klima në ndryshim ka nevojë për një kondicioner për 256 blloqe të brendshme. Grimcat e dobëta të ajrit tregojnë hapje. Mbyllni ato brenda një minute, përpara se klima të fillojë të kthehet në gjendjen e saj natyrore.",
   "biome_based_crops.guide.block_count": "blloqe %s",
   "biome_based_crops.ac.climate_label": "Klima",
   "biome_based_crops.ac.previous_climate": "Klima e mëparshme",
   "biome_based_crops.ac.next_climate": "Klima e ardhshme",
   "biome_based_crops.ac.selector_usage": "Klikoni për të ecur përpara. Mbani të shtypur Shift ose përdorni tastin e shigjetës së majtë për të lëvizur prapa.",
-  "biome_based_crops.ac.energy_room": "Dhoma: %s blloqe"
+  "biome_based_crops.ac.energy_room": "Dhoma: %s blloqe",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instaloni një termoregulator elektrik ose Tough As Nails për të regjistruar një biome sere."
 }

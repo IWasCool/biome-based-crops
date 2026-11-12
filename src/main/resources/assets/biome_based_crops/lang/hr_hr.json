@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biom staklenika nije valjan",
   "biome_based_crops.ac.room_climate": "Sobna klima: %s",
   "biome_based_crops.ac.unit_capacity": "klima uređaji: %s instalirani, %s potrebni",
-  "biome_based_crops.ac.capacity_hint": "Svaki klima uređaj podržava 256 zatvorenih unutarnjih blokova pri promjeni klime. Prirodno usklađena soba ne treba klima uređaj.",
+  "biome_based_crops.ac.capacity_hint": "Svaki klima uređaj podržava 256 unutarnjih blokova pri promjeni klime. Za registraciju bioma uvijek je potreban električni ili Tough As Nails termoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Prednji izlaz je blokiran",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Soba treba više klima uređaja za svoj unutarnji volumen",
   "biome_based_crops.greenhouse.status.too_large": "Prostorija premašuje najveći unutarnji volumen",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Unutarnji zahtjevi:",
   "biome_based_crops.guide.scroll_materials": "Pomaknite se za više materijala.",
   "biome_based_crops.guide.setup": "Postavljanje staklenika:",
-  "biome_based_crops.guide.setup_text": "Jednom kada soba postigne potrebnu temperaturu i ispuni zahtjeve poda i unutarnjeg bloka, registrirat će se kao taj biom, omogućujući mafijama i drugim stvorenjima da se i u njoj mrijeste. Usjevi i mladice trebaju staklo izloženo nebu neposredno iznad svake biljke. Ostatak krova može biti čvrst. Klima uređaj nije potreban kada prirodna klima odgovara zahtjevima. Za promjenu klime usmjerite izlaze zraka klima uređaja u prostoriju. Koristite jedan klima uređaj na 256 zatvorenih unutarnjih blokova. Blijede čestice zraka ukazuju na otvore. Zatvorite ih unutar jedne minute, prije nego što se klima počne vraćati u svoje prirodno stanje.",
+  "biome_based_crops.guide.setup_text": "Jednom kada soba postigne potrebnu temperaturu i ispuni zahtjeve poda i unutarnjeg bloka, registrirat će se kao taj biom, omogućujući mafiji i drugim stvorenjima da se i u njoj mrijeste. Usjevi i mladice trebaju staklo izloženo nebu neposredno iznad svake biljke. Ostatak krova može biti čvrst. Za registraciju bioma potreban je električni ili Tough As Nails termoregulator okrenut prema sobi. Klima koja se mijenja zahtijeva jedan klima uređaj na 256 unutarnjih blokova. Blijede čestice zraka ukazuju na otvore. Zatvorite ih unutar jedne minute, prije nego što se klima počne vraćati u svoje prirodno stanje.",
   "biome_based_crops.guide.block_count": "%s blokova",
   "biome_based_crops.ac.climate_label": "Klima",
   "biome_based_crops.ac.previous_climate": "Prethodna klima",
   "biome_based_crops.ac.next_climate": "Sljedeća klima",
   "biome_based_crops.ac.selector_usage": "Kliknite za kretanje naprijed. Držite Shift ili upotrijebite tipku sa strelicom lijevo za kretanje unatrag.",
-  "biome_based_crops.ac.energy_room": "Soba: %s blokova"
+  "biome_based_crops.ac.energy_room": "Soba: %s blokova",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instalirajte električni ili Tough As Nails termoregulator za registraciju bioma staklenika."
 }

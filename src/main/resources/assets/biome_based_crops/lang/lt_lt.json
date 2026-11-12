@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Šiltnamio biomas negalioja",
   "biome_based_crops.ac.room_climate": "Kambario klimatas: %s",
   "biome_based_crops.ac.unit_capacity": "oro kondicionieriai: sumontuoti %s, reikalingi %s",
-  "biome_based_crops.ac.capacity_hint": "Kiekvienas oro kondicionierius palaiko 256 uždarus vidinius blokus keičiantis klimatui. Natūraliai derančiam kambariui nereikia oro kondicionieriaus.",
+  "biome_based_crops.ac.capacity_hint": "Keičiant klimatą, kiekvienas oro kondicionierius palaiko 256 vidinius blokus. Registruojantis biomą visada reikia elektrinio arba Tough As Nails termoreguliatoriaus.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Priekinė išleidimo anga užblokuota",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Patalpoje reikia daugiau oro kondicionierių, kad būtų patenkintas jo vidinis tūris",
   "biome_based_crops.greenhouse.status.too_large": "Patalpa viršija didžiausią vidinį tūrį",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Vidaus reikalavimai:",
   "biome_based_crops.guide.scroll_materials": "Slinkite, kad gautumėte daugiau medžiagos.",
   "biome_based_crops.guide.setup": "Šiltnamio įrengimas:",
-  "biome_based_crops.guide.setup_text": "Kai kambarys pasieks reikiamą temperatūrą ir atitiks grindų ir vidaus bloko reikalavimus, jis bus užregistruotas kaip biomas, todėl joje taip pat gali neršti minios ir kiti padarai. Pasėliams ir sodinukams reikia danguje esančio stiklo tiesiai virš kiekvieno augalo. Likusi stogo dalis gali būti tvirta. Oro kondicionieriaus nereikia, kai natūralus klimatas atitinka reikalavimus. Norėdami pakeisti klimatą, oro kondicionierių oro išleidimo angas nukreipkite į patalpą. Naudokite vieną oro kondicionierių 256 uždariems vidaus blokams. Silpnos oro dalelės rodo angas. Uždarykite juos per vieną minutę, kol klimatas pradės grįžti į savo natūralią būseną.",
+  "biome_based_crops.guide.setup_text": "Kai kambarys pasieks reikiamą temperatūrą ir atitiks grindų ir vidaus bloko reikalavimus, jis bus užregistruotas kaip tas biomas, todėl joje taip pat gali neršti minios ir kiti padarai. Pasėliams ir sodinukams reikia danguje esančio stiklo tiesiai virš kiekvieno augalo. Likusi stogo dalis gali būti tvirta. Registruojantis biomą reikia elektrinio arba Tough As Nails termoreguliatoriaus, nukreipto į kambarį. Keičiantis klimatui reikalingas vienas kondicionierius 256 vidaus blokams. Silpnos oro dalelės rodo angas. Uždarykite juos per vieną minutę, kol klimatas pradės grįžti į savo natūralią būseną.",
   "biome_based_crops.guide.block_count": "%s blokų",
   "biome_based_crops.ac.climate_label": "Klimatas",
   "biome_based_crops.ac.previous_climate": "Ankstesnis klimatas",
   "biome_based_crops.ac.next_climate": "Kitas klimatas",
   "biome_based_crops.ac.selector_usage": "Spustelėkite, kad pereitumėte į priekį. Norėdami grįžti atgal, laikykite nuspaudę klavišą „Shift“ arba naudokite rodyklės į kairę klavišą.",
-  "biome_based_crops.ac.energy_room": "Kambarys: %s blokai"
+  "biome_based_crops.ac.energy_room": "Kambarys: %s blokai",
+  "biome_based_crops.greenhouse.status.missing_controller": "Įdiekite elektrinį arba Tough As Nails termoreguliatorių, kad užregistruotumėte šiltnamio biomą."
 }

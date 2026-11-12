@@ -47,7 +47,8 @@ class TranslationResourcesTest {
                 "biome_based_crops.guide.required_climate", "biome_based_crops.guide.floor_blocks",
                 "biome_based_crops.guide.interior_requirements", "biome_based_crops.guide.setup_text",
                 "biome_based_crops.ac.previous_climate", "biome_based_crops.ac.next_climate",
-                "biome_based_crops.ac.selector_usage")), "Guide and climate controls need translatable text");
+                "biome_based_crops.ac.selector_usage", "biome_based_crops.greenhouse.status.missing_controller")),
+                "Guide and climate controls need translatable text");
         for (String locale : expected) {
             JsonObject translated = read(locale);
             assertEquals(english.keySet(), translated.keySet(), locale + " translation keys");

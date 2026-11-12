@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma de invernadero no válido",
   "biome_based_crops.ac.room_climate": "Clima ambiente: %s",
   "biome_based_crops.ac.unit_capacity": "aires acondicionados: %s instalado, %s necesario",
-  "biome_based_crops.ac.capacity_hint": "Cada aire acondicionado admite 256 bloques interiores cerrados cuando cambia el clima. Una habitación que combine naturalmente no necesita aire acondicionado.",
+  "biome_based_crops.ac.capacity_hint": "Cada aire acondicionado admite 256 bloques interiores cuando cambia el clima. El registro del bioma siempre necesita un termorregulador eléctrico o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La salida frontal está bloqueada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La habitación necesita más aires acondicionados para su volumen interior.",
   "biome_based_crops.greenhouse.status.too_large": "La habitación supera el volumen interior máximo.",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Requisitos interiores:",
   "biome_based_crops.guide.scroll_materials": "Desplácese para ver más materiales.",
   "biome_based_crops.guide.setup": "Configuración del invernadero:",
-  "biome_based_crops.guide.setup_text": "Una vez que la habitación alcance la temperatura requerida y cumpla con los requisitos del piso y del bloque interior, se registrará como ese bioma, lo que permitirá que mobs y otras criaturas se reproduzcan en él también. Los cultivos y los árboles jóvenes necesitan vidrio expuesto al cielo directamente encima de cada planta. El resto del techo puede ser macizo. No se necesita aire acondicionado cuando el clima natural cumple con los requisitos. Para cambiar el clima, oriente las salidas de aire de los aparatos de aire acondicionado hacia la habitación. Utilice un aire acondicionado por cada 256 bloques interiores cerrados. Las tenues partículas de aire indican aberturas. Séllalos en un minuto, antes de que el clima empiece a volver a su estado natural.",
+  "biome_based_crops.guide.setup_text": "Una vez que la habitación alcance la temperatura requerida y cumpla con los requisitos del piso y del bloque interior, se registrará como ese bioma, lo que permitirá que mobs y otras criaturas se reproduzcan en él también. Los cultivos y los árboles jóvenes necesitan vidrio expuesto al cielo directamente encima de cada planta. El resto del techo puede ser macizo. El registro del bioma necesita un termorregulador eléctrico o Tough As Nails orientado hacia la habitación. El clima cambiante necesita un aire acondicionado por cada 256 bloques interiores. Las tenues partículas de aire indican aberturas. Séllalos en un minuto, antes de que el clima empiece a volver a su estado natural.",
   "biome_based_crops.guide.block_count": "%s bloques",
   "biome_based_crops.ac.climate_label": "Clima",
   "biome_based_crops.ac.previous_climate": "Clima anterior",
   "biome_based_crops.ac.next_climate": "Próximo clima",
   "biome_based_crops.ac.selector_usage": "Haga clic para avanzar. Mantenga presionada la tecla Mayús o use la tecla de flecha izquierda para retroceder.",
-  "biome_based_crops.ac.energy_room": "Sala: %s cuadras"
+  "biome_based_crops.ac.energy_room": "Sala: %s cuadras",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instale un termorregulador eléctrico o Tough As Nails para registrar un bioma de invernadero."
 }

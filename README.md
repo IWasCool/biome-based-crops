@@ -14,8 +14,8 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 
 - Find every mod block and item in the dedicated **Biomes Notebook** creative tab after the vanilla tabs. Use the creative inventory's page arrows if the tab is on another page.
 - Assign crops and saplings to climates, specific biomes, or biome tags.
-- Build greenhouses that automatically identify their biome from required native materials, matching climate, and breathable air.
-- Choose Icy, Cold, Neutral, Warm or Hot with an FE-powered Electrical Thermoregulator. Each AC supports 256 enclosed interior blocks when changing climate; naturally matching greenhouses need no AC.
+- Build greenhouses that identify their biome from required native materials, matching climate, and breathable air, with an installed Electrical or Tough As Nails thermoregulator to mark intentional registration.
+- Choose Icy, Cold, Neutral, Warm or Hot with an FE-powered Electrical Thermoregulator. Each AC supports 256 enclosed interior blocks when changing climate; registering a naturally matching greenhouse biome still needs an installed thermoregulator, without fuel or FE use for registration.
 - Build a native biome floor and match habitat percentages that scale with room size.
 - Distinguish greenhouse biomes with characteristic flowers, trees, and rocks; mixed completed layouts never grant multiple biome identities.
 - Apply the detected biome inside the room, including its natural mob spawn lists, while the surrounding world keeps its native biome.
@@ -37,10 +37,10 @@ Plants grow normally in a natural biome that represents their allowed climate or
 For plants outside both their natural biome and direct thermoregulator coverage, greenhouses provide another option with all three conditions:
 
 1. **Sky-exposed glass above the plant.** Keep an unobstructed path from the glass to the sky.
-2. **A matching greenhouse biome.** Build its native floor and every habitat material shown in the Biomes Notebook, inside a sealed room.
+2. **A matching greenhouse habitat.** Build its native floor and every habitat material shown in the Biomes Notebook, inside a sealed room.
 3. **The biome's required climate.** The actual room must be Icy, Cold, Neutral, Warm or Hot as required. Matching natural climate is enough; use a powered controller when it does not match.
 
-A sealed room registers its greenhouse biome when its native floor, habitat, and climate qualify. **Glass is only a crop and sapling requirement; it is not needed to register the biome.** Put sky-exposed glass directly above each plant that needs greenhouse growth. The rest of the roof may be solid. The guide's **Greenhouse Setup** section explains these checks. Room detection is automatic, with no scanner block, probe, or manual survey.
+A sealed room registers its actual biome and spawn lists only when an Electrical or Tough As Nails thermoregulator faces into the room and its native floor, habitat, and climate qualify. An idle or unfueled unit is enough when the natural climate matches. Removing the last qualifying thermoregulator revokes biome registration. Native and greenhouse-assisted crop and sapling growth keep their existing rules independently of registration. **Glass is only a crop and sapling requirement; it is not needed to register the biome.** Put sky-exposed glass directly above each plant that needs greenhouse growth. The rest of the roof may be solid. The guide's **Greenhouse Setup** section explains these checks. Room detection is automatic, with no scanner block, probe, or manual survey.
 
 Desert needs 100% sand ground; Forest needs 90% native soil. Basalt Deltas needs a 90% basalt/blackstone floor, interior magma blocks equal to 3% of the enclosed interior volume, and Hot climate. Habitat materials must be inside the room; foundation, wall, and roof blocks do not count. The guide shows whole-number habitat percentages and keeps floor choices, climate requirements, and construction notes together. Item icons support JEI, EMI, or REI recipes and uses when installed.
 

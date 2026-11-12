@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Sera biyomu geçerli değil",
   "biome_based_crops.ac.room_climate": "Oda iklimi: %s",
   "biome_based_crops.ac.unit_capacity": "klimalar: %s kurulu, %s gerekli",
-  "biome_based_crops.ac.capacity_hint": "Her klima, iklim değiştiğinde 256 kapalı iç bloğu destekler. Doğal olarak eşleşen bir odanın klimaya ihtiyacı yoktur.",
+  "biome_based_crops.ac.capacity_hint": "Her klima, iklimi değiştirirken 256 iç bloğu destekler. Biyom kaydı her zaman bir Elektrikli veya Tough As Nails termoregülatöre ihtiyaç duyar.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ön çıkış tıkalı",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Odanın iç hacmi için daha fazla klimaya ihtiyaç var",
   "biome_based_crops.greenhouse.status.too_large": "Oda maksimum iç hacmi aşıyor",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "İç Mekan Gereksinimleri:",
   "biome_based_crops.guide.scroll_materials": "Daha fazla malzeme için kaydırın.",
   "biome_based_crops.guide.setup": "Sera Kurulumu:",
-  "biome_based_crops.guide.setup_text": "Oda gerekli sıcaklığa ulaştığında ve zemin ve iç blok gereksinimlerini karşıladığında, bu biyom olarak kaydedilecek ve çetelerin ve diğer yaratıkların da burada ortaya çıkmasına olanak tanıyacak. Mahsuller ve fidanlar, her bitkinin doğrudan üzerinde gökyüzüne maruz kalan camlara ihtiyaç duyar. Çatının geri kalanı sağlam olabilir. Doğal iklim ihtiyaca uygun olduğunda klimaya ihtiyaç duyulmaz. İklimi değiştirmek için klimaların hava çıkışlarını odaya yönlendirin. 256 kapalı iç blok başına bir klima kullanın. Soluk hava parçacıkları açıklıklara işaret eder. İklim doğal durumuna dönmeye başlamadan önce onları bir dakika içinde mühürleyin.",
+  "biome_based_crops.guide.setup_text": "Oda gerekli sıcaklığa ulaştığında ve zemin ve iç blok gereksinimlerini karşıladığında, bu biyom olarak kaydedilecek ve çetelerin ve diğer yaratıkların da burada ortaya çıkmasına olanak tanıyacak. Mahsuller ve fidanlar, her bitkinin doğrudan üzerinde gökyüzüne maruz kalan camlara ihtiyaç duyar. Çatının geri kalanı sağlam olabilir. Biyom kaydı için odaya bakan bir Elektrikli veya Tough As Nails termoregülatör gerekir. Değişen iklim, 256 iç blok başına bir klimaya ihtiyaç duyuyor. Soluk hava parçacıkları açıklıklara işaret eder. İklim doğal durumuna dönmeye başlamadan önce onları bir dakika içinde mühürleyin.",
   "biome_based_crops.guide.block_count": "%s bloklar",
   "biome_based_crops.ac.climate_label": "İklim",
   "biome_based_crops.ac.previous_climate": "Önceki iklim",
   "biome_based_crops.ac.next_climate": "Sonraki iklim",
   "biome_based_crops.ac.selector_usage": "İleriye doğru ilerlemek için tıklayın. Geriye doğru ilerlemek için Shift tuşunu basılı tutun veya sol ok tuşunu kullanın.",
-  "biome_based_crops.ac.energy_room": "Oda: %s blok"
+  "biome_based_crops.ac.energy_room": "Oda: %s blok",
+  "biome_based_crops.greenhouse.status.missing_controller": "Bir sera biyomunu kaydetmek için bir Elektrikli veya Tough As Nails termoregülatör takın."
 }

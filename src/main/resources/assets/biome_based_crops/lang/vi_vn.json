@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Quần xã nhà kính không hợp lệ",
   "biome_based_crops.ac.room_climate": "Khí hậu trong phòng: %s",
   "biome_based_crops.ac.unit_capacity": "máy điều hòa không khí: đã lắp đặt %s, cần có %s",
-  "biome_based_crops.ac.capacity_hint": "Mỗi máy điều hòa không khí hỗ trợ 256 khối bên trong kèm theo khi khí hậu thay đổi. Một căn phòng phù hợp tự nhiên không cần điều hòa.",
+  "biome_based_crops.ac.capacity_hint": "Mỗi máy điều hòa hỗ trợ 256 khối bên trong khi khí hậu thay đổi. Đăng ký quần xã luôn cần bộ điều chỉnh nhiệt điện hoặc Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ổ cắm phía trước bị chặn",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Căn phòng cần nhiều máy điều hòa hơn cho thể tích bên trong của nó",
   "biome_based_crops.greenhouse.status.too_large": "Căn phòng vượt quá thể tích bên trong tối đa",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Yêu cầu về nội thất:",
   "biome_based_crops.guide.scroll_materials": "Cuộn để xem thêm tài liệu.",
   "biome_based_crops.guide.setup": "Thiết lập nhà kính:",
-  "biome_based_crops.guide.setup_text": "Sau khi căn phòng đạt đến nhiệt độ cần thiết và đáp ứng các yêu cầu về sàn cũng như khối bên trong, nó sẽ được đăng ký là quần xã sinh vật đó, cho phép mob và các sinh vật khác sinh sản trong đó. Cây trồng và cây con cần có kính tiếp xúc với bầu trời ngay phía trên mỗi cây. Phần còn lại của mái nhà có thể vững chắc. Không cần điều hòa khi khí hậu tự nhiên phù hợp với yêu cầu. Để thay đổi khí hậu, hãy hướng các cửa thoát khí của máy điều hòa vào phòng. Sử dụng một máy điều hòa không khí cho 256 khối nội thất kèm theo. Các hạt không khí mờ biểu thị các lỗ hở. Bịt kín chúng trong vòng một phút, trước khi khí hậu bắt đầu trở lại trạng thái tự nhiên.",
+  "biome_based_crops.guide.setup_text": "Sau khi căn phòng đạt đến nhiệt độ cần thiết và đáp ứng các yêu cầu về sàn cũng như khối bên trong, nó sẽ được đăng ký là quần xã sinh vật đó, cho phép mob và các sinh vật khác sinh sản trong đó. Cây trồng và cây con cần có kính tiếp xúc với bầu trời ngay phía trên mỗi cây. Phần còn lại của mái nhà có thể vững chắc. Đăng ký quần xã cần có bộ điều chỉnh nhiệt độ Điện hoặc Tough As Nails hướng vào phòng. Khí hậu thay đổi cần một máy điều hòa không khí cho mỗi 256 khối nội thất. Các hạt không khí mờ biểu thị các lỗ hở. Bịt kín chúng trong vòng một phút, trước khi khí hậu bắt đầu trở lại trạng thái tự nhiên.",
   "biome_based_crops.guide.block_count": "%s khối",
   "biome_based_crops.ac.climate_label": "Khí hậu",
   "biome_based_crops.ac.previous_climate": "Khí hậu trước đây",
   "biome_based_crops.ac.next_climate": "Khí hậu tiếp theo",
   "biome_based_crops.ac.selector_usage": "Nhấp để chuyển tiếp. Giữ phím Shift hoặc sử dụng phím mũi tên trái để quay lùi.",
-  "biome_based_crops.ac.energy_room": "Phòng: %s khối"
+  "biome_based_crops.ac.energy_room": "Phòng: %s khối",
+  "biome_based_crops.greenhouse.status.missing_controller": "Cài đặt bộ điều chỉnh nhiệt điện hoặc Tough As Nails để đăng ký quần xã nhà kính."
 }

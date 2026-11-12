@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma roemah katja tidak valid",
   "biome_based_crops.ac.room_climate": "Iklim roeangan: %s",
   "biome_based_crops.ac.unit_capacity": "ATj: %s terpasang, %s diperloekan",
-  "biome_based_crops.ac.capacity_hint": "Setiap ATj mendoekoeng 256 blok interior tertoetoep saat peroebahan iklim. Roeangan jang serasi setjara alami tidak memerloekan ATj.",
+  "biome_based_crops.ac.capacity_hint": "Setiap ATj mendoekoeng 256 blok interior saat peroebahan iklim. Pendaftaran bioma selaloe memerloekan termoregoelasi Listrik ataoe Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Stopkontak depan diblokir",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Roeangan memerloekan lebih banjak ATj oentoek voloeme interiornja",
   "biome_based_crops.greenhouse.status.too_large": "Roeangan melebihi voloeme interior maksimoem",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Persjaratan Interior:",
   "biome_based_crops.guide.scroll_materials": "Goelir oentoek melihat materi lainnja.",
   "biome_based_crops.guide.setup": "Pengatoeran Roemah Katja:",
-  "biome_based_crops.guide.setup_text": "Setelah roeangan mentjapai soehoe jang diperloekan dan memenoehi persjaratan lantai dan blok interior, roeangan terseboet akan terdaftar sebagai bioma terseboet, memoengkinkan monster dan makhloek lain oentoek berteloer di dalamnja djoega. Tanaman dan anakan memboetoehkan katja jang terboeka langsoeng di atas setiap tanaman. Atap lainnja bisa kokoh. ATj tidak diperloekan djika iklim alami sesoeai dengan keboetoehan. Oentoek mengoebah iklim, arahkan saloeran keloear oedara ATj ke dalam roeangan. Goenakan satoe ATj oentoek setiap 256 blok interior tertoetoep. Partikel oedara samar menandakan adanja boekaan. Toetoep rapat dalam waktoe satoe menit, sebeloem iklim moelai kembali ke kondisi alaminja.",
+  "biome_based_crops.guide.setup_text": "Setelah roeangan mentjapai soehoe jang diperloekan dan memenoehi persjaratan lantai dan blok interior, roeangan terseboet akan terdaftar sebagai bioma terseboet, memoengkinkan monster dan makhloek lain oentoek berteloer di dalamnja djoega. Tanaman dan anakan memboetoehkan katja jang terboeka langsoeng di atas setiap tanaman. Atap lainnja bisa kokoh. Pendaftaran bioma memerloekan termostat Listrik ataoe Tough As Nails jang menghadap ke dalam roeangan. Peroebahan iklim memboetoehkan satoe ATj oentoek setiap 256 blok interior. Partikel oedara samar menandakan adanja boekaan. Toetoep rapat dalam waktoe satoe menit, sebeloem iklim moelai kembali ke kondisi alaminja.",
   "biome_based_crops.guide.block_count": "%s blok",
   "biome_based_crops.ac.climate_label": "Iklim",
   "biome_based_crops.ac.previous_climate": "Iklim sebeloemnja",
   "biome_based_crops.ac.next_climate": "Iklim berikoetnja",
   "biome_based_crops.ac.selector_usage": "Klik oentoek memoetar madjoe. Tahan Shift ataoe goenakan tombol panah kiri oentoek memoetar moendoer.",
-  "biome_based_crops.ac.energy_room": "Roeangan: %s blok"
+  "biome_based_crops.ac.energy_room": "Roeangan: %s blok",
+  "biome_based_crops.greenhouse.status.missing_controller": "Pasang Termostat Listrik ataoe Tough As Nails oentoek mendaftarkan bioma roemah katja."
 }

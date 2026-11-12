@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "ʻAʻole kūpono ka biome hale ʻaina",
   "biome_based_crops.ac.room_climate": "Ke ea lumi: %s",
   "biome_based_crops.ac.unit_capacity": "nā ea: %s hoʻokomo ʻia, %s pono",
-  "biome_based_crops.ac.capacity_hint": "Kākoʻo kēlā me kēia ea ea i 256 mau poloka i loko i ka wā e hoʻololi ai ke aniau. ʻAʻole pono kahi lumi hoʻohālikelike kūlohelohe.",
+  "biome_based_crops.ac.capacity_hint": "Kākoʻo kēlā me kēia ea ea i 256 mau poloka i loko i ka wā e hoʻololi ai ke aniau. Pono mau ka ho'opa'a inoa Biome i ka mea ho'oponopono uila a i 'ole Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ua ālai ʻia ka puka mua",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Pono ka lumi i nā ea hau no kona leo o loko",
   "biome_based_crops.greenhouse.status.too_large": "Ua ʻoi aku ka nui o ka lumi i ka nui o loko",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Nā Koina Kalaiaina:",
   "biome_based_crops.guide.scroll_materials": "E ʻōwili no nā mea hou aku.",
   "biome_based_crops.guide.setup": "Hoʻonohonoho hale ʻōmaʻomaʻo:",
-  "biome_based_crops.guide.setup_text": "Ke hiki ka lumi i ka mahana i makemake ʻia a hoʻokō i nā koi o ka papahele a me nā ʻāpana o loko, e hoʻopaʻa inoa ʻo ia i kēlā biome, e hiki ai i nā poʻe ʻino a me nā mea ola ʻē aʻe ke hoʻoulu i loko. Pono nā mea kanu a me nā kumu lāʻau i ke aniani i ʻike ʻia ma luna pono o kēlā me kēia mea kanu. Hiki ke paʻa ke koena o ka hale. ʻAʻole pono ka ea i ka wā e kūpono ai ke aniau kūlohelohe i ke koi. No ka hoʻololi ʻana i ke aniau, e kuhikuhi i nā puka makani o nā ea i loko o ka lumi. E hoʻohana i hoʻokahi air conditioner no 256 mau poloka loko i hoʻopaʻa ʻia. Hōʻike nā ʻāpana ea palupalu i nā puka. E sila iā lākou i loko o hoʻokahi minuke, ma mua o ka hoʻi ʻana o ke aniau i kona ʻano maoli.",
+  "biome_based_crops.guide.setup_text": "Ke hiki ka lumi i ka mahana i makemake ʻia a hoʻokō i nā koi o ka papahele a me nā ʻāpana o loko, e hoʻopaʻa inoa ʻo ia ma ke ʻano he biome, e hiki ai i nā poʻe ʻino a me nā mea ola ʻē aʻe ke hoʻoulu i loko. Pono nā mea kanu a me nā kumu lāʻau i ke aniani i ʻike ʻia ma luna pono o kēlā me kēia mea kanu. Hiki ke paʻa ke koena o ka hale. Pono ka ho'opa'a inoa Biome i kahi thermoregulator Uila a i 'ole Tough As Nails e kū ana i loko o ka lumi. Pono ka hoʻololi ʻana i ke aniau i hoʻokahi ea hau no 256 mau poloka loko. Hōʻike nā ʻāpana ea palupalu i nā puka. E sila iā lākou i loko o hoʻokahi minuke, ma mua o ka hoʻi ʻana o ke aniau i kona ʻano maoli.",
   "biome_based_crops.guide.block_count": "%s poloka",
   "biome_based_crops.ac.climate_label": "Ke ea",
   "biome_based_crops.ac.previous_climate": "Ke ea mua",
   "biome_based_crops.ac.next_climate": "Ke ea aʻe",
   "biome_based_crops.ac.selector_usage": "Kaomi no ka holo ʻana i mua. E paʻa i ka Shift a i ʻole e hoʻohana i ke kī pua hema e holo i hope.",
-  "biome_based_crops.ac.energy_room": "lumi: %s poloka"
+  "biome_based_crops.ac.energy_room": "lumi: %s poloka",
+  "biome_based_crops.greenhouse.status.missing_controller": "E hoʻouka i kahi mea hoʻoponopono uila a i ʻole Tough As Nails thermoregulator e hoʻopaʻa inoa i kahi biome greenhouse."
 }

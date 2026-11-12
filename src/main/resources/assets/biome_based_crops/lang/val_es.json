@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "El bioma d'hivernacle no és vàlid",
   "biome_based_crops.ac.room_climate": "Clima de l'habitació: %s",
   "biome_based_crops.ac.unit_capacity": "aire condicionat: %s instal·lat, %s necessari",
-  "biome_based_crops.ac.capacity_hint": "Cada aire condicionat admet 256 blocs interiors tancats quan es canvia el clima. Una habitació que coincideixi naturalment no necessita aire condicionat.",
+  "biome_based_crops.ac.capacity_hint": "Cada aire condicionat admet 256 blocs interiors quan es canvia el clima. El registre del bioma sempre necessita un termoregulador elèctric o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La sortida frontal està bloquejada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La sala necessita més aire condicionat pel seu volum interior",
   "biome_based_crops.greenhouse.status.too_large": "L'habitació supera el volum interior màxim",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Requisits interiors:",
   "biome_based_crops.guide.scroll_materials": "Desplaceu-vos per obtenir més materials.",
   "biome_based_crops.guide.setup": "Configuració de l'hivernacle:",
-  "biome_based_crops.guide.setup_text": "Un cop l'habitació arribi a la temperatura requerida i compleixi els requisits del sòl i del bloc interior, es registrarà com a bioma, permetent que les turbes i altres criatures també hi apareguin. Els cultius i els planters necessiten un vidre exposat al cel directament a sobre de cada planta. La resta del sostre pot ser sòlid. No es necessita cap aire condicionat quan el clima natural coincideix amb el requisit. Per canviar el clima, apunteu les sortides d'aire dels aparells d'aire condicionat a l'habitació. Utilitzeu un aparell d'aire condicionat per cada 256 blocs interiors tancats. Les partícules d'aire tènues indiquen obertures. Segellar-los en un minut, abans que el clima comenci a tornar al seu estat natural.",
+  "biome_based_crops.guide.setup_text": "Un cop l'habitació arribi a la temperatura requerida i compleixi els requisits del sòl i del bloc interior, es registrarà com a bioma, permetent que les turbes i altres criatures també hi apareguin. Els cultius i els planters necessiten un vidre exposat al cel directament a sobre de cada planta. La resta del sostre pot ser sòlid. El registre del bioma necessita un termoregulador elèctric o Tough As Nails orientat a l'habitació. El canvi de clima necessita un aire condicionat per cada 256 blocs interiors. Les partícules d'aire tènues indiquen obertures. Segellar-los en un minut, abans que el clima comenci a tornar al seu estat natural.",
   "biome_based_crops.guide.block_count": "%s blocs",
   "biome_based_crops.ac.climate_label": "Clima",
   "biome_based_crops.ac.previous_climate": "Clima anterior",
   "biome_based_crops.ac.next_climate": "Clima següent",
   "biome_based_crops.ac.selector_usage": "Feu clic per avançar. Manteniu premuda la tecla Maj o utilitzeu la tecla de fletxa esquerra per anar cap enrere.",
-  "biome_based_crops.ac.energy_room": "Sala: %s blocs"
+  "biome_based_crops.ac.energy_room": "Sala: %s blocs",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instal·leu un termoregulador elèctric o Tough As Nails per registrar un bioma d'hivernacle."
 }

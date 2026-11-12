@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma della serra non valido",
   "biome_based_crops.ac.room_climate": "Clima ambiente: %s",
   "biome_based_crops.ac.unit_capacity": "condizionatori: %s installati, %s necessari",
-  "biome_based_crops.ac.capacity_hint": "Ogni condizionatore d'aria supporta 256 blocchi interni chiusi quando si cambia clima. Una stanza naturalmente abbinata non ha bisogno di aria condizionata.",
+  "biome_based_crops.ac.capacity_hint": "Ogni condizionatore d'aria supporta 256 blocchi interni quando si cambia clima. La registrazione del bioma necessita sempre di un termoregolatore elettrico o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "L'uscita anteriore è bloccata",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La stanza necessita di più condizionatori per il suo volume interno",
   "biome_based_crops.greenhouse.status.too_large": "La stanza supera il volume interno massimo",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Requisiti interni:",
   "biome_based_crops.guide.scroll_materials": "Scorri per ulteriori materiali.",
   "biome_based_crops.guide.setup": "Configurazione della serra:",
-  "biome_based_crops.guide.setup_text": "Una volta che la stanza raggiunge la temperatura richiesta e soddisfa i requisiti del pavimento e del blocco interno, verrà registrata come quel bioma, consentendo anche ai mob e ad altre creature di generarsi al suo interno. Le colture e gli alberelli necessitano di vetro esposto al cielo direttamente sopra ogni pianta. Il resto del tetto può essere solido. Non è necessario alcun condizionatore d'aria quando il clima naturale corrisponde al fabbisogno. Per cambiare il clima, orientare le bocchette dell'aria dei condizionatori nella stanza. Utilizzare un condizionatore d'aria ogni 256 blocchi interni chiusi. Le deboli particelle d'aria indicano aperture. Sigillateli entro un minuto, prima che il clima inizi a tornare al suo stato naturale.",
+  "biome_based_crops.guide.setup_text": "Una volta che la stanza raggiunge la temperatura richiesta e soddisfa i requisiti del pavimento e del blocco interno, verrà registrata come quel bioma, consentendo anche ai mob e ad altre creature di generarsi al suo interno. Le colture e gli alberelli necessitano di vetro esposto al cielo direttamente sopra ogni pianta. Il resto del tetto può essere solido. La registrazione del bioma necessita di un termoregolatore elettrico o Tough As Nails rivolto verso la stanza. Il cambiamento climatico richiede un condizionatore d’aria ogni 256 blocchi interni. Le deboli particelle d'aria indicano aperture. Sigillateli entro un minuto, prima che il clima inizi a tornare al suo stato naturale.",
   "biome_based_crops.guide.block_count": "%s blocchi",
   "biome_based_crops.ac.climate_label": "Clima",
   "biome_based_crops.ac.previous_climate": "Clima precedente",
   "biome_based_crops.ac.next_climate": "Il prossimo clima",
   "biome_based_crops.ac.selector_usage": "Fare clic per andare avanti. Tieni premuto Maiusc o usa il tasto freccia sinistra per tornare indietro.",
-  "biome_based_crops.ac.energy_room": "Stanza: %s blocchi"
+  "biome_based_crops.ac.energy_room": "Stanza: %s blocchi",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installare un termoregolatore elettrico o Tough As Nails per registrare un bioma serra."
 }

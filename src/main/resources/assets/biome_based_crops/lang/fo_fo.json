@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Vakstrarhúsbiome ikki galdandi",
   "biome_based_crops.ac.room_climate": "Stovuveðurlag: %s",
   "biome_based_crops.ac.unit_capacity": "klimaanlegg: %s sett upp, %s tørvur er á",
-  "biome_based_crops.ac.capacity_hint": "Hvør klimaanlegg stuðlar 256 innilokaðum innrættingarblokkum, tá veðurlagið broytist. Eitt natúrliga passandi kamar hevur onga klimaanlegg brúk fyri.",
+  "biome_based_crops.ac.capacity_hint": "Hvør klimaanlegg stuðlar 256 innrættingarblokkum, tá veðurlagið broytist. Biome skráseting hevur altíð brúk fyri einum El- ella Tough As Nails hitaregulatori.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Fremra úttakið er sperrað .",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Kamarið hevur brúk fyri fleiri klimaanleggum til sítt innandura rúmd .",
   "biome_based_crops.greenhouse.status.too_large": "Rúmið fer upp um hámarksrúmdina innandura .",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Innrættingarkrøv:",
   "biome_based_crops.guide.scroll_materials": "Rulla fyri at síggja fleiri tilfar.",
   "biome_based_crops.guide.setup": "Vakstrarhús uppseting:",
-  "biome_based_crops.guide.setup_text": "Tá rúmið er komið upp á kravda hitan og lýkur krøvini til gólv og innandura blokk, fer tað at skráseta seg sum tað biome, soleiðis at mobbar og aðrar verur eisini kunnu gýta í tí. Gróður og plantuplantur hava brúk fyri himmalsýndum glasi beint omanfyri hvørja plantu. Restin av takinum kann vera fast. Eingin klimaanlegg er neyðugur, tá náttúruveðurlagið samsvarar við kravið. Fyri at broyta veðurlagið, skalt tú peika luftúttøkurnar hjá klimaanleggunum inn í rúmið. Brúka eina klimaanlegg fyri hvønn 256 innilokaðar innrættingarblokkarnar. Svakir luftpartiklar vísa op. Innsigla tey innan ein minutt, áðrenn veðurlagið byrjar at koma aftur í sín natúrliga stand.",
+  "biome_based_crops.guide.setup_text": "Tá rúmið er komið upp á kravda hitan og lýkur krøvini til gólv og innandura blokk, fer tað at skráseta seg sum tað biome, soleiðis at mobbar og aðrar verur eisini kunnu gýta í tí. Gróður og plantuplantur hava brúk fyri himmalsýndum glasi beint omanfyri hvørja plantu. Restin av takinum kann vera fast. Biome skráseting hevur brúk fyri einum el- ella Tough As Nails hitaregulatori, sum vendir inn í rúmið. Skiftandi veðurlag hevur brúk fyri einum klimaanleggi fyri hvørjar 256 innrættingarblokkarnar. Svakir luftpartiklar vísa op. Innsigla tey innan ein minutt, áðrenn veðurlagið byrjar at koma aftur í sín natúrliga stand.",
   "biome_based_crops.guide.block_count": "%s blokkar",
   "biome_based_crops.ac.climate_label": "Veðurlag .",
   "biome_based_crops.ac.previous_climate": "Fyrrverandi veðurlag .",
   "biome_based_crops.ac.next_climate": "Næsta veðurlag .",
   "biome_based_crops.ac.selector_usage": "Trýst fyri at súkkla fram. Halt Shift ella brúka vinstra pílknapp til at súkkla aftur.",
-  "biome_based_crops.ac.energy_room": "Rúm: %s blokkar"
+  "biome_based_crops.ac.energy_room": "Rúm: %s blokkar",
+  "biome_based_crops.greenhouse.status.missing_controller": "Set upp ein El- ella Tough As Nails hitaregulator til at skráseta eitt vakstrarhúsbiome."
 }

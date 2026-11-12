@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Greenhouse biome net jildich",
   "biome_based_crops.ac.room_climate": "Keamerklimaat: %s",
   "biome_based_crops.ac.unit_capacity": "air conditioners: %s ynstallearre, %s nedich",
-  "biome_based_crops.ac.capacity_hint": "Elke airconditioning stipet 256 ynsletten ynterieurblokken by it feroarjen fan klimaat. In natuerlik oerienkommende keamer hat gjin airconditioning nedich.",
+  "biome_based_crops.ac.capacity_hint": "Elke airconditioning stipet 256 ynterieurblokken by it feroarjen fan klimaat. Biome registraasje hat altyd in elektryske as Tough As Nails thermoregulator nedich.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "De foarkant outlet is blokkearre",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "De keamer hat mear airconditioning nedich foar syn ynterieurvolumint",
   "biome_based_crops.greenhouse.status.too_large": "De keamer is grutter as it maksimum ynterieur folume",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Ynterieureasken:",
   "biome_based_crops.guide.scroll_materials": "Skow foar mear materialen.",
   "biome_based_crops.guide.setup": "Greenhouse opset:",
-  "biome_based_crops.guide.setup_text": "Sadree't de keamer de fereaske temperatuer berikt en foldocht oan 'e easken foar flier en ynterieurblok, sil it registrearje as dat bioom, wêrtroch mobs en oare skepsels der ek yn kinne spawnen. Gewaaksen en saplings hawwe himel bleatsteld glês direkt boppe elke plant nedich. De rest fan it dak kin fêst wêze. Gjin airconditioning is nedich as it natuerlike klimaat oerienkomt mei de eask. Om it klimaat te feroarjen, rjochtsje de loftútlaat fan 'e airconditioning yn' e keamer. Brûk ien airconditioning per 256 ynsletten ynterieurblokken. Flauwe luchtpartikels jouwe iepeningen oan. Seal se binnen ien minút, foardat it klimaat begjint werom te gean nei syn natuerlike steat.",
+  "biome_based_crops.guide.setup_text": "Sadree't de keamer de fereaske temperatuer berikt en foldocht oan 'e easken foar flier en ynterieurblok, sil it registrearje as dat bioom, wêrtroch mobs en oare skepsels der ek yn kinne spawnen. Gewaaksen en saplings hawwe himel bleatsteld glês direkt boppe elke plant nedich. De rest fan it dak kin fêst wêze. Biome-registraasje hat in elektryske as Tough As Nails thermoregulator nedich dy't yn 'e keamer rjochtet. It feroarjen fan klimaat hat ien airconditioning nedich per 256 ynterieurblokken. Flauwe luchtpartikels jouwe iepeningen oan. Seal se binnen ien minút, foardat it klimaat begjint werom te gean nei syn natuerlike steat.",
   "biome_based_crops.guide.block_count": "%s blokken",
   "biome_based_crops.ac.climate_label": "Klimaat",
   "biome_based_crops.ac.previous_climate": "Foarige klimaat",
   "biome_based_crops.ac.next_climate": "Folgjende klimaat",
   "biome_based_crops.ac.selector_usage": "Klikje om foarút te fytsen. Hâld Shift yn of brûk de lofter pylktoets om efterút te fytsen.",
-  "biome_based_crops.ac.energy_room": "Keamer: %s blokken"
+  "biome_based_crops.ac.energy_room": "Keamer: %s blokken",
+  "biome_based_crops.greenhouse.status.missing_controller": "Ynstallearje in elektryske as Tough As Nails thermoregulator om in broeikasbioom te registrearjen."
 }

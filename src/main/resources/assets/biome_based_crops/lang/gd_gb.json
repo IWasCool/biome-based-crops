@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Chan eil biome taigh-glainne dligheach",
   "biome_based_crops.ac.room_climate": "Gnàth-shìde an t-seòmair: %s",
   "biome_based_crops.ac.unit_capacity": "inneal-adhair: %s air a stàladh, %s a dhìth",
-  "biome_based_crops.ac.capacity_hint": "Bidh gach inneal-adhair a’ toirt taic do 256 blocaichean a-staigh dùinte nuair a bhios iad ag atharrachadh gnàth-shìde. Chan fheum seòmar maidsidh nàdarra inneal-adhair.",
+  "biome_based_crops.ac.capacity_hint": "Bidh gach inneal-adhair a’ toirt taic do 256 blocaichean a-staigh nuair a bhios iad ag atharrachadh gnàth-shìde. Feumaidh clàradh biome an-còmhnaidh inneal-riaghlaidh Dealain no Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Tha an t-ionad aghaidh air a bhacadh",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Feumaidh an seòmar barrachd innealan-adhair airson an tomhas a-staigh aige",
   "biome_based_crops.greenhouse.status.too_large": "Tha an seòmar nas àirde na an ìre as àirde a-staigh",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Riatanasan taobh a-staigh:",
   "biome_based_crops.guide.scroll_materials": "Scrollaich airson barrachd stuthan.",
   "biome_based_crops.guide.setup": "Suidheachadh taigh-glainne:",
-  "biome_based_crops.guide.setup_text": "Cho luath ‘s a ruigeas an seòmar an teòthachd a tha a dhìth agus a choinnicheas ri riatanasan an làr agus a’ bhloc a-staigh, clàraichidh e mar am biome sin, a ’leigeil le mobs agus creutairean eile sìolachadh ann cuideachd. Feumaidh bàrr agus lusan òga glainne le speur dìreach os cionn gach lus. Faodaidh an còrr den mhullach a bhith cruaidh. Chan eil feum air inneal-adhair nuair a tha an aimsir nàdarra a rèir an riatanas. Gus an aimsir atharrachadh, cuir a-mach ionadan adhair de na h-innealan-adhair a-steach don t-seòmar. Cleachd aon inneal-adhair airson gach 256 blocaichean a-staigh dùinte. Bidh mìrean èadhair lag a’ comharrachadh fosglaidhean. Ròin iad taobh a-staigh aon mhionaid, mus tòisich a 'ghnàth-shìde a' tilleadh gu a staid nàdarra.",
+  "biome_based_crops.guide.setup_text": "Cho luath ‘s a ruigeas an seòmar an teòthachd a tha a dhìth agus a choinnicheas ri riatanasan an làr agus a’ bhloc a-staigh, clàraichidh e mar am biome sin, a ’leigeil le mobs agus creutairean eile sìolachadh ann cuideachd. Feumaidh bàrr agus lusan òga glainne le speur dìreach os cionn gach lus. Faodaidh an còrr den mhullach a bhith cruaidh. Feumaidh clàradh biome teirm-riaghladair dealain no Tough As Nails mu choinneimh an t-seòmair. Feumaidh atharrachadh gnàth-shìde aon inneal-adhair gach 256 blocaichean a-staigh. Bidh mìrean èadhair lag a’ comharrachadh fosglaidhean. Ròin iad taobh a-staigh aon mhionaid, mus tòisich a 'ghnàth-shìde a' tilleadh gu a staid nàdarra.",
   "biome_based_crops.guide.block_count": "%s blocaichean",
   "biome_based_crops.ac.climate_label": "Gnàth-shìde",
   "biome_based_crops.ac.previous_climate": "Gnàth-shìde roimhe",
   "biome_based_crops.ac.next_climate": "An ath ghnàth-shìde",
   "biome_based_crops.ac.selector_usage": "Cliog gus rothaireachd air adhart. Cùm Shift no cleachd an iuchair saighead chlì gus rothaireachd air ais.",
-  "biome_based_crops.ac.energy_room": "Seòmar: %s blocaichean"
+  "biome_based_crops.ac.energy_room": "Seòmar: %s blocaichean",
+  "biome_based_crops.greenhouse.status.missing_controller": "Stàlaich thermoregulator Dealain no Tough As Nails gus biome taigh-glainne a chlàradh."
 }

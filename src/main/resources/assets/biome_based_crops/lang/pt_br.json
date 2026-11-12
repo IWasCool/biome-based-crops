@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma de estufa não válido",
   "biome_based_crops.ac.room_climate": "Clima da sala: %s",
   "biome_based_crops.ac.unit_capacity": "aparelhos de ar condicionado: %s instalados, %s necessários",
-  "biome_based_crops.ac.capacity_hint": "Cada ar condicionado suporta 256 blocos interiores fechados quando o clima muda. Uma sala que combina naturalmente não precisa de ar condicionado.",
+  "biome_based_crops.ac.capacity_hint": "Cada ar condicionado suporta 256 blocos interiores em caso de mudança climática. O registro do bioma sempre precisa de um termorregulador elétrico ou Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "A saída frontal está bloqueada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "A sala precisa de mais aparelhos de ar condicionado para o seu volume interior",
   "biome_based_crops.greenhouse.status.too_large": "A sala excede o volume interior máximo",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Requisitos internos:",
   "biome_based_crops.guide.scroll_materials": "Role para mais materiais.",
   "biome_based_crops.guide.setup": "Configuração da estufa:",
-  "biome_based_crops.guide.setup_text": "Assim que a sala atingir a temperatura exigida e atender aos requisitos de piso e bloco interno, ela será registrada como aquele bioma, permitindo que mobs e outras criaturas também apareçam nela. As colheitas e mudas precisam de vidro exposto ao céu diretamente acima de cada planta. O resto do telhado pode ser sólido. Nenhum ar condicionado é necessário quando o clima natural corresponde às necessidades. Para mudar o clima, aponte as saídas de ar dos aparelhos de ar condicionado para a sala. Use um ar condicionado por 256 blocos internos fechados. Partículas tênues de ar indicam aberturas. Sele-os dentro de um minuto, antes que o clima comece a retornar ao seu estado natural.",
+  "biome_based_crops.guide.setup_text": "Assim que a sala atingir a temperatura exigida e atender aos requisitos de piso e bloco interno, ela será registrada como aquele bioma, permitindo que mobs e outras criaturas também apareçam nela. As colheitas e mudas precisam de vidro exposto ao céu diretamente acima de cada planta. O resto do telhado pode ser sólido. O registro do bioma precisa de um termorregulador elétrico ou Tough As Nails voltado para a sala. A mudança climática precisa de um ar condicionado para cada 256 blocos internos. Partículas tênues de ar indicam aberturas. Sele-os dentro de um minuto, antes que o clima comece a retornar ao seu estado natural.",
   "biome_based_crops.guide.block_count": "Blocos %s",
   "biome_based_crops.ac.climate_label": "Clima",
   "biome_based_crops.ac.previous_climate": "Clima anterior",
   "biome_based_crops.ac.next_climate": "Próximo clima",
   "biome_based_crops.ac.selector_usage": "Clique para avançar. Segure Shift ou use a tecla de seta para a esquerda para retroceder.",
-  "biome_based_crops.ac.energy_room": "Sala: blocos %s"
+  "biome_based_crops.ac.energy_room": "Sala: blocos %s",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instale um termorregulador elétrico ou Tough As Nails para registrar um bioma de efeito estufa."
 }

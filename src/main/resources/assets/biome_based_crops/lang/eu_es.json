@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Berotegi-bioma ez da baliozkoa",
   "biome_based_crops.ac.room_climate": "Gelako klima: %s",
   "biome_based_crops.ac.unit_capacity": "aire girotua: %s instalatuta, %s behar da",
-  "biome_based_crops.ac.capacity_hint": "Aire girotu bakoitzak 256 barruko bloke itxi onartzen ditu klima aldatzean. Berez bat datorren gela batek ez du aire girotua behar.",
+  "biome_based_crops.ac.capacity_hint": "Aire girotu bakoitzak 256 barruko bloke onartzen ditu klima aldatzean. Biomaren erregistroak beti behar du Elektrikoa edo Tough As Nails termoerreguladore bat.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Aurrealdeko irteera blokeatuta dago",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Gelak aire girotu gehiago behar ditu bere barruko bolumenerako",
   "biome_based_crops.greenhouse.status.too_large": "Gelak barruko bolumen maximoa gainditzen du",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Barne-baldintzak:",
   "biome_based_crops.guide.scroll_materials": "Joan material gehiago lortzeko.",
   "biome_based_crops.guide.setup": "Berotegiaren konfigurazioa:",
-  "biome_based_crops.guide.setup_text": "Gelak behar den tenperaturara iristen direnean eta zoruaren eta barruko blokeen baldintzak betetzen dituenean, bioma gisa erregistratuko da, mobs eta beste izaki batzuk ere bertan sortu ahal izateko. Laboreek eta landareek zeruari begirako beira behar dute landare bakoitzaren gainean. Gainerako teilatua sendoa izan daiteke. Ez da aire girotua behar klima naturala baldintzarekin bat datorrenean. Klima aldatzeko, jarri aire girotuaren aire-irteerak gelara. Erabili aire girotu bat itxitako barruko 256 bloke bakoitzeko. Aire partikulek irekidurak adierazten dituzte. Zigilatu minutu batean, klima bere egoera naturalera itzultzen hasi baino lehen.",
+  "biome_based_crops.guide.setup_text": "Gelak behar den tenperaturara iristen direnean eta zoruaren eta barruko blokeen baldintzak betetzen dituenean, bioma gisa erregistratuko da, mobs eta beste izaki batzuk ere bertan sortu ahal izateko. Laboreek eta landareek zeruari begirako beira behar dute landare bakoitzaren gainean. Gainerako teilatua sendoa izan daiteke. Biomak erregistratzeko, gelara begira dagoen termoerreguladore elektriko bat edo Tough As Nails behar da. Klima aldatzeak aire girotua behar du barruko 256 bloke bakoitzeko. Aire partikulek irekidurak adierazten dituzte. Zigilatu minutu batean, klima bere egoera naturalera itzultzen hasi baino lehen.",
   "biome_based_crops.guide.block_count": "%s blokeak",
   "biome_based_crops.ac.climate_label": "Klima",
   "biome_based_crops.ac.previous_climate": "Aurreko klima",
   "biome_based_crops.ac.next_climate": "Hurrengo klima",
   "biome_based_crops.ac.selector_usage": "Egin klik aurrera egiteko. Sakatu Maius edo erabili ezkerreko gezi-tekla atzera egiteko.",
-  "biome_based_crops.ac.energy_room": "Gela: %s blokeak"
+  "biome_based_crops.ac.energy_room": "Gela: %s blokeak",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instalatu elektrizitate edo Tough As Nails termoerreguladore bat berotegi-efektuko bioma erregistratzeko."
 }

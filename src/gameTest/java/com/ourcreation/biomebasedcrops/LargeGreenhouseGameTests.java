@@ -88,7 +88,11 @@ public final class LargeGreenhouseGameTests {
                     level.setBlock(min.offset(width, y, z), Blocks.BLUE_STAINED_GLASS.defaultBlockState(), flags);
                 }
             }
-            // Native Neutral climate needs no controllers, even in a very large room.
+            // One idle marker permits intentional registration without providing thermal capacity.
+            BlockPos marker = min.offset(2, 1, -1);
+            level.setBlock(marker, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState()
+                    .setValue(AirConditionerBlock.FACING, Direction.SOUTH), flags);
+            ((AirConditionerBlockEntity) level.getBlockEntity(marker)).setEnabled(false);
             // Reserve interior scenery so later material swaps preserve the topology.
             int totalMaterials = GreenhouseRecipes.scaledCount(4, width * height * depth);
             for (int i = 0; i < totalMaterials; i++)

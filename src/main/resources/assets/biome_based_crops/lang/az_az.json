@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "İstixana biomu etibarlı deyil",
   "biome_based_crops.ac.room_climate": "Otaq iqlimi: %s",
   "biome_based_crops.ac.unit_capacity": "kondisionerlər: %s quraşdırılıb, %s lazımdır",
-  "biome_based_crops.ac.capacity_hint": "Hər bir kondisioner iqlim dəyişikliyi zamanı 256 qapalı daxili bloku dəstəkləyir. Təbii olaraq uyğun gələn bir otaqda kondisioner tələb olunmur.",
+  "biome_based_crops.ac.capacity_hint": "Hər bir kondisioner iqlim dəyişikliyi zamanı 256 daxili bloku dəstəkləyir. Biome qeydiyyatı həmişə Elektrik və ya Tough As Nails termoregulyatora ehtiyac duyur.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ön çıxış bloklanıb",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Otağın daxili həcminə görə daha çox kondisioner lazımdır",
   "biome_based_crops.greenhouse.status.too_large": "Otaq maksimum daxili həcmi aşır",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Daxili Tələblər:",
   "biome_based_crops.guide.scroll_materials": "Daha çox material üçün sürüşdürün.",
   "biome_based_crops.guide.setup": "İstixana Quraşdırma:",
-  "biome_based_crops.guide.setup_text": "Otaq tələb olunan temperatura çatdıqdan və döşəmə və daxili blok tələblərinə cavab verdikdən sonra o, həmin biom kimi qeydiyyatdan keçəcək və burada dəstələrin və digər canlıların da kürü atmasına imkan verəcək. Bitkilər və fidanlar birbaşa hər bir bitkinin üstündə səmaya açıq şüşə lazımdır. Damın qalan hissəsi möhkəm ola bilər. Təbii iqlim tələblərə uyğun olduqda kondisionerə ehtiyac yoxdur. İqlimi dəyişdirmək üçün kondisionerlərin hava çıxışlarını otağa yönəldin. 256 qapalı daxili blok üçün bir kondisionerdən istifadə edin. Zəif hava hissəcikləri açılışları göstərir. İqlim təbii vəziyyətinə qayıtmağa başlamazdan əvvəl onları bir dəqiqə ərzində möhürləyin.",
+  "biome_based_crops.guide.setup_text": "Otaq tələb olunan temperatura çatdıqdan və döşəmə və daxili blok tələblərinə cavab verdikdən sonra, o, həmin biom kimi qeydiyyatdan keçəcək və burada dəstələrin və digər canlıların da kürü atmasına imkan verəcək. Bitkilər və fidanlar birbaşa hər bir bitkinin üstündə səmaya açıq şüşə lazımdır. Damın qalan hissəsi möhkəm ola bilər. Biome qeydiyyatı üçün otağa baxan Elektrik və ya Tough As Nails termoregulyator lazımdır. Dəyişən iqlim üçün 256 daxili bloka bir kondisioner lazımdır. Zəif hava hissəcikləri açılışları göstərir. İqlim təbii vəziyyətinə qayıtmağa başlamazdan əvvəl onları bir dəqiqə ərzində möhürləyin.",
   "biome_based_crops.guide.block_count": "%s bloklar",
   "biome_based_crops.ac.climate_label": "İqlim",
   "biome_based_crops.ac.previous_climate": "Əvvəlki iqlim",
   "biome_based_crops.ac.next_climate": "Növbəti iqlim",
   "biome_based_crops.ac.selector_usage": "İrəli keçmək üçün klikləyin. Geriyə dönmək üçün Shift düyməsini basıb saxlayın və ya sol ox düyməsini istifadə edin.",
-  "biome_based_crops.ac.energy_room": "Otaq: %s blok"
+  "biome_based_crops.ac.energy_room": "Otaq: %s blok",
+  "biome_based_crops.greenhouse.status.missing_controller": "İstixana biomunu qeydiyyatdan keçirmək üçün Elektrik və ya Tough As Nails termoregulyator quraşdırın."
 }

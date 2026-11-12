@@ -4,16 +4,23 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.NaturalSpawner;
+import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import net.neoforged.fml.ModList;
 
 @GameTestHolder(BiomeBasedCrops.MODID)
 @PrefixGameTestTemplate(false)
@@ -21,24 +28,104 @@ public final class GreenhouseHabitatGameTests {
     private GreenhouseHabitatGameTests() { }
 
     @GameTest(template = "empty", skyAccess = true, batch = "native_greenhouse_habitats")
-    public static void naturallyMatchingClimateSupportsForeignBiomeWithoutAController(GameTestHelper helper) {
+    public static void naturallyMatchingClimateNeedsAnIntentionalControllerForBiomeRegistration(GameTestHelper helper) {
         run(helper, () -> {
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of("minecraft:forest=minecraft:diamond_block*1"));
             GreenhouseSettings.BIOME_FLOOR_RULES.set(List.of("minecraft:forest=100:minecraft:sand"));
             ServerLevel level = helper.getLevel();
-            BlockPos center = room(helper, Blocks.SAND);
+            BlockPos center = room(helper, Blocks.SAND, false);
             level.setBlock(center.offset(-3, 0, -3), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
             CropProfile forest = exact("minecraft:forest", CropClimate.NEUTRAL);
             helper.assertFalse(forest.allows(GreenhouseEnvironment.nativeBiome(level, center), center),
                     "Fixture already belongs to the crop's native biome");
             var inspection = GreenhouseEnvironment.inspect(level, center);
-            helper.assertTrue(inspection.valid(), "Naturally matching habitat was rejected: " + inspection);
+            helper.assertFalse(inspection.valid(), "An ordinary house registered a biome without a thermoregulator");
+            helper.assertTrue(inspection.status().endsWith("missing_controller"), "Missing registration controller was not reported: " + inspection);
             var geometry = GreenhouseRoomScanner.completedAroundController(level, center);
             helper.assertTrue(geometry != null && geometry.machines.isEmpty(), "Fixture contains a climate controller");
             helper.assertTrue(GreenhouseEnvironment.currentClimate(level, center) == CropClimate.NEUTRAL,
                     "Fixture's natural climate does not match its forest habitat");
             helper.assertTrue(CommonEvents.canGrow(level, center, forest),
-                    "A matching natural climate required a powered controller for a foreign-biome crop");
+                    "The biome registration gate incorrectly disabled greenhouse-assisted growth");
+            helper.assertTrue(CommonEvents.canGrowNaturally(level, center, Blocks.WHEAT.defaultBlockState()),
+                    "Native-climate crops incorrectly required a registration controller");
+            helper.assertTrue(CommonEvents.canGrowNaturally(level, center, Blocks.OAK_SAPLING.defaultBlockState()),
+                    "Native-climate saplings incorrectly required a registration controller");
+            helper.assertTrue(GreenhouseEnvironment.regionAt(level, center) == null, "Unregistered house published a biome region");
+            var nativeSpawns = creatureSpawns(level, center);
+            assertUnregisteredForestGrowth(helper, level, center);
+            helper.assertTrue(nativeSpawns.equals(creatureSpawns(level, center)), "Greenhouse-assisted growth changed the native spawn table");
+
+            addWallController(level, center, CropClimate.NEUTRAL);
+            var controller = (AirConditionerBlockEntity) level.getBlockEntity(center.west(5).above(3));
+            controller.setEnabled(false);
+            helper.assertValueEqual(controller.energyStored(), 0, "Registration marker unexpectedly had power");
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "An installed idle controller did not permit natural-climate registration");
+            helper.assertFalse(controller.hasPaidAirflow(), "Presence-only registration started thermal conditioning");
+            helper.assertTrue(CommonEvents.canGrow(level, center, forest), "Intentional natural-climate greenhouse did not support its registered biome");
+            level.setBlock(center.west(5).above(3), Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+            assertUnregisteredForestGrowth(helper, level, center);
+            helper.assertTrue(nativeSpawns.equals(creatureSpawns(level, center)), "Removing the marker retained a foreign spawn table");
+        });
+    }
+
+    private static void assertUnregisteredForestGrowth(GameTestHelper helper, ServerLevel level, BlockPos center) {
+        List<? extends String> oldRules = List.copyOf(Config.CROP_BIOME_RULES.get());
+        try {
+            Config.CROP_BIOME_RULES.set(List.of("wheat=minecraft:forest", "oak_sapling=minecraft:forest"));
+            CropMatcher.clearCaches();
+            CropClimateRules.clearCache();
+            for (var state : List.of(Blocks.WHEAT.defaultBlockState(), Blocks.OAK_SAPLING.defaultBlockState())) {
+                helper.assertTrue(CropMatcher.profileForState(state).orElseThrow().hasBiomeRule(),
+                        "Plant fixture did not have an exact foreign-biome requirement");
+                helper.assertTrue(CommonEvents.canGrowNaturally(level, center, state),
+                        "Unregistered complete habitat blocked a matching crop or sapling");
+                helper.assertTrue(CommonEvents.canGrowWithFertilizer(level, center, state),
+                        "Registration marker became a fertilizer requirement");
+            }
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).status().endsWith("missing_controller"),
+                    "A successful growth check leaked its habitat into registered inspection");
+            helper.assertTrue(GreenhouseEnvironment.regionAt(level, center) == null && level.getBiome(center).is(Biomes.PLAINS),
+                    "A successful growth check changed the world's registered biome");
+            var atmosphere = GreenhouseEnvironment.atmosphereRegionAt(level, center);
+            helper.assertTrue(atmosphere == null || atmosphere.biome() == null,
+                    "A successful growth check published a client biome snapshot");
+        } finally {
+            Config.CROP_BIOME_RULES.set(oldRules);
+            CropMatcher.clearCaches();
+            CropClimateRules.clearCache();
+        }
+    }
+
+    private static List<?> creatureSpawns(ServerLevel level, BlockPos pos) {
+        try {
+            var lookup = NaturalSpawner.class.getDeclaredMethod("mobsAt", ServerLevel.class, StructureManager.class,
+                    ChunkGenerator.class, MobCategory.class, BlockPos.class, Holder.class);
+            lookup.setAccessible(true);
+            return ((net.minecraft.util.random.WeightedRandomList<?>) lookup.invoke(null, level, level.structureManager(),
+                    level.getChunkSource().getGenerator(), MobCategory.CREATURE, pos, null)).unwrap();
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("Could not exercise the vanilla natural-spawn table lookup", exception);
+        }
+    }
+
+    @GameTest(template = "empty", skyAccess = true, batch = "native_greenhouse_habitats")
+    public static void unfueledTanControllerCanMarkAnOtherwiseNaturalHabitat(GameTestHelper helper) {
+        if (!ModList.get().isLoaded("toughasnails")) { helper.succeed(); return; }
+        run(helper, () -> {
+            GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of("minecraft:forest=minecraft:diamond_block*1"));
+            GreenhouseSettings.BIOME_FLOOR_RULES.set(List.of("minecraft:forest=100:minecraft:sand"));
+            ServerLevel level = helper.getLevel();
+            BlockPos center = room(helper, Blocks.SAND, false);
+            level.setBlock(center.offset(-3, 0, -3), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "Controller-free fixture unexpectedly registered");
+            BlockPos marker = center.west(5).above(2);
+            Block tan = BuiltInRegistries.BLOCK.get(ResourceLocation.parse("toughasnails:thermoregulator"));
+            level.setBlock(marker, tan.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Block.UPDATE_ALL);
+            helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "Unfueled TAN controller was not accepted as an installed registration marker");
+            helper.assertTrue(ThermoregulatorDetector.providedClimateAt(level, marker, center).isEmpty(), "Unfueled TAN fixture unexpectedly supplied heat");
+            level.setBlock(marker, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertFalse(GreenhouseEnvironment.inspect(level, center).valid(), "Removing TAN marker left the cached biome registered");
         });
     }
 
@@ -99,6 +186,7 @@ public final class GreenhouseHabitatGameTests {
             for (int y = 0; y < 5; y++) for (int z = -4; z <= 4; z++) {
                 level.setBlock(center.offset(5, y, z), Blocks.OAK_LEAVES.defaultBlockState(), Block.UPDATE_ALL);
             }
+            addWallController(level, center, CropClimate.NEUTRAL);
             GreenhouseEnvironment.inspect(level, center);
             var geometry = GreenhouseRoomScanner.completedAroundController(level, center);
             helper.assertValueEqual(geometry.features.getOrDefault(id("oak_log"), 0), 0, "Exterior wall logs counted as living trees");
@@ -109,6 +197,7 @@ public final class GreenhouseHabitatGameTests {
                 level.setBlock(center.offset(-5, y, z), Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
                 level.setBlock(center.offset(5, y, z), Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
             }
+            addWallController(level, center, CropClimate.NEUTRAL);
             forestVegetation(level, center);
             awaitForest(helper, center, settings, 0);
         } catch (RuntimeException | Error exception) {
@@ -211,7 +300,10 @@ public final class GreenhouseHabitatGameTests {
                 walls.add(center.offset(along, y, -5));
                 walls.add(center.offset(along, y, 5));
             }
-            for (BlockPos wall : walls) level.setBlock(wall, Blocks.BRICKS.defaultBlockState(), Block.UPDATE_ALL);
+            for (BlockPos wall : walls) {
+                if (!level.getBlockState(wall).is(GreenhouseContent.AIR_CONDITIONER.get()))
+                    level.setBlock(wall, Blocks.BRICKS.defaultBlockState(), Block.UPDATE_ALL);
+            }
             var decorated = GreenhouseEnvironment.inspect(level, center);
             helper.assertTrue(decorated.valid(), "A sealed brick room with a glass roof was rejected: " + decorated);
             helper.assertValueEqual(decorated.glazing().roofFound(), 81, "informational roof glass count");
@@ -235,14 +327,14 @@ public final class GreenhouseHabitatGameTests {
             helper.assertFalse(CommonEvents.canGrow(level, center.south(), forest), "Plant lighting spread sideways under an opaque roof");
             for (BlockPos roof : roofs) level.setBlock(roof, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);
             helper.assertTrue(GreenhouseEnvironment.inspect(level, center).valid(), "Restoring the glass roof did not recover the greenhouse");
-            level.setBlock(center.offset(-5, 2, 0), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(center.offset(-5, 2, 1), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             var leaking = GreenhouseEnvironment.inspect(level, center);
             helper.assertTrue(leaking.valid() && leaking.status().endsWith("leaking"),
                     "A brief wall hole discarded the known greenhouse: " + leaking);
             helper.assertTrue(level.getBiome(center).is(Biomes.FOREST), "Wall leak grace lost the room's biome");
             helper.assertTrue(GreenhouseEnvironment.regionAt(level, center.west(6)) == null,
                     "The leaking room expanded into exterior air");
-            level.setBlock(center.offset(-5, 2, 0), Blocks.BRICKS.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(center.offset(-5, 2, 1), Blocks.BRICKS.defaultBlockState(), Block.UPDATE_ALL);
             helper.assertTrue(GreenhouseEnvironment.inspect(level, center).status().endsWith("valid"),
                     "Resealing the wall did not recover the greenhouse");
         });
@@ -438,6 +530,10 @@ public final class GreenhouseHabitatGameTests {
     }
 
     private static BlockPos room(GameTestHelper helper, Block floor) {
+        return room(helper, floor, true);
+    }
+
+    private static BlockPos room(GameTestHelper helper, Block floor, boolean registrationController) {
         helper.setBiome(Biomes.PLAINS);
         ServerLevel level = helper.getLevel();
         BlockPos center = helper.absolutePos(new BlockPos(6, 2, 6));
@@ -446,15 +542,20 @@ public final class GreenhouseHabitatGameTests {
             boolean wall = Math.abs(at.getX() - center.getX()) == 5 || Math.abs(at.getZ() - center.getZ()) == 5 || at.getY() == center.getY() + 5;
             level.setBlock(at, ground ? floor.defaultBlockState() : wall ? Blocks.GLASS.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
         }
+        if (registrationController) addWallController(level, center, CropClimate.NEUTRAL);
         GreenhouseEnvironment.clearCache();
         return center;
     }
 
     private static void addWallController(ServerLevel level, BlockPos center, CropClimate climate) {
-        BlockPos position = center.west(5).above(2);
+        // Keep the outlet above the generated Y+2 canopy, with a clear interior air cell.
+        BlockPos position = center.west(5).above(3);
         level.setBlock(position, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState()
                 .setValue(AirConditionerBlock.FACING, Direction.EAST), Block.UPDATE_ALL);
-        ((AirConditionerBlockEntity) level.getBlockEntity(position)).setClimate(climate);
+        var controller = (AirConditionerBlockEntity) level.getBlockEntity(position);
+        controller.setClimate(climate);
+        // These unpowered fixtures count as installed markers/capacity, not background scan sources.
+        controller.setEnabled(false);
     }
 
     private static GreenhouseEnvironment.RequirementProgress progress(GreenhouseEnvironment.Inspection inspection, String block) {

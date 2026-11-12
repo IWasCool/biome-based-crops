@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Forceja biomo ne valida",
   "biome_based_crops.ac.room_climate": "Ĉambra klimato: %s",
   "biome_based_crops.ac.unit_capacity": "klimatiziloj: %s instalita, %s bezonata",
-  "biome_based_crops.ac.capacity_hint": "Ĉiu klimatizilo apogas 256 enfermitajn internajn blokojn dum ŝanĝado de klimato. Nature kongrua ĉambro bezonas neniun klimatizilon.",
+  "biome_based_crops.ac.capacity_hint": "Ĉiu klimatizilo apogas 256 internajn blokojn dum ŝanĝado de klimato. Biomregistrado ĉiam bezonas Elektran aŭ Tough As Nails termoregulilon.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La antaŭa ellasejo estas blokita",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La ĉambro bezonas pli da klimatiziloj por sia interna volumeno",
   "biome_based_crops.greenhouse.status.too_large": "La ĉambro superas la maksimuman internan volumenon",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Internaj Postuloj:",
   "biome_based_crops.guide.scroll_materials": "Volumo por pli da materialoj.",
   "biome_based_crops.guide.setup": "Forcejo-Agordo:",
-  "biome_based_crops.guide.setup_text": "Post kiam la ĉambro atingas la postulatan temperaturon kaj renkontas la plankon kaj internajn blokpostulojn, ĝi registriĝos kiel tiu biomo, ebligante mafiojn kaj aliajn estaĵojn generi en ĝi ankaŭ. Rikoltoj kaj arbidoj bezonas ĉielkovritan vitron rekte super ĉiu planto. La resto de la tegmento povas esti solida. Ne necesas klimatizilo kiam la natura klimato kongruas kun la postulo. Por ŝanĝi la klimaton, direktu aerelirejojn de la klimatiziloj en la ĉambron. Uzu unu klimatizilon po 256 enfermitaj internaj blokoj. Malfortaj aerpartikloj indikas malfermaĵojn. Sigelu ilin ene de unu minuto, antaŭ ol la klimato komencas reveni al sia natura stato.",
+  "biome_based_crops.guide.setup_text": "Post kiam la ĉambro atingas la postulatan temperaturon kaj renkontas la plankon kaj internajn blokpostulojn, ĝi registriĝos kiel tiu biomo, ebligante mafiojn kaj aliajn estaĵojn generi en ĝi ankaŭ. Rikoltoj kaj arbidoj bezonas ĉielkovritan vitron rekte super ĉiu planto. La resto de la tegmento povas esti solida. Biome-registrado bezonas Elektran aŭ Tough As Nails termoregulilon alfrontantan en la ĉambron. Ŝanĝanta klimato bezonas unu klimatizilon po 256 internaj blokoj. Malfortaj aerpartikloj indikas malfermaĵojn. Sigelu ilin ene de unu minuto, antaŭ ol la klimato komencas reveni al sia natura stato.",
   "biome_based_crops.guide.block_count": "%s blokoj",
   "biome_based_crops.ac.climate_label": "Klimato",
   "biome_based_crops.ac.previous_climate": "Antaŭa klimato",
   "biome_based_crops.ac.next_climate": "Sekva klimato",
   "biome_based_crops.ac.selector_usage": "Klaku por bicikli antaŭen. Tenu Shift aŭ uzu la maldekstran sagoklavon por bicikli malantaŭen.",
-  "biome_based_crops.ac.energy_room": "Ĉambro: %s blokoj"
+  "biome_based_crops.ac.energy_room": "Ĉambro: %s blokoj",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instalu Elektran aŭ Tough As Nails termoregulilon por registri forcejan biomon."
 }

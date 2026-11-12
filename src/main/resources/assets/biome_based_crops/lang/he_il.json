@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "ביומה של חממה לא תקפה",
   "biome_based_crops.ac.room_climate": "אקלים בחדר: %s",
   "biome_based_crops.ac.unit_capacity": "מזגנים: %s מותקנים, נדרש %s",
-  "biome_based_crops.ac.capacity_hint": "כל מזגן תומך ב-256 בלוקים פנימיים סגורים בעת שינוי אקלים. חדר תואם באופן טבעי אינו זקוק למזגן.",
+  "biome_based_crops.ac.capacity_hint": "כל מזגן תומך ב-256 בלוקים פנימיים בעת שינוי אקלים. רישום ביומה תמיד מצריך מווסת חום חשמלי או Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "השקע הקדמי חסום",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "החדר זקוק ליותר מזגנים לנפח הפנימי שלו",
   "biome_based_crops.greenhouse.status.too_large": "החדר חורג מהנפח הפנימי המרבי",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "דרישות פנים:",
   "biome_based_crops.guide.scroll_materials": "גלול לחומרים נוספים.",
   "biome_based_crops.guide.setup": "הגדרת חממה:",
-  "biome_based_crops.guide.setup_text": "ברגע שהחדר יגיע לטמפרטורה הנדרשת ויעמוד בדרישות הרצפה והבלוקים הפנימיים, הוא יירשם כביומה זו, מה שיאפשר להמון ויצורים אחרים להשריץ בו גם הם. גידולים ושתילים זקוקים לזכוכית חשופה לשמיים ישירות מעל כל צמח. שאר הגג יכול להיות מוצק. אין צורך במזגן כאשר האקלים הטבעי תואם את הדרישה. כדי לשנות את האקלים, כוונו את יציאות האוויר של המזגנים לתוך החדר. השתמש במזגן אחד לכל 256 בלוקים פנימיים סגורים. חלקיקי אוויר חלשים מצביעים על פתחים. אטום אותם תוך דקה אחת, לפני שהאקלים יתחיל לחזור למצבו הטבעי.",
+  "biome_based_crops.guide.setup_text": "ברגע שהחדר יגיע לטמפרטורה הנדרשת ויעמוד בדרישות הרצפה והבלוקים הפנימיים, הוא יירשם כביומה זה, מה שיאפשר להמון ויצורים אחרים להשריץ בו גם הם. גידולים ושתילים זקוקים לזכוכית חשופה לשמיים ישירות מעל כל צמח. שאר הגג יכול להיות מוצק. רישום ביומה מצריך מווסת חום חשמלי או Tough As Nails הפונה לחדר. שינוי האקלים צריך מזגן אחד לכל 256 בלוקים פנימיים. חלקיקי אוויר חלשים מצביעים על פתחים. אטום אותם תוך דקה אחת, לפני שהאקלים יתחיל לחזור למצבו הטבעי.",
   "biome_based_crops.guide.block_count": "%s בלוקים",
   "biome_based_crops.ac.climate_label": "אקלים",
   "biome_based_crops.ac.previous_climate": "אקלים קודם",
   "biome_based_crops.ac.next_climate": "האקלים הבא",
   "biome_based_crops.ac.selector_usage": "לחץ כדי לעבור קדימה. החזק את Shift או השתמש במקש החץ שמאלה כדי לחזור אחורה.",
-  "biome_based_crops.ac.energy_room": "חדר: %s בלוקים"
+  "biome_based_crops.ac.energy_room": "חדר: %s בלוקים",
+  "biome_based_crops.greenhouse.status.missing_controller": "התקן וסת חשמלי או Tough As Nails כדי לרשום ביומה של חממה."
 }

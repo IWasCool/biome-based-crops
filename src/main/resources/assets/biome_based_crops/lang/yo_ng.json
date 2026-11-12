@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Eefin biome ko wulo",
   "biome_based_crops.ac.room_climate": "Oju-ọjọ yara: %s",
   "biome_based_crops.ac.unit_capacity": "amúlétutù: %s ti fi sori ẹrọ, %s nilo",
-  "biome_based_crops.ac.capacity_hint": "Kondisona afẹfẹ kọọkan ṣe atilẹyin awọn bulọọki inu ilohunsoke 256 ti o wa ni pipade nigba iyipada afefe. Yara ibaramu nipa ti ara ko nilo amúlétutù.",
+  "biome_based_crops.ac.capacity_hint": "Kondisona afẹfẹ kọọkan ṣe atilẹyin awọn bulọọki inu ilohunsoke 256 nigba iyipada afefe. Iforukọsilẹ Biome nigbagbogbo nilo Itanna tabi thermoregulator Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Oju-ọna iwaju ti dina",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Yara naa nilo awọn amúlétutù diẹ sii fun iwọn inu inu rẹ",
   "biome_based_crops.greenhouse.status.too_large": "Yara naa ti kọja iwọn didun inu ti o pọju",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Awọn ibeere inu inu:",
   "biome_based_crops.guide.scroll_materials": "Yi lọ fun diẹ ẹ sii ohun elo.",
   "biome_based_crops.guide.setup": "Eto eefin:",
-  "biome_based_crops.guide.setup_text": "Ni kete ti yara naa ba de iwọn otutu ti o nilo ati pe o pade ilẹ ati awọn ibeere bulọọki inu, yoo forukọsilẹ bi biome yẹn, ti o mu ki awọn agbajo eniyan ati awọn ẹda miiran le tan ninu rẹ paapaa. Awọn irugbin ati awọn irugbin nilo gilasi ọrun ti o han taara loke ọgbin kọọkan. Awọn iyokù ti awọn oke le jẹ ri to. Ko si afẹfẹ afẹfẹ ti a nilo nigbati oju-ọjọ adayeba baamu ibeere naa. Lati yi oju-ọjọ pada, tọka awọn iÿë afẹfẹ ti awọn amúlétutù sinu yara naa. Lo afẹfẹ afẹfẹ kan fun awọn bulọọki inu ilohunsoke 256. Awọn patikulu afẹfẹ airẹwẹsi tọka awọn ṣiṣi. Pa wọn mọ laarin iṣẹju kan, ṣaaju ki oju-ọjọ to bẹrẹ pada si ipo adayeba rẹ.",
+  "biome_based_crops.guide.setup_text": "Ni kete ti yara naa ba de iwọn otutu ti o nilo ati pe o pade ilẹ ati awọn ibeere bulọọki inu inu, yoo forukọsilẹ bi biome yẹn, ti o mu ki awọn agbajo eniyan ati awọn ẹda miiran le tan ninu rẹ paapaa. Awọn irugbin ati awọn irugbin nilo gilasi ọrun ti o han taara loke ọgbin kọọkan. Awọn iyokù ti awọn oke le jẹ ri to. Iforukọsilẹ Biome nilo Itanna tabi thermoregulator Tough As Nails ti nkọju si yara naa. Iyipada afefe nilo afẹfẹ afẹfẹ kan fun awọn bulọọki inu inu 256. Awọn patikulu afẹfẹ airẹwẹsi tọka awọn ṣiṣi. Pa wọn mọ laarin iṣẹju kan, ṣaaju ki oju-ọjọ to bẹrẹ pada si ipo adayeba rẹ.",
   "biome_based_crops.guide.block_count": "awọn bulọọki %s",
   "biome_based_crops.ac.climate_label": "Oju-ọjọ",
   "biome_based_crops.ac.previous_climate": "Ti tẹlẹ afefe",
   "biome_based_crops.ac.next_climate": "Next afefe",
   "biome_based_crops.ac.selector_usage": "Tẹ lati yiyi siwaju. Mu Yi lọ yi bọ tabi lo bọtini itọka osi lati yipo sẹhin.",
-  "biome_based_crops.ac.energy_room": "Yara: %s ohun amorindun"
+  "biome_based_crops.ac.energy_room": "Yara: %s ohun amorindun",
+  "biome_based_crops.greenhouse.status.missing_controller": "Fi Itanna tabi thermoregulator Tough As Nails sori ẹrọ lati forukọsilẹ biome eefin kan."
 }

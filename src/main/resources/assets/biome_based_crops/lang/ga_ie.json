@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Níl an bithóim cheaptha teasa bailí",
   "biome_based_crops.ac.room_climate": "Aeráid an tseomra: %s",
   "biome_based_crops.ac.unit_capacity": "oiriúntóir aer: %s suiteáilte, %s ag teastáil",
-  "biome_based_crops.ac.capacity_hint": "Tacaíonn gach oiriúntóir aer le 256 bloc istigh faoi iamh agus iad ag athrú aeráide. Níl aon oiriúntóir aer ag teastáil ó sheomra meaitseála nádúrtha.",
+  "biome_based_crops.ac.capacity_hint": "Tacaíonn gach oiriúntóir aer le 256 bloc istigh nuair a bhíonn aeráid á athrú. Teastaíonn teirmerialtóir Leictreach nó Tough As Nails i gcónaí le clárú bithóim.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Tá bac ar an asraon tosaigh",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Tá níos mó oiriúntóirí aer de dhíth ar an seomra le haghaidh toirt an taobh istigh",
   "biome_based_crops.greenhouse.status.too_large": "Sáraíonn an seomra an toirt istigh uasta",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Riachtanais Taobh istigh:",
   "biome_based_crops.guide.scroll_materials": "Scrollaigh le haghaidh tuilleadh ábhar.",
   "biome_based_crops.guide.setup": "Socrú Cheaptha Teasa:",
-  "biome_based_crops.guide.setup_text": "Nuair a shroicheann an seomra an teocht riachtanach agus go gcomhlíonann sé na ceanglais maidir le bloc urláir agus taobh istigh, cláróidh sé mar an bithóim sin, rud a chuirfidh ar chumas mobs agus créatúir eile sceitheadh ​​ann freisin. Teastaíonn gloine ón spéir os cionn gach planda ó bharra agus ó ghasúir. Is féidir leis an gcuid eile den díon a bheith soladach. Níl gá le haon oiriúntóir aer nuair a oireann an aeráid nádúrtha don riachtanas. Chun an aeráid a athrú, cuir asraonta aer na n-oiriúntóirí aer isteach sa seomra. Úsáid oiriúntóir aer amháin in aghaidh gach 256 bloc istigh iniata. Léiríonn cáithníní aer lag oscailtí. Séalaigh iad laistigh de nóiméad amháin, sula dtosaíonn an aeráid ag filleadh ar a staid nádúrtha.",
+  "biome_based_crops.guide.setup_text": "Nuair a shroicheann an seomra an teocht riachtanach agus go gcomhlíonann sé na ceanglais maidir le bloc urláir agus taobh istigh, cláróidh sé mar an bithóim sin, rud a chuirfidh ar chumas mobs agus créatúir eile sceitheadh ​​ann freisin. Teastaíonn gloine ón spéir os cionn gach planda ó bharra agus ó ghasúir. Is féidir leis an gcuid eile den díon a bheith soladach. Teastaíonn teirmerialtóir Leictreach nó Tough As Nails chun aghaidh a thabhairt ar an seomra le haghaidh clárúcháin bithóim. Teastaíonn oiriúntóir aer amháin in aghaidh an 256 bloc istigh de dhíth ar athrú aeráide. Léiríonn cáithníní aer lag oscailtí. Séalaigh iad laistigh de nóiméad amháin, sula dtosaíonn an aeráid ag filleadh ar a staid nádúrtha.",
   "biome_based_crops.guide.block_count": "%s bloic",
   "biome_based_crops.ac.climate_label": "Aeráid",
   "biome_based_crops.ac.previous_climate": "Aeráid roimhe seo",
   "biome_based_crops.ac.next_climate": "Aeráid eile",
   "biome_based_crops.ac.selector_usage": "Cliceáil chun rothaíocht ar aghaidh. Coinnigh Shift nó úsáid an eochair saigheada ar chlé chun rothaíocht ar gcúl.",
-  "biome_based_crops.ac.energy_room": "Seomra: %s bloic"
+  "biome_based_crops.ac.energy_room": "Seomra: %s bloic",
+  "biome_based_crops.greenhouse.status.missing_controller": "Suiteáil teirmerialtóir Leictreach nó Tough As Nails chun bithóim cheaptha teasa a chlárú."
 }

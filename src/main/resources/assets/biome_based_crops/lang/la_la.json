@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "CONSERVATORIUM biome non valet",
   "biome_based_crops.ac.room_climate": "Locus climatis: %s",
   "biome_based_crops.ac.unit_capacity": "aer conditioners: %s inauguratus, %s necessarius",
-  "biome_based_crops.ac.capacity_hint": "Quaelibet aer Conditioner sustinet 256 stipites interiores inclusus mutando climate. Locus naturaliter matching non indiget aer Conditioner.",
+  "biome_based_crops.ac.capacity_hint": "Quilibet aer Conditioner stipes interiores sustinet cum mutabili climate 256. Biome adnotatione electrico vel Tough As Nails thermoregulatore eget semper.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ante exitum obstructus",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Conclave plus indiget aeris conditionarii ad suum volumen interiorem",
   "biome_based_crops.greenhouse.status.too_large": "Conclave maximum volumen interiorem excedit",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Interior Requisita:",
   "biome_based_crops.guide.scroll_materials": "Librum pro pluribus materiis.",
   "biome_based_crops.guide.setup": "CONSERVATORIUM PRAEFIXUS:",
-  "biome_based_crops.guide.setup_text": "Cum locus temperatura debitam attingit et ad aream interiorem et scandalum requisita occurrat, subcriptio ut biome, ut turbas aliasque creaturas in ea quoque pariant. Fruges et virgulta vitreo aere detecto directe super unamquamque plantam indigent. Reliquum tectum solidum esse potest. Nullus aer conditionator desideratur cum climatis naturalis postulationem aequet. Ad clima mutare, decursibus aeris conditioners in cubiculum aeris designare. Utere aere uno Conditioner per 256 cuneos interiores inclusos. Particulae aeris deficientis aperturae indicant. Intra unum minutum signa, antequam ad suum statum naturalem clima revertitur.",
+  "biome_based_crops.guide.setup_text": "Cum locus ad debitam temperiem perveniet et ad aream interiorem et clausuram requisita occurrat, subcriptio ut biome, ut turbas aliasque creaturas in ea quoque pariant. Fruges et virgulta vitreo aere detecto directe super unamquamque plantam indigent. Reliquum tectum solidum esse potest. Biome registration electricum vel Tough As Nails thermoregulatorem in cubiculum versus desiderat. Climatis commutans unam condicionem aeris per 256 cuneos interiores requirit. Particulae aeris deficientis aperturae indicant. Intra unum minutum signa, antequam ad suum statum naturalem clima revertitur.",
   "biome_based_crops.guide.block_count": "%s caudices",
   "biome_based_crops.ac.climate_label": "Clima",
   "biome_based_crops.ac.previous_climate": "Loca priora",
   "biome_based_crops.ac.next_climate": "Climatum proximum",
   "biome_based_crops.ac.selector_usage": "Click to cyclum deinceps. Shift tene vel uti clavis sagitta sinistra ad cyclum retrorsum.",
-  "biome_based_crops.ac.energy_room": "Locus: %s caudices"
+  "biome_based_crops.ac.energy_room": "Locus: %s caudices",
+  "biome_based_crops.greenhouse.status.missing_controller": "Electricam seu thermoregulatorem Tough As Nails inaugurare ut subcriptio biome CONSERVATORIUM."
 }

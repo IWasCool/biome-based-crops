@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Bioma rumah hijau tidak sah",
   "biome_based_crops.ac.room_climate": "Iklim bilik: %s",
   "biome_based_crops.ac.unit_capacity": "penghawa dingin: %s dipasang, %s diperlukan",
-  "biome_based_crops.ac.capacity_hint": "Setiap penghawa dingin menyokong 256 blok dalaman tertutup apabila perubahan iklim. Bilik yang padan secara semula jadi tidak memerlukan penghawa dingin.",
+  "biome_based_crops.ac.capacity_hint": "Setiap penghawa dingin menyokong 256 blok dalaman apabila perubahan iklim. Pendaftaran biome sentiasa memerlukan termoregulator Elektrik atau Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Saluran keluar hadapan disekat",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Bilik itu memerlukan lebih banyak penghawa dingin untuk isipadu dalamannya",
   "biome_based_crops.greenhouse.status.too_large": "Bilik melebihi volum dalaman maksimum",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Keperluan Dalaman:",
   "biome_based_crops.guide.scroll_materials": "Tatal untuk mendapatkan lebih banyak bahan.",
   "biome_based_crops.guide.setup": "Persediaan Rumah Hijau:",
-  "biome_based_crops.guide.setup_text": "Setelah bilik mencapai suhu yang diperlukan dan memenuhi keperluan lantai dan blok dalaman, ia akan didaftarkan sebagai bioma itu, membolehkan perusuh dan makhluk lain bertelur di dalamnya juga. Tanaman dan anak pokok memerlukan kaca yang terdedah kepada langit terus di atas setiap tumbuhan. Selebihnya bumbung boleh menjadi pepejal. Tiada penghawa dingin diperlukan apabila iklim semula jadi sepadan dengan keperluan. Untuk mengubah iklim, arahkan saluran keluar udara penghawa dingin ke dalam bilik. Gunakan satu penghawa dingin bagi setiap 256 blok dalaman tertutup. Zarah udara yang lemah menunjukkan bukaan. Tutupnya dalam masa satu minit, sebelum iklim mula kembali ke keadaan semula jadi.",
+  "biome_based_crops.guide.setup_text": "Setelah bilik mencapai suhu yang diperlukan dan memenuhi keperluan lantai dan blok dalaman, ia akan didaftarkan sebagai bioma itu, membolehkan perusuh dan makhluk lain bertelur di dalamnya juga. Tanaman dan anak pokok memerlukan kaca yang terdedah kepada langit terus di atas setiap tumbuhan. Selebihnya bumbung boleh menjadi pepejal. Pendaftaran biome memerlukan termoregulator Elektrik atau Tough As Nails menghadap ke dalam bilik. Perubahan iklim memerlukan satu penghawa dingin bagi setiap 256 blok dalaman. Zarah udara yang lemah menunjukkan bukaan. Tutupnya dalam masa satu minit, sebelum iklim mula kembali ke keadaan semula jadi.",
   "biome_based_crops.guide.block_count": "%s blok",
   "biome_based_crops.ac.climate_label": "Iklim",
   "biome_based_crops.ac.previous_climate": "Iklim sebelumnya",
   "biome_based_crops.ac.next_climate": "Iklim seterusnya",
   "biome_based_crops.ac.selector_usage": "Klik untuk kitaran ke hadapan. Tahan Shift atau gunakan kekunci anak panah kiri untuk berpusing ke belakang.",
-  "biome_based_crops.ac.energy_room": "Bilik: %s blok"
+  "biome_based_crops.ac.energy_room": "Bilik: %s blok",
+  "biome_based_crops.greenhouse.status.missing_controller": "Pasang termoregulator Elektrik atau Tough As Nails untuk mendaftarkan bioma rumah hijau."
 }

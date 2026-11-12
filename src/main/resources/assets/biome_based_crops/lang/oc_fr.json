@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Lo biòma de sèrra pas valid",
   "biome_based_crops.ac.room_climate": "Clima de la sala: %s",
   "biome_based_crops.ac.unit_capacity": "climatizators: %s installats, %s necessaris",
-  "biome_based_crops.ac.capacity_hint": "Cada climatizador pren en carga 256 blòts interiors tancats al moment de cambiar de clima. Una sala naturalament correspondenta a pas besonh de climatizador.",
+  "biome_based_crops.ac.capacity_hint": "Cada climatizador pren en carga 256 blòts interiors al moment de cambiar de clima. L'enregistrament del biòma a totjorn besonh d'un termoregulator electric o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La sortida davancièra es blocada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La sala a besonh de mai d'aire condicionat per son volum interior",
   "biome_based_crops.greenhouse.status.too_large": "La sala despassa lo volum interior maximal",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Requisits interiors:",
   "biome_based_crops.guide.scroll_materials": "Desplaçatz-vos per mai de materials.",
   "biome_based_crops.guide.setup": "Configuracion de la sèrra:",
-  "biome_based_crops.guide.setup_text": "Un còp que la sala atenh la temperatura requerida e complís las exigéncias del solèr e del blòt interior, s'enregistrarà coma aquel biòma, permetent a de mòbs e d'autras creaturas de s'i engendrar tanben. Las culturas e los plantons an besonh de veire expausat al cèl dirèctament al dessús de cada planta. Lo rèsta del tet pòt èsser solid. Cap de climatizador es pas necessari quand lo clima natural correspond a l'exigéncia. Per cambiar lo clima, puntatz las sortidas d'aire dels climatizators dins la sala. Utilizatz un climatizador per 256 blòts interiors tancats. Las particulas d'aire feblas indican de doberturas. Tancatz-los dins una minuta, abans que lo clima comence de tornar a son estat natural.",
+  "biome_based_crops.guide.setup_text": "Un còp que la sala atenh la temperatura requerida e complís los requisits del solèr e del blòt interior, s'enregistrarà coma aquel biòma, permetent a de mòbs e d'autras creaturas de s'i engendrar tanben. Las culturas e los plantons an besonh de veire expausat al cèl dirèctament al dessús de cada planta. Lo rèsta del tet pòt èsser solid. L'enregistrament del bioma a besonh d'un termoregulator electric o Tough As Nails virat cap a la sala. Lo cambiament climatic a besonh d'un climatizador per 256 quartièrs interiors. Las particulas d'aire feblas indican de doberturas. Tancatz-los dins una minuta, abans que lo clima comence de tornar a son estat natural.",
   "biome_based_crops.guide.block_count": "%s blòts",
   "biome_based_crops.ac.climate_label": "Clima",
   "biome_based_crops.ac.previous_climate": "Clima precedent",
   "biome_based_crops.ac.next_climate": "Clima seguent",
   "biome_based_crops.ac.selector_usage": "Clicatz per avançar. Mantenètz Maj o utilizatz la tòca de flècha esquèrra per virar en revèrs.",
-  "biome_based_crops.ac.energy_room": "Sala: %s blòts"
+  "biome_based_crops.ac.energy_room": "Sala: %s blòts",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installatz un termoregulator electric o Tough As Nails per enregistrar un biòma de sèrra."
 }

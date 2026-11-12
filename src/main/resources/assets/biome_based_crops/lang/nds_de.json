@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Gewächshausbiom nicht gültig",
   "biome_based_crops.ac.room_climate": "Raumklima: %s",
   "biome_based_crops.ac.unit_capacity": "Klimaanlagen: %s installiert, %s erforderlich",
-  "biome_based_crops.ac.capacity_hint": "Jede Klimaanlage unterstützt 256 geschlossene Innenblöcke bei Klimaänderungen. Ein natürlich passender Raum braucht keine Klimaanlage.",
+  "biome_based_crops.ac.capacity_hint": "Jede Klimaanlage unterstützt 256 Innenblöcke bei Klimaänderungen. Für die Biomregistrierung ist immer ein elektrischer oder Tough As Nails Thermoregulator erforderlich.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Der vordere Auslass ist blockiert",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Der Raum benötigt für sein Innenvolumen mehr Klimaanlagen",
   "biome_based_crops.greenhouse.status.too_large": "Der Raum überschreitet das maximale Innenvolumen",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Innenraumanforderungen:",
   "biome_based_crops.guide.scroll_materials": "Scrollen Sie für weitere Materialien.",
   "biome_based_crops.guide.setup": "Gewächshausaufbau:",
-  "biome_based_crops.guide.setup_text": "Sobald der Raum die erforderliche Temperatur erreicht und die Boden- und Innenblockanforderungen erfüllt, wird er als dieses Biom registriert, sodass auch Mobs und andere Kreaturen darin spawnen können. Pflanzen und Setzlinge benötigen direkt über jeder Pflanze eine Glasscheibe, die dem Himmel ausgesetzt ist. Der Rest des Daches kann massiv sein. Wenn das natürliche Klima den Anforderungen entspricht, ist keine Klimaanlage erforderlich. Um das Klima zu verändern, richten Sie die Luftauslässe der Klimaanlagen in den Raum. Verwenden Sie eine Klimaanlage pro 256 geschlossene Innenblöcke. Schwache Luftpartikel weisen auf Öffnungen hin. Versiegeln Sie sie innerhalb einer Minute, bevor das Klima wieder in seinen natürlichen Zustand zurückkehrt.",
+  "biome_based_crops.guide.setup_text": "Sobald der Raum die erforderliche Temperatur erreicht und die Boden- und Innenblockanforderungen erfüllt, wird er als dieses Biom registriert, sodass auch Mobs und andere Kreaturen darin spawnen können. Pflanzen und Setzlinge benötigen direkt über jeder Pflanze eine Glasscheibe, die dem Himmel ausgesetzt ist. Der Rest des Daches kann massiv sein. Für die Biom-Registrierung ist ein elektrischer oder Tough As Nails Thermoregler erforderlich, der in den Raum zeigt. Das sich ändernde Klima erfordert eine Klimaanlage pro 256 Innenblöcke. Schwache Luftpartikel weisen auf Öffnungen hin. Versiegeln Sie sie innerhalb einer Minute, bevor das Klima wieder in seinen natürlichen Zustand zurückkehrt.",
   "biome_based_crops.guide.block_count": "%s Blöcke",
   "biome_based_crops.ac.climate_label": "Klima",
   "biome_based_crops.ac.previous_climate": "Vorheriges Klima",
   "biome_based_crops.ac.next_climate": "Nächstes Klima",
   "biome_based_crops.ac.selector_usage": "Klicken Sie, um vorwärts zu blättern. Halten Sie die Umschalttaste gedrückt oder verwenden Sie die linke Pfeiltaste, um rückwärts zu blättern.",
-  "biome_based_crops.ac.energy_room": "Raum: %s Blöcke"
+  "biome_based_crops.ac.energy_room": "Raum: %s Blöcke",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installieren Sie einen elektrischen oder Tough As Nails Thermoregulator, um ein Gewächshausbiom zu registrieren."
 }

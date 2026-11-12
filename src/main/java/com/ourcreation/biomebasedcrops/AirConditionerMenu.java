@@ -143,7 +143,7 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
 
     public enum RoomStatus {
         SCANNING("scanning"), VALID("valid"), LEAKING("leaking"), OPEN("open"), NO_GLASS("no_glass"),
-        MISSING_SPECIMENS("missing_specimens"), WRONG_CLIMATE("wrong_climate"),
+        MISSING_CONTROLLER("missing_controller"), MISSING_SPECIMENS("missing_specimens"), WRONG_CLIMATE("wrong_climate"),
         MISSING_FLOOR("missing_floor"), FILLING_AIR("filling_air"), AMBIGUOUS("ambiguous"),
         TOO_LARGE("too_large"), INSUFFICIENT_CAPACITY("insufficient_capacity"),
         UNLOADED("unloaded"), DISABLED("disabled"), BLOCKED_OUTLET("blocked_outlet"), OUTSIDE("outside");

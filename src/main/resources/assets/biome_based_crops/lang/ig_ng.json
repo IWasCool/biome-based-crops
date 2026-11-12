@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Greenhouse biome adịghị mma",
   "biome_based_crops.ac.room_climate": "Ihu igwe ime ụlọ: %s",
   "biome_based_crops.ac.unit_capacity": "ntụ oyi: %s arụnyere, %s chọrọ",
-  "biome_based_crops.ac.capacity_hint": "Igwe ntụ oyi nke ọ bụla na-akwado 256 mgbochi ime ụlọ mgbe ọ na-agbanwe ihu igwe. Ime ụlọ dabara adaba na-achọghị ntụ oyi.",
+  "biome_based_crops.ac.capacity_hint": "Igwe ntụ oyi ọ bụla na-akwado ihe mgbochi ime ụlọ 256 mgbe ọ na-agbanwe ihu igwe. Ndebanye aha biome mgbe niile na-achọ ọkụ eletrik ma ọ bụ Tough As Nails thermoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "E gbochiri ụzọ ọpụpụ n'ihu",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ime ụlọ ahụ chọrọ ikuku ntụ oyi maka olu ime ya",
   "biome_based_crops.greenhouse.status.too_large": "Ime ụlọ ahụ karịrị oke ime",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Ihe ndị chọrọ ime:",
   "biome_based_crops.guide.scroll_materials": "Pịgharịa maka ihe ndị ọzọ.",
   "biome_based_crops.guide.setup": "Ntọala ụlọ griin haus:",
-  "biome_based_crops.guide.setup_text": "Ozugbo ọnụ ụlọ ahụ ruru okpomọkụ achọrọ wee zute ala na ihe mgbochi ime ụlọ, ọ ga-edebanye aha dị ka biome ahụ, na-eme ka ìgwè mmadụ na ihe ndị ọzọ e kere eke nwee ike ịmụba n'ime ya. Ihe ọkụkụ na sapling chọrọ iko nke mbara igwe na-ekpuchi anya n'elu osisi ọ bụla. Ihe fọdụrụ n'elu ụlọ nwere ike isi ike. Enweghị ntụ oyi ọ bụla achọrọ mgbe ihu igwe okike dabara n'ihe achọrọ. Iji gbanwee ihu igwe, tụọ ebe ikuku ikuku nke ikuku n'ime ụlọ. Jiri otu ntụ oyi n'ime ụlọ 256 agbachiri. Ụmụ irighiri ikuku nke dara ada na-egosi oghere. Mechie ha n'ime otu nkeji, tupu ihu igwe amalite ịlaghachi n'ọnọdụ okike ya.",
+  "biome_based_crops.guide.setup_text": "Ozugbo ọnụ ụlọ ahụ ruru okpomọkụ achọrọ wee zute n'ala na ihe mgbochi ime ụlọ, ọ ga-edebanye aha dị ka biome ahụ, na-eme ka ìgwè mmadụ na ihe ndị ọzọ e kere eke nwee ike ịmụba n'ime ya. Ihe ọkụkụ na sapling chọrọ iko nke mbara igwe na-ekpuchi anya n'elu osisi ọ bụla. Ihe fọdụrụ n'elu ụlọ nwere ike isi ike. Ndebanye aha biome chọrọ ọkụ eletrik ma ọ bụ Tough As Nails thermoregulator chere ihu n'ime ụlọ ahụ. Ịgbanwe ihu igwe chọrọ otu ntụ oyi n'ime ụlọ 256. Ụmụ irighiri ikuku nke dara ada na-egosi oghere. Mechie ha n'ime otu nkeji, tupu ihu igwe amalite ịlaghachi n'ọnọdụ okike ya.",
   "biome_based_crops.guide.block_count": "%s mgbochi",
   "biome_based_crops.ac.climate_label": "Ihu igwe",
   "biome_based_crops.ac.previous_climate": "ihu igwe gara aga",
   "biome_based_crops.ac.next_climate": "Ihu igwe ọzọ",
   "biome_based_crops.ac.selector_usage": "Pịa ka ịgbatị okirikiri gaa n'ihu. Jide Shift ma ọ bụ jiri igodo akụ aka ekpe ka ịgbagharị azụ azụ.",
-  "biome_based_crops.ac.energy_room": "Ime ụlọ: %s mgbochi"
+  "biome_based_crops.ac.energy_room": "Ime ụlọ: %s mgbochi",
+  "biome_based_crops.greenhouse.status.missing_controller": "Wụnye ọkụ eletrik ma ọ bụ Tough As Nails thermoregulator ka ịdebanye aha biome griin haus."
 }

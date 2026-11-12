@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "El bioma del serra minga valid",
   "biome_based_crops.ac.room_climate": "Clima de la stanza: %s",
   "biome_based_crops.ac.unit_capacity": "climatizatur: %s installà, %s necessari",
-  "biome_based_crops.ac.capacity_hint": "Ogni condizionador d’aria suporta 256 blocch interni serrà quand cambia el clima. Una stanza che la currispunt en mod natüral g’ha minga bisogn de un aria condizionada.",
+  "biome_based_crops.ac.capacity_hint": "Ogni condizionador d’aria suporta 256 blocch interni quand cambia el clima. La registraziun del bioma g’ha semper bisogn de un termoregolatur eletrich o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La presa frontal l’è blocada",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La stanza g’ha bisogn de püsee aria condizionada per el sò volum interno",
   "biome_based_crops.greenhouse.status.too_large": "La stanza la supera el volum massim interno",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Requisiti interni:",
   "biome_based_crops.guide.scroll_materials": "Scorri per olter materiai.",
   "biome_based_crops.guide.setup": "Impostaziun del serra:",
-  "biome_based_crops.guide.setup_text": "Quand la stanza la riva a la temperadüra dumandada e la sudisfa i requisit del paviment e di blocch interni, la se registrarà cuma chel bioma, cunsentend ai mob e a olter creatur de spawn anca dent. I cultur e i piantin g’han bisogn de veder espost al ciel diretament sora ogni pianta. El rest del tècc pœu vèss solido. A’l é minga necessari un condizionador d’aria quand qe ‘l clima natural ‘l é corispondent a ‘l requisito. Per cambiar el clima, puntar i purte d’aria di condizionadur d’aria in de la stanza. Dupera un climatizatur per 256 blocch interni racchius. I partisel d’aria sciupà indican apertür. Silla-i ind un minut, inanz qe ‘l clima ‘l comence a tornar a ‘l sœ stat natural.",
+  "biome_based_crops.guide.setup_text": "Quand la stanza la riva a la temperadüra dumandada e la sudisfa i requisit del paviment e del blocch interni, la se registrarà cuma chel bioma, cunsentend ai mob e a olter creatur de spawn anca dent. I cultur e i piantin g’han bisogn de veder espost al ciel diretament sora ogni pianta. El rest del tècc pœu vèss solido. La registraziun del bioma g’ha bisogn de un termoregolatur eletrich o Tough As Nails che varda vers la stanza. El cambiament del clima g’ha bisogn de un climatizatur per 256 quartier interni. I partisel d’aria sciupà indican apertür. Silla-i ind un minut, inanz qe ‘l clima ‘l comence a tornar a ‘l sœ stat natural.",
   "biome_based_crops.guide.block_count": "%s blocch",
   "biome_based_crops.ac.climate_label": "Clima",
   "biome_based_crops.ac.previous_climate": "Clima precedent",
   "biome_based_crops.ac.next_climate": "Clima sucesif",
   "biome_based_crops.ac.selector_usage": "Clicca per ndà innanz. Tegni premu Maiusc o dupera el tast freccia sinistra per girar indrée.",
-  "biome_based_crops.ac.energy_room": "Stanza: quartier %s"
+  "biome_based_crops.ac.energy_room": "Stanza: quartier %s",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instalar un termoregolatur eletric o Tough As Nails per registrar un bioma de serra."
 }

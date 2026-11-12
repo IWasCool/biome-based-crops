@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Drivhusbiomet er ikke gyldig",
   "biome_based_crops.ac.room_climate": "Romklima: %s",
   "biome_based_crops.ac.unit_capacity": "klimaanlegg: %s installert, %s nødvendig",
-  "biome_based_crops.ac.capacity_hint": "Hvert klimaanlegg støtter 256 innelukkede innvendige blokker ved klimaskifte. Et naturlig matchende rom trenger ikke klimaanlegg.",
+  "biome_based_crops.ac.capacity_hint": "Hvert klimaanlegg støtter 256 innvendige blokker ved klimaskifte. Biomeregistrering krever alltid en elektrisk eller Tough As Nails termoregulator.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Frontuttaket er blokkert",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Rommet trenger flere klimaanlegg for det indre volumet",
   "biome_based_crops.greenhouse.status.too_large": "Rommet overskrider maksimalt innvendig volum",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Interiørkrav:",
   "biome_based_crops.guide.scroll_materials": "Bla for mer materiale.",
   "biome_based_crops.guide.setup": "Drivhusoppsett:",
-  "biome_based_crops.guide.setup_text": "Når rommet når ønsket temperatur og oppfyller kravene til gulv og indre blokker, vil det registreres som det biomet, slik at mobber og andre skapninger kan gyte i det også. Avlinger og frøplanter trenger himmeleksponert glass rett over hver plante. Resten av taket kan være solid. Ingen klimaanlegg er nødvendig når det naturlige klimaet samsvarer med kravet. For å endre klimaet, pek luftuttakene fra klimaanlegget inn i rommet. Bruk ett klimaanlegg per 256 vedlagte interiørblokker. Svake luftpartikler indikerer åpninger. Forsegl dem innen ett minutt før klimaet begynner å gå tilbake til sin naturlige tilstand.",
+  "biome_based_crops.guide.setup_text": "Når rommet når den nødvendige temperaturen og oppfyller kravene til gulv og indre blokker, vil det registreres som det biomet, slik at mobber og andre skapninger kan gyte i det også. Avlinger og frøplanter trenger himmeleksponert glass rett over hver plante. Resten av taket kan være solid. Biomeregistrering krever en elektrisk eller Tough As Nails termoregulator som vender inn i rommet. Endring av klima krever ett klimaanlegg per 256 innvendige blokker. Svake luftpartikler indikerer åpninger. Forsegl dem innen ett minutt før klimaet begynner å gå tilbake til sin naturlige tilstand.",
   "biome_based_crops.guide.block_count": "%s blokker",
   "biome_based_crops.ac.climate_label": "Klima",
   "biome_based_crops.ac.previous_climate": "Tidligere klima",
   "biome_based_crops.ac.next_climate": "Neste klima",
   "biome_based_crops.ac.selector_usage": "Klikk for å gå fremover. Hold nede Shift eller bruk venstre piltast for å gå bakover.",
-  "biome_based_crops.ac.energy_room": "Rom: %s blokker"
+  "biome_based_crops.ac.energy_room": "Rom: %s blokker",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installer en elektrisk eller Tough As Nails termoregulator for å registrere et drivhusbiom."
 }

@@ -191,13 +191,14 @@ public final class AutoGreenhouseGameTests {
     }
 
     @GameTest(template = "empty", skyAccess = true, batch = "auto_greenhouses")
-    public static void naturallyColdHouseNeedsNoIceOrBinding(GameTestHelper helper) {
+    public static void naturallyColdHouseNeedsAnIdleControllerButNoIceOrBinding(GameTestHelper helper) {
         withSettings(helper, () -> {
             helper.setBiome(Biomes.TAIGA);
             setRecipe("minecraft:taiga");
             ServerLevel level = helper.getLevel();
             BlockPos center = house(helper);
             materials(level, center);
+            idleRegistrationController(level, center);
             GreenhouseEnvironment.invalidateClimate();
             var survey = GreenhouseEnvironment.inspect(level, center);
             helper.assertTrue(survey.valid(), "Natural cold baseline did not satisfy cold greenhouse: " + survey.status());
@@ -213,6 +214,7 @@ public final class AutoGreenhouseGameTests {
             setRecipe("minecraft:taiga");
             ServerLevel level = helper.getLevel();
             BlockPos center = house(helper);
+            idleRegistrationController(level, center);
             List<Block> markers = List.of(Blocks.DIAMOND_BLOCK, Blocks.DIAMOND_BLOCK, Blocks.EMERALD_BLOCK, Blocks.LAPIS_BLOCK);
             for (int i = 0; i < markers.size(); i++) {
                 level.setBlock(center.offset(i - 2, -1, 0), markers.get(i).defaultBlockState(), Block.UPDATE_ALL);
@@ -428,13 +430,14 @@ public final class AutoGreenhouseGameTests {
     }
 
     @GameTest(template = "empty", skyAccess = true, batch = "auto_greenhouses")
-    public static void realCuratedForestPaletteWorksWithoutOverridesHeatersOrCore(GameTestHelper helper) {
+    public static void realCuratedForestPaletteWorksWithAnIdleControllerWithoutOverridesOrHeating(GameTestHelper helper) {
         withSettings(helper, () -> {
             helper.setBiome(Biomes.PLAINS);
             GreenhouseSettings.BIOME_MATERIAL_RULES.set(List.of());
             GreenhouseRecipes.clearCache();
             ServerLevel level = helper.getLevel();
             BlockPos center = house(helper);
+            idleRegistrationController(level, center);
             for (int x = -4; x <= 4; x++) for (int z = -4; z <= 4; z++)
                 level.setBlock(center.offset(x, -1, z), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
             GreenhouseHabitatGameTests.forestVegetation(level, center);
@@ -538,6 +541,13 @@ public final class AutoGreenhouseGameTests {
         level.setBlock(center.offset(-1, 1, 0), Blocks.DIAMOND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(center.offset(1, 1, 0), Blocks.EMERALD_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(center.offset(2, 1, 0), Blocks.LAPIS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+    }
+
+    private static void idleRegistrationController(ServerLevel level, BlockPos center) {
+        BlockPos marker = center.north(5).above(3);
+        level.setBlock(marker, GreenhouseContent.AIR_CONDITIONER.get().defaultBlockState()
+                .setValue(AirConditionerBlock.FACING, net.minecraft.core.Direction.SOUTH), Block.UPDATE_ALL);
+        ((AirConditionerBlockEntity) level.getBlockEntity(marker)).setEnabled(false);
     }
 
     private static AirConditionerBlockEntity conditioner(ServerLevel level, BlockPos center, BlockPos at, CropClimate target) {

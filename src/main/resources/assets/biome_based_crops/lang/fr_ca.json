@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biome de serre non valide",
   "biome_based_crops.ac.room_climate": "Climat ambiant : %s",
   "biome_based_crops.ac.unit_capacity": "climatiseurs : %s installés, %s nécessaires",
-  "biome_based_crops.ac.capacity_hint": "Chaque climatiseur prend en charge 256 blocs intérieurs fermés lors du changement de climat. Une pièce naturellement assortie n’a pas besoin de climatiseur.",
+  "biome_based_crops.ac.capacity_hint": "Chaque climatiseur prend en charge 256 blocs intérieurs lors du changement de climat. L'enregistrement du biome nécessite toujours un thermorégulateur électrique ou Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "La sortie avant est bloquée",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "La pièce a besoin de plus de climatiseurs pour son volume intérieur",
   "biome_based_crops.greenhouse.status.too_large": "La pièce dépasse le volume intérieur maximum",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Exigences intérieures :",
   "biome_based_crops.guide.scroll_materials": "Faites défiler pour plus de matériaux.",
   "biome_based_crops.guide.setup": "Configuration de la serre :",
-  "biome_based_crops.guide.setup_text": "Une fois que la pièce atteint la température requise et répond aux exigences du sol et du bloc intérieur, elle s'enregistrera comme ce biome, permettant aux foules et autres créatures d'y apparaître également. Les cultures et les jeunes arbres ont besoin d’un verre exposé au ciel directement au-dessus de chaque plante. Le reste du toit peut être solide. Aucun climatiseur n’est nécessaire lorsque le climat naturel correspond aux exigences. Pour modifier le climat, dirigez les sorties d’air des climatiseurs vers la pièce. Utilisez un climatiseur pour 256 blocs intérieurs fermés. De faibles particules d’air indiquent des ouvertures. Scellez-les dans la minute, avant que le climat ne revienne à son état naturel.",
+  "biome_based_crops.guide.setup_text": "Une fois que la pièce atteint la température requise et répond aux exigences du sol et du bloc intérieur, elle s'enregistrera comme ce biome, permettant aux mobs et autres créatures d'y apparaître également. Les cultures et les jeunes arbres ont besoin d’un verre exposé au ciel directement au-dessus de chaque plante. Le reste du toit peut être solide. L'enregistrement du biome nécessite un thermorégulateur électrique ou Tough As Nails orienté vers la pièce. Le changement climatique nécessite un climatiseur pour 256 blocs intérieurs. De faibles particules d’air indiquent des ouvertures. Scellez-les dans la minute, avant que le climat ne revienne à son état naturel.",
   "biome_based_crops.guide.block_count": "blocs %s",
   "biome_based_crops.ac.climate_label": "Climat",
   "biome_based_crops.ac.previous_climate": "Climat antérieur",
   "biome_based_crops.ac.next_climate": "Climat suivant",
   "biome_based_crops.ac.selector_usage": "Cliquez pour avancer. Maintenez Shift ou utilisez la touche fléchée gauche pour revenir en arrière.",
-  "biome_based_crops.ac.energy_room": "Salle : %s blocs"
+  "biome_based_crops.ac.energy_room": "Salle : %s blocs",
+  "biome_based_crops.greenhouse.status.missing_controller": "Installez un thermorégulateur électrique ou Tough As Nails pour enregistrer un biome de serre."
 }

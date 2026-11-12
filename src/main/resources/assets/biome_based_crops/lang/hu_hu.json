@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Az üvegházhatású biom nem érvényes",
   "biome_based_crops.ac.room_climate": "Szobaklíma: %s",
   "biome_based_crops.ac.unit_capacity": "klímaberendezések: %s telepítve, %s szükséges",
-  "biome_based_crops.ac.capacity_hint": "Minden klímaberendezés 256 zárt belső blokkot támogat klímaváltozáskor. Egy természetesen illeszkedő helyiséghez nincs szükség légkondicionálóra.",
+  "biome_based_crops.ac.capacity_hint": "Minden klímaberendezés 256 belső blokkot támogat klímaváltozáskor. A biom regisztrációhoz mindig szükség van egy elektromos vagy Tough As Nails hőszabályozóra.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Az elülső kimenet blokkolva van",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "A helyiségnek több légkondicionálóra van szüksége a belső térfogatához",
   "biome_based_crops.greenhouse.status.too_large": "A helyiség túllépi a maximális belső térfogatot",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Belső követelmények:",
   "biome_based_crops.guide.scroll_materials": "További anyagokért görgessen.",
   "biome_based_crops.guide.setup": "Üvegház kialakítása:",
-  "biome_based_crops.guide.setup_text": "Amint a szoba eléri a szükséges hőmérsékletet, és megfelel a padlóra és a belső blokkra vonatkozó követelményeknek, akkor biomként regisztrálja magát, lehetővé téve, hogy a csőcselék és más lények is megjelenjenek benne. A haszonnövényeknek és facsemetéknek égnek látszó üvegre van szükségük közvetlenül minden növény felett. A tető többi része tömör is lehet. Nincs szükség légkondicionálóra, ha a természetes klíma megfelel a követelményeknek. A klíma megváltoztatásához irányítsa a klímaberendezések levegőkimeneteit a helyiségbe. Használjon egy klímaberendezést 256 zárt belső blokkonként. Halvány levegőrészecskék jelzik a nyílásokat. Egy percen belül zárja le őket, mielőtt az éghajlat visszatér természetes állapotába.",
+  "biome_based_crops.guide.setup_text": "Amint a szoba eléri a szükséges hőmérsékletet, és megfelel a padlóra és a belső blokkra vonatkozó követelményeknek, akkor biomként regisztrálja magát, lehetővé téve, hogy a csőcselék és más lények is megjelenjenek benne. A haszonnövényeknek és facsemetéknek égnek látszó üvegre van szükségük közvetlenül minden növény felett. A tető többi része tömör is lehet. A biom regisztrációhoz elektromos vagy Tough As Nails hőszabályozóra van szükség, amely a helyiség felé néz. A változó klímához 256 belső blokkonként egy légkondicionáló kell. Halvány levegőrészecskék jelzik a nyílásokat. Egy percen belül zárja le őket, mielőtt az éghajlat visszatér természetes állapotába.",
   "biome_based_crops.guide.block_count": "%s blokk",
   "biome_based_crops.ac.climate_label": "Éghajlat",
   "biome_based_crops.ac.previous_climate": "Korábbi éghajlat",
   "biome_based_crops.ac.next_climate": "Következő klíma",
   "biome_based_crops.ac.selector_usage": "Kattintson a továbblépéshez. Tartsa lenyomva a Shift billentyűt, vagy használja a balra mutató nyílbillentyűt a visszalépéshez.",
-  "biome_based_crops.ac.energy_room": "Szoba: %s háztömb"
+  "biome_based_crops.ac.energy_room": "Szoba: %s háztömb",
+  "biome_based_crops.greenhouse.status.missing_controller": "Telepítsen elektromos vagy Tough As Nails hőszabályozót az üvegházi biom regisztrálásához."
 }

@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biome-ga aqalka cagaaran ma shaqeynayo",
   "biome_based_crops.ac.room_climate": "Cimilada qolka: %s",
   "biome_based_crops.ac.unit_capacity": "qaboojiyeyaasha: %s la rakibay, %s loo baahan yahay",
-  "biome_based_crops.ac.capacity_hint": "Qaboojiyaha kastaa wuxuu taageeraa 256 baloogyo gudaha ah oo xiran marka cimilada la beddelayo. Qol si dabiici ah u habboon uma baahna qaboojiyaha.",
+  "biome_based_crops.ac.capacity_hint": "Qaboojiyaha kastaa wuxuu taageeraa 256 baloogyada gudaha ah marka cimilada la beddelo. Diiwaangelinta biome waxay had iyo jeer u baahan tahay koronto ama Tough As Nails heerkulbeeye.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Meesha hore waa la xannibay",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Qolku wuxuu u baahan yahay qaboojiyayaal badan oo mugga gudaha ah",
   "biome_based_crops.greenhouse.status.too_large": "Qolku wuxuu ka sarreeyaa mugga gudaha ugu sarreeya",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Shuruudaha Arrimaha Gudaha:",
   "biome_based_crops.guide.scroll_materials": "U rog si aad u hesho agab badan.",
   "biome_based_crops.guide.setup": "Dejinta Guriga cagaaran:",
-  "biome_based_crops.guide.setup_text": "Marka qolku gaadho heerkulkii loo baahnaa oo uu buuxiyo shuruudaha sagxadda dhulka iyo gudaha, waxa uu isu diiwaangelin doonaa sidii biome-kaas, taas oo awood u siinaysa mooryaan iyo makhluuqa kale in ay ku dhex dhalaan sidoo kale. Dalagyada iyo saplings waxay u baahan yihiin muraayado cirfiid ah oo si toos ah uga sarreeya geed kasta. Inta kale ee saqafka waxay noqon kartaa mid adag. Looma baahna qaboojiyaha marka cimilada dabiiciga ahi ay ku habboonaato shuruudaha. Si aad u bedesho cimilada, tilmaan meelaha hawo qaboojiyaha qolka. Isticmaal hal qaboojiye 256dii baloogyada gudaha ee xiran. Qaybaha hawada daciifka ah ayaa tilmaamaya fur-furan. Xidh iyaga hal daqiiqo gudaheed, ka hor intaanay cimiladu ku soo laaban xaaladdeedii dabiiciga ahayd.",
+  "biome_based_crops.guide.setup_text": "Marka qolku gaadho heer kulka loo baahan yahay oo uu buuxiyo shuruudaha sagxadda dhulka iyo gudaha, waxa uu isu diiwaangelin doonaa sidii biome-kaas, taas oo awood u siinaysa mooryaan iyo makhluuqa kale in ay sidoo kale ku dhalaan. Dalagyada iyo saplings waxay u baahan yihiin muraayado cirfiid ah oo si toos ah uga sarreeya geed kasta. Inta kale ee saqafka waxay noqon kartaa mid adag. Diiwaangelinta biome waxay u baahan tahay koronto ama Tough As Nails heerkulbeeye u soo jeeda qolka. Cimiladu waxay u baahan tahay hal qaboojiye 256dii baloog ee gudaha ah. Qaybaha hawada daciifka ah ayaa tilmaamaya fur-furan. Xidh iyaga hal daqiiqo gudaheed, ka hor intaanay cimiladu ku soo laaban xaaladdeedii dabiiciga ahayd.",
   "biome_based_crops.guide.block_count": "%s baloogyada",
   "biome_based_crops.ac.climate_label": "Cimilada",
   "biome_based_crops.ac.previous_climate": "Cimilo hore",
   "biome_based_crops.ac.next_climate": "Cimilada xigta",
   "biome_based_crops.ac.selector_usage": "Guji si aad horay u wado baaskiilka. Qabo Shift ama isticmaal furaha fallaadha bidix si aad gadaal ugu wareegtid.",
-  "biome_based_crops.ac.energy_room": "Qolka: %s blocks"
+  "biome_based_crops.ac.energy_room": "Qolka: %s blocks",
+  "biome_based_crops.greenhouse.status.missing_controller": "Ku rakib heerkulbeeye koronto ama Tough As Nails si aad u diiwaan geliso bayoolajiga aqalka dhirta lagu koriyo."
 }

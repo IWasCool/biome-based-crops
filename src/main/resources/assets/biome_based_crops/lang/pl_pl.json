@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "Biom szklarniowy jest nieprawidłowy",
   "biome_based_crops.ac.room_climate": "Klimat pomieszczenia: %s",
   "biome_based_crops.ac.unit_capacity": "klimatyzatory: zainstalowano %s, potrzebne było %s",
-  "biome_based_crops.ac.capacity_hint": "Każdy klimatyzator obsługuje 256 zamkniętych bloków wewnętrznych podczas zmiany klimatu. Naturalnie pasujący pokój nie potrzebuje klimatyzatora.",
+  "biome_based_crops.ac.capacity_hint": "Każdy klimatyzator obsługuje 256 bloków wewnętrznych podczas zmiany klimatu. Rejestracja biomu zawsze wymaga termoregulatora elektrycznego lub Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Wylot przedni jest zablokowany",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Pomieszczenie potrzebuje więcej klimatyzatorów ze względu na objętość wnętrza",
   "biome_based_crops.greenhouse.status.too_large": "Pomieszczenie przekracza maksymalną objętość wnętrza",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Wymagania wewnętrzne:",
   "biome_based_crops.guide.scroll_materials": "Przewiń, aby zobaczyć więcej materiałów.",
   "biome_based_crops.guide.setup": "Konfiguracja szklarni:",
-  "biome_based_crops.guide.setup_text": "Gdy pomieszczenie osiągnie wymaganą temperaturę i spełni wymagania dotyczące podłogi i bloku wewnętrznego, zarejestruje się jako ten biom, umożliwiając odradzanie się w nim mobów i innych stworzeń. Uprawy i sadzonki wymagają przeszkleń bezpośrednio nad każdą rośliną. Pozostała część dachu może być solidna. Jeśli naturalny klimat spełnia wymagania, nie jest potrzebny żaden klimatyzator. Aby zmienić klimat, należy skierować wyloty powietrza z klimatyzatorów w stronę pomieszczenia. Używaj jednego klimatyzatora na 256 zamkniętych bloków wewnętrznych. Słabe cząsteczki powietrza wskazują otwory. Uszczelnij je w ciągu minuty, zanim klimat zacznie wracać do swojego naturalnego stanu.",
+  "biome_based_crops.guide.setup_text": "Gdy pomieszczenie osiągnie wymaganą temperaturę i spełni wymagania dotyczące podłogi i bloku wewnętrznego, zarejestruje się jako ten biom, umożliwiając odradzanie się w nim mobów i innych stworzeń. Uprawy i sadzonki wymagają przeszkleń bezpośrednio nad każdą rośliną. Pozostała część dachu może być solidna. Rejestracja biomu wymaga termoregulatora elektrycznego lub Tough As Nails skierowanego w stronę pomieszczenia. Zmieniający się klimat wymaga jednego klimatyzatora na 256 bloków wewnętrznych. Słabe cząsteczki powietrza wskazują otwory. Uszczelnij je w ciągu minuty, zanim klimat zacznie wracać do swojego naturalnego stanu.",
   "biome_based_crops.guide.block_count": "%s bloki",
   "biome_based_crops.ac.climate_label": "Klimat",
   "biome_based_crops.ac.previous_climate": "Poprzedni klimat",
   "biome_based_crops.ac.next_climate": "Kolejny klimat",
   "biome_based_crops.ac.selector_usage": "Kliknij, aby przejść dalej. Przytrzymaj Shift lub użyj klawisza strzałki w lewo, aby przewijać wstecz.",
-  "biome_based_crops.ac.energy_room": "Pokój: %s bloków"
+  "biome_based_crops.ac.energy_room": "Pokój: %s bloków",
+  "biome_based_crops.greenhouse.status.missing_controller": "Zainstaluj termoregulator elektryczny lub Tough As Nails, aby zarejestrować biom szklarniowy."
 }

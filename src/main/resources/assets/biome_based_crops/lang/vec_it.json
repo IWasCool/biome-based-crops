@@ -79,7 +79,7 @@
   "biome_based_crops.ac.greenhouse_unregistered": "El bioma in serra no vałido",
   "biome_based_crops.ac.room_climate": "Clima deła stansa: %s",
   "biome_based_crops.ac.unit_capacity": "condisionatori: %s instałai, %s necesari",
-  "biome_based_crops.ac.capacity_hint": "Ogni climatixador el ga 256 blochi interni serà co se canbia el clima. Na stansa che ła corisponde in modo naturałe no ła ga bisogno de aria condisionà.",
+  "biome_based_crops.ac.capacity_hint": "Ogni condisionador el ga 256 blochi interni quando che se canbia el clima. Pa ła registrasion del bioma ła ga senpre bisogno de un termoregołador ełetrico o Tough As Nails.",
   "biome_based_crops.greenhouse.status.blocked_outlet": "Ła presa davanti ła xe blocà",
   "biome_based_crops.greenhouse.status.insufficient_capacity": "Ła stansa ła ga bisogno de pì climatixatori pa el so vołume interno",
   "biome_based_crops.greenhouse.status.too_large": "Ła stansa ła supera el vołume interno masimo",
@@ -109,11 +109,12 @@
   "biome_based_crops.guide.interior_requirements": "Requisiti interni:",
   "biome_based_crops.guide.scroll_materials": "Scorri par altri materiałi.",
   "biome_based_crops.guide.setup": "Inpostasion deła serra:",
-  "biome_based_crops.guide.setup_text": "Na volta che ła stansa ła riva a ła tenperadura richiesta e ła rispeta i recuisiti del pavimento e del bloco interno, ła se registrarà come chel bioma, permetendoghe anca a mob e altre creature de far vegner fora. Łe colture e i pianti i ga bisogno de véro esposto al ciel diretamente sora ogni pianta. El resto del teto pol esar sołido. No ghe xe bisogno de aria condisionà co el clima naturałe el corisponde al requisito. Pa canbiar el clima, punta łe prese d’aria dei condisionadori inte ła stansa. Dopara un condisionador par 256 blochi interni. Łe particełe de aria łe indica verture. Serarle entro un minuto, prima che el clima el scominsia a tornar al so stato naturałe.",
+  "biome_based_crops.guide.setup_text": "Na volta che ła stansa ła riva a ła tenperadura richiesta e ła rispeta i recuisiti del pavimento e del bloco interno, ła se registrarà come chel bioma, permetendoghe a mob e altre creature de far vegner fora anca łu. Łe colture e i pianti i ga bisogno de véro esposto al ciel diretamente sora ogni pianta. El resto del teto pol esar sołido. Pa ła registrasion del bioma ła ga bisogno de un termoregołador ełetrico o Tough As Nails che el varda verso ła stansa. El clima che canbia ghe vol un condisionador par 256 blochi interni. Łe particełe de aria łe indica verture. Serarle entro un minuto, prima che el clima el scominsia a tornar al so stato naturałe.",
   "biome_based_crops.guide.block_count": "%s bloca",
   "biome_based_crops.ac.climate_label": "Clima",
   "biome_based_crops.ac.previous_climate": "Clima precedente",
   "biome_based_crops.ac.next_climate": "Clima dopo",
   "biome_based_crops.ac.selector_usage": "Clicca par ndar vanti. Tegner tenpo Maj o dopara el tasto frecia a sinistra pa girar indrìo.",
-  "biome_based_crops.ac.energy_room": "Stansa: %s isolati"
+  "biome_based_crops.ac.energy_room": "Stansa: %s isolati",
+  "biome_based_crops.greenhouse.status.missing_controller": "Instała un termoregołador ełètrico o Tough As Nails pa registrar un bioma de serra."
 }
