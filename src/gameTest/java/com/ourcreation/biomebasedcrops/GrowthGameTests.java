@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -344,19 +345,24 @@ public final class GrowthGameTests {
             assertRegulatorClimates(helper, regulatorState(regulator, true, false, true),
                     Set.of(CropClimate.NEUTRAL, CropClimate.WARM, CropClimate.HOT));
             assertRegulatorClimates(helper, regulatorState(regulator, true, true, true), Set.of(CropClimate.NEUTRAL));
-            level.setBlock(first, regulatorState(regulator, true, false, false), Block.UPDATE_ALL);
-            level.setBlock(second, regulatorState(regulator, true, false, true), Block.UPDATE_ALL);
+            level.setBlock(first, regulatorState(regulator, true, false, false)
+                    .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Block.UPDATE_ALL);
+            level.setBlock(second, regulatorState(regulator, true, false, true)
+                    .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
             helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Heating or inactive regulator supported cold crops");
 
-            level.setBlock(second, regulatorState(regulator, true, true, false), Block.UPDATE_ALL);
+            level.setBlock(second, regulatorState(regulator, true, true, false)
+                    .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
             helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Inactive regulator hid a later active cooling regulator");
             CropProfile biomeRestricted = new CropProfile(Set.of(CropClimate.COLD),
                     List.of(BiomeSelector.parse("minecraft:jungle").orElseThrow()));
             helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, biomeRestricted),
                     "Cooling regulator bypassed an explicit biome requirement");
-            level.setBlock(second, regulatorState(regulator, false, true, false), Block.UPDATE_ALL);
+            level.setBlock(second, regulatorState(regulator, false, true, false)
+                    .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
             helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Disabled regulator remained active");
-            level.setBlock(second, regulatorState(regulator, true, true, true), Block.UPDATE_ALL);
+            level.setBlock(second, regulatorState(regulator, true, true, true)
+                    .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
             helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Both fuels incorrectly provided a cold climate");
             helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, crop, neutral), "Both fuels did not provide a neutral climate");
 
@@ -380,7 +386,8 @@ public final class GrowthGameTests {
             BlockState previous = level.getBlockState(machine);
             CropProfile cold = new CropProfile(Set.of(CropClimate.COLD));
             try {
-                level.setBlock(machine, regulatorState(regulatorBlock(), true, true, false), Block.UPDATE_ALL);
+                level.setBlock(machine, regulatorState(regulatorBlock(), true, true, false)
+                        .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_ALL);
                 helper.assertTrue(ThermoregulatorDetector.canSupportProfile(level, crop, cold), "Loaded regulator across a chunk boundary was missed");
                 helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop.west(4), cold), "Regulator outside the horizontal radius was counted");
                 helper.assertFalse(ThermoregulatorDetector.canSupportProfile(level, crop.below(4), cold), "Regulator above the vertical range was counted");

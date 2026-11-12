@@ -35,11 +35,15 @@ The default is `cropBiomeRules = []`, preserving all climate defaults. Remove an
 
 ## Greenhouses
 
-A plant can grow in a matching natural biome. Outside that biome, it needs **sky-exposed glass above it**, a **matching greenhouse biome**, and the **climate required by that biome**. Climate is one of **Icy, Cold, Neutral, Warm, Hot**. A controller is needed only when the natural room climate does not match.
+A plant can grow in a matching natural biome. An active Electrical or Tough As Nails thermoregulator can also support climate-based plants in a **four-block horizontal front half-circle**, up to **one block above or below** the machine. This direct support needs no greenhouse, habitat materials, or overhead glass, and works with the greenhouse feature disabled. Solid obstructions stop the airflow; inactive, empty, or redstone-disabled units do not support crops. Explicit biome rules still need the matching biome.
 
-Greenhouses identify their biome from a sealed enclosure, native floors, habitat materials, matching climate, and breathable air. Glass is not part of biome registration. The field guide contains the construction notes; detection is automatic. The biome overlay is reversible and does not rewrite saved chunk biomes or generate terrain. A wrong climate cannot activate a habitat's biome. Outdoor controllers do not replace the greenhouse requirements.
+Outside the natural biome and direct controller coverage, a plant can instead use **sky-exposed glass above it**, a **matching greenhouse biome**, and the **climate required by that biome**. Climate is one of **Icy, Cold, Neutral, Warm, Hot**. A controller is needed only when the natural room climate does not match.
 
-1. Craft the **Farmer's Field Guide** and select the intended biome.
+Greenhouses identify their biome from a sealed enclosure, native floors, habitat materials, matching climate, and breathable air. Glass is not part of biome registration. The field guide contains the construction notes; detection is automatic. The biome overlay is reversible and does not rewrite saved chunk biomes or generate terrain. A wrong climate cannot activate a habitat's biome. Direct controller support grows climate-based crops without registering any greenhouse biome.
+
+On Sable ships, crop biome checks use the plant's current world position while controller coverage uses its ship-local position. Ship movement across biome boundaries changes the natural growing conditions. Moving greenhouse biome overlays are outside this integration's scope.
+
+1. Craft the **Biomes Notebook** and select the intended biome.
 2. Build a sealed room with a native floor and suitable solid walls. Give each crop or sapling glass above it with an unobstructed path to the sky.
 3. Meet the native-floor coverage and every habitat percentage in the guide.
 4. Match the biome's climate naturally or with a powered **Electrical Thermoregulator** set to Icy, Cold, Neutral, Warm or Hot.
@@ -69,9 +73,9 @@ A greenhouse provides **one biome only**. Extra identifying materials can refine
 
 The **Electrical Thermoregulator** retains registry ID `biome_based_crops:air_conditioner`. Supply Forge Energy from any side. It stores **100,000 FE**, accepts **10,000 FE per transfer**, and uses **360 FE/t** while running. A redstone signal stops it.
 
-Its climate selector has exactly five settings, in order: **Icy, Cold, Neutral, Warm, Hot**. Use the vanilla left/right buttons beside the recessed climate readout to select a mode. Clicking the readout also cycles modes; Shift-click cycles backward. The controls support keyboard focus. Opening the menu prioritizes the room directly in front. Hover the small **!** indicator at the top right for **No greenhouse detected** when no room is found, or **Enclosed room detected** with an explicit **greenhouse biome valid/not-valid** result. The sky-exposed-glass instruction appears at the bottom with the capacity guidance. Ceiling-glass counts are informational; glass is not a biome-registration requirement. Put sky-exposed glass directly above each crop or sapling that needs greenhouse growth. Climate, interior capacity, required AC count, and any unmet biome requirement are also shown. Hover the FE gauge for energy, power use, and room volume. There are no numerical temperature controls or readings.
+Its climate selector has exactly five settings, in order: **Icy, Cold, Neutral, Warm, Hot**. Use the vanilla left/right buttons beside the recessed climate readout to select a mode. Clicking the readout also cycles modes; Shift-click cycles backward. The controls support keyboard focus. Opening the menu prioritizes the room directly in front. Hover the small **!** indicator at the top right for **No greenhouse detected** when no room is found, or **Enclosed room detected** with an explicit **greenhouse biome valid/not-valid** result. The sky-exposed-glass instruction appears at the bottom with the capacity guidance. Glass is not a biome-registration requirement. Put sky-exposed glass directly above each crop or sapling that needs greenhouse growth, unless it uses direct thermoregulator support. Climate, interior capacity, and required AC count are also shown. Hover the FE gauge for energy, power use, and room volume. There are no numerical temperature controls or readings.
 
-The front outlet chooses which room an AC serves. Install it inside the room, or in a wall with the outlet facing inward. Its selected climate spreads through that connected, sealed room. Outdoors, only the short breeze directly in front of the outlet changes local climate; standing nearby at the sides or rear does not. The actual climate at the plant must match its greenhouse biome; a controller never bypasses plant lighting, habitat, or biome checks. A naturally matching climate works without a controller.
+The front outlet chooses which room an AC serves. Install it inside the room, or in a wall with the outlet facing inward. Its selected climate spreads through that connected, sealed room. Outdoors, the four-block circular front area changes local climate and directly supports climate-based plants; standing nearby at the sides or rear does not. Greenhouse biome registration still requires its climate and habitat checks. A naturally matching climate works without a controller.
 
 When changing the natural climate, each eligible installed AC supports **256 enclosed interior blocks** in its room. Count the entire interior volume, including its height: an 8×8×4 interior uses one unit's 256-block capacity; 8×8×8 uses two units' 512-block capacity. Capacities add across units facing into the same sealed room, including units placed inside it. **Naturally matching rooms need no AC at any interior size.** Rooms may have any shape within the separate maximum interior-volume limit.
 
@@ -85,7 +89,7 @@ Craft a **Thermometer** with glass, redstone, and an iron ingot in a vertical co
 
 ### Optional integrations
 
-The mod does not require another temperature mod. Optional external climate controllers and native atmosphere integrations remain supported when installed and active. They participate in the same greenhouse climate checks; they cannot let crops grow in an unrelated outdoor biome or remove the plant-lighting requirement. Crop requirements and normal messages do not depend on those integrations.
+The mod does not require another temperature mod. Optional external climate controllers and native atmosphere integrations remain supported when installed and active. Tough As Nails thermoregulators can directly support climate-based plants in the same four-block front area as the Electrical Thermoregulator, without greenhouse glass or habitat requirements. Other integrations retain their own sealed-volume or atmosphere contracts. Crop requirements and normal messages do not depend on those integrations.
 
 ### Large rooms and glass
 
@@ -157,14 +161,14 @@ Biomes resolve to one of the five climate categories using climate tags and thei
 | `enableSaplingBiomeDependencies` | `true` | Apply rules to trees, bamboo, cactus, sugar cane, mushrooms, fungi, and azaleas. |
 | `blockNaturalGrowth` | `true` | Enforce rules for natural growth. |
 | `blockBonemealGrowth` | `true` | Enforce rules for bonemeal and supported fertilizers. |
-| `enableThermoregulatorCompatibility` | `true` | Allow active optional external controllers to condition greenhouse climate. They do not bypass growth requirements. |
-| `thermoregulatorRadius` | `16` | External climate-controller coverage radius, from 1 to 64 blocks. |
+| `enableThermoregulatorCompatibility` | `true` | Allow external greenhouse climate controllers and direct crop support from active Tough As Nails thermoregulators. |
+| `thermoregulatorRadius` | `16` | Search radius for other external controllers, such as Northstar's sealed regulator, from 1 to 64 blocks. Electrical/Tough As Nails direct crop coverage stays at four blocks. |
 | `climateRulesVersion` | `0` | Migration marker for the controller-radius default; earlier factory radii upgrade to 16. |
 | `supportedCropNamespaces` | Generated list | Recognize additional custom crop-like plants and raw produce from these mods. |
 
 Vanilla crop and sapling classes are recognized automatically. Namespaces containing `delight` are also supported. Plants can still be placed outside their growth requirements. Disabling either category restores ordinary growth for it and hides its requirement tooltips. `enableTooltips` is in the client config.
 
-An external controller must be active and cover the queried position. Empty, inactive, and redstone-disabled controllers supply no climate. Their output is considered only as climate conditioning, never as a shortcut around a greenhouse or biome rule.
+An external controller must be active and cover the queried position. Empty, inactive, and redstone-disabled controllers supply no climate. Tough As Nails heating supports Neutral/Warm/Hot crops; cooling supports Icy/Cold/Neutral crops; both modes together support Neutral. Direct thermal support does not replace explicit biome rules or provide oxygen in an unbreathable atmosphere. Northstar's regulator retains its own sealed-volume and kinetic-power requirements.
 
 ## Commands
 

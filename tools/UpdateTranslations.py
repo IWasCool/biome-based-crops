@@ -22,7 +22,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 LANG = ROOT / "src/main/resources/assets/biome_based_crops/lang"
 CACHE = ROOT / "build/translation-cache"
 FORMAT = re.compile(r"%(?:(\d+)\$)?s")
-BRANDS = {"Biome Based Crops"}
+BRANDS = {"Biome Based Crops", "Biomes Notebook", "Tough As Nails", "Sable"}
+PROTECTED = re.compile(FORMAT.pattern + "|" + "|".join(re.escape(brand) for brand in sorted(BRANDS, key=len, reverse=True)))
 CACHE_LOCKS = {}
 LOCKS_GUARD = threading.Lock()
 LOCALE_TARGET = {
@@ -46,7 +47,17 @@ PARENTS = {"bar": "de", "ksh": "de", "nds": "de", "sxu": "de",
 def translation_input(text):
     # Disambiguate Minecraft's physical climate controls for machine translation.
     # Canonical English strings and cache keys remain exactly as authored.
-    text = text.replace("Biome field index", "Biome guide index")
+    text = {
+        "External Climate Controller Compatibility": "Support for external temperature controllers",
+        "Client Tooltips": "Client-side tooltips",
+        "Required Native Specimen Blocks": "Required blocks native to this biome",
+        "Climate Rules Version": "Version of the climate rules",
+        "Biome Specimen Block Overrides": "Custom blocks representing the biome",
+        "Legacy Roof Glass Survey Ratio": "Ratio of roof glass for old greenhouse surveys",
+        "Electrical Thermoregulator": "Electric temperature regulator",
+        "Compressor hums": "The compressor is humming",
+        "Next biomes": "Next natural biomes",
+    }.get(text, text)
     text = text.replace("Faint air wisps indicate openings.", "Faint air particles indicate openings.")
     text = re.sub(r"\bAC outlets\b", "air outlets of the air conditioners", text)
     text = re.sub(r"\bAC units\b", "air conditioners", text)
@@ -85,7 +96,7 @@ def protect(text):
     def replace(match):
         arguments.append(match.group())
         return "{" + str(801000 + len(arguments)) + "}"
-    return FORMAT.sub(replace, text), arguments
+    return PROTECTED.sub(replace, text), arguments
 
 
 def restore(text, arguments):
@@ -116,6 +127,12 @@ def translate_batch(target, texts):
     else:
         for text in texts:
             translated.append(translate_one(target, text))
+    # A batch can translate most labels while echoing a few longer English labels.
+    # Retry just those individually; shared one-word terms may legitimately be identical.
+    if any(value not in {source, translation_input(source)} for source, value in zip(texts, translated)):
+        for index, (source, value) in enumerate(zip(texts, translated)):
+            if value in {source, translation_input(source)} and len(source.split()) >= 3:
+                translated[index] = translate_one(target, source)
     return translated
 
 
@@ -167,13 +184,15 @@ def translate_language_cached(target, texts):
 
 def english_variant(locale, text):
     # English-language game variants keep their own reading styles.
+    # Protect product names and format arguments from spelling/reading-style changes too.
+    text, arguments = protect(text)
     if locale == "en_pt":
         replacements = {"you": "ye", "your": "yer", "the room": "the cabin",
                         "Room": "Cabin", "room": "cabin", "Previous": "Previous",
                         "No ": "Nay ", "Select": "Pick", "Click": "Tap"}
         for before, after in replacements.items():
             text = re.sub(r"\b" + re.escape(before), lambda _: after, text)
-        return "Arrr! " + text
+        return restore("Arrr! " + text, arguments)
     if locale == "lol_us":
         replacements = {"the": "da", "The": "Da", "you": "u", "Your": "Ur",
                         "your": "ur", "are": "r", "is": "iz", "Needs": "Needz",
@@ -181,7 +200,7 @@ def english_variant(locale, text):
                         "climate": "wether", "greenhouse": "growy haus", "Greenhouse": "Growy Haus"}
         for before, after in replacements.items():
             text = re.sub(r"\b" + re.escape(before) + r"\b", lambda _: after, text)
-        return text
+        return restore(text, arguments)
     if locale == "enp":
         replacements = {"Climate": "Weather", "climate": "weather", "Biome": "Landkind",
                         "biome": "landkind", "Greenhouse": "Glasshouse", "greenhouse": "glasshouse",
@@ -190,45 +209,48 @@ def english_variant(locale, text):
                         "Configuration": "Settings", "Controller": "Weather Setter"}
         for before, after in replacements.items():
             text = text.replace(before, after)
-        return text
+        return restore(text, arguments)
     if locale == "enws":
-        return re.sub(r"\byour\b", "thy", re.sub(r"\byou\b", "thou", text)).replace("Click", "Press")
+        return restore(re.sub(r"\byour\b", "thy", re.sub(r"\byou\b", "thou", text)).replace("Click", "Press"), arguments)
     if locale == "en_ud":
         # Keep formatting arguments unflipped so Minecraft still substitutes them.
         alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!?.,:;()[]<>_&1234567890"
         upside = "ɐqɔpǝɟƃɥıɾʞlɯuodbɹsʇnʌʍxʎz∀ꓭƆᗡƎℲפHIſꓘ˥WNOԀꝹᴚS⊥∩ΛMX⅄Z¡¿˙'::)(][><‾⅋⇂ᄅƐㄣϛ9ㄥ860"
         mapping = dict(zip(alphabet, upside))
-        protected, arguments = protect(text)
-        arguments = [argument if "$" in argument else f"%{index}$s"
-                     for index, argument in enumerate(arguments, 1)]
-        pieces = re.split(r"(\{801\d+\})", protected)
+        next_argument = 1
+        for index, argument in enumerate(arguments):
+            if FORMAT.fullmatch(argument):
+                arguments[index] = argument if "$" in argument else f"%{next_argument}$s"
+                next_argument += 1
+        pieces = re.split(r"(\{801\d+\})", text)
         flipped = []
         for part in reversed(pieces):
             flipped.append(part if part.startswith("{801") else "".join(mapping.get(c, c) for c in reversed(part)))
         return restore("".join(flipped), arguments)
-    return text
+    return restore(text, arguments)
 
 
 def writing_variant(locale, text):
+    text, arguments = protect(text)
     if locale == "de_ch":
-        return text.replace("ß", "ss")
+        return restore(text.replace("ß", "ss"), arguments)
     if locale == "sr_cs":
         cyrillic = "абвгдђежзијклљмнњопрстћуфхцчџш"
         latin = ["a", "b", "v", "g", "d", "đ", "e", "ž", "z", "i", "j", "k", "l", "lj", "m", "n", "nj", "o", "p", "r", "s", "t", "ć", "u", "f", "h", "c", "č", "dž", "š"]
         table = dict(zip(cyrillic, latin))
         table.update({source.upper(): target.title() for source, target in zip(cyrillic, latin)})
-        return "".join(table.get(char, char) for char in text)
+        return restore("".join(table.get(char, char) for char in text), arguments)
     if locale == "be_latn":
         table = dict(zip("абвгдеёзйклмнопрстуўфхцчыьэ", ["a", "b", "v", "h", "d", "ie", "io", "z", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "ŭ", "f", "ch", "c", "č", "y", "", "e"]))
         table.update({"ж": "ž", "і": "i", "ш": "š", "ю": "iu", "я": "ia"})
         table.update({source.upper(): target.title() for source, target in list(table.items())})
-        return "".join(table.get(char, char) for char in text)
+        return restore("".join(table.get(char, char) for char in text), arguments)
     if locale == "qid":
         # Indonesian spelling before the 1972 reform.
-        return text.replace("j", "dj").replace("J", "Dj").replace("c", "tj").replace("C", "Tj").replace("u", "oe").replace("U", "Oe").replace("y", "j").replace("Y", "J")
+        return restore(text.replace("j", "dj").replace("J", "Dj").replace("c", "tj").replace("C", "Tj").replace("u", "oe").replace("U", "Oe").replace("y", "j").replace("Y", "J"), arguments)
     if locale == "rpr":
-        return re.sub(r"([бвгджзклмнпрстфхцчшщБВГДЖЗКЛМНПРСТФХЦЧШЩ])\b", r"\1ъ", text)
-    return text
+        return restore(re.sub(r"([бвгджзклмнпрстфхцчшщБВГДЖЗКЛМНПРСТФХЦЧШЩ])\b", r"\1ъ", text), arguments)
+    return restore(text, arguments)
 
 
 def main():
@@ -236,6 +258,7 @@ def main():
     parser.add_argument("--catalog", help="Optional English key catalog to merge into en_us.json")
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--refresh-keys", default="", help="Comma-separated keys to retranslate after terminology changes")
+    parser.add_argument("--only-keys", default="", help="Limit work to these comma-separated keys, preserving all other existing entries")
     args = parser.parse_args()
     english = json.loads((LANG / "en_us.json").read_text(encoding="utf-8"))
     if args.catalog:
@@ -244,11 +267,16 @@ def main():
     records = {}
     groups = {}
     refresh_keys = set(filter(None, args.refresh_keys.split(",")))
+    only_keys = set(filter(None, args.only_keys.split(",")))
+    unknown_keys = (refresh_keys | only_keys) - english.keys()
+    if unknown_keys:
+        parser.error("Unknown translation keys: " + ", ".join(sorted(unknown_keys)))
     for path in sorted(LANG.glob("*.json")):
         locale = path.stem
         original = json.loads(path.read_text(encoding="utf-8"))
         keys = [key for key, value in english.items()
-                if value not in BRANDS and (key in refresh_keys or key not in original or original[key] == value)]
+                if (not only_keys or key in only_keys) and value not in BRANDS
+                and (key in refresh_keys or key not in original or original[key] == value)]
         target = LOCALE_TARGET.get(locale, locale.split("_")[0])
         records[locale] = (path, original, keys, target)
         if target != "en":
@@ -298,7 +326,8 @@ def main():
                 translated[key] = value
             elif key not in translated:
                 translated[key] = value
-        translated.update(specials.get(locale, {}))
+        translated.update({key: value for key, value in specials.get(locale, {}).items()
+                           if key in keys})
         for key, value in translated.items():
             expected = sorted(FORMAT.findall(english[key]))
             actual = sorted(FORMAT.findall(value))
@@ -316,6 +345,9 @@ def main():
     (ROOT / "build/translation-coverage.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     published_coverage = {key: report[key] for key in
                           ("locales", "fallback_locales", "parent_language_inheritance", "writing_system_fallbacks")}
+    published_coverage["source_keys"] = len(english)
+    published_coverage["last_refreshed_keys"] = sorted(refresh_keys)
+    published_coverage["translation_method"] = "Machine-assisted; native-speaker review is not complete."
     published_coverage["fallback_policy"] = "Existing authored translations are retained. Unsupported new strings use English; regional variants may inherit their parent language."
     (ROOT / "tools/translation-coverage.json").write_text(json.dumps(published_coverage, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report), flush=True)

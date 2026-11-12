@@ -11,10 +11,6 @@ class GenerateMachineTextures {
     static final int BODY = 0x8F9691, EDGE = 0x505351, LIGHT = 0xA8B3AB,
             SHADE = 0x707570, DARK = 0x353438,
             BLADE = 0x767C78, HUB = BODY, BLUE = 0x58B5E0, ORANGE = 0xE9934D;
-    // The GUI keeps its established neutral colors when the block palette changes.
-    static final int DIAL_EDGE = 0x5F6966, DIAL_RIM = 0xA1AAA6,
-            DIAL_LIGHT = 0xE1E6E2, DIAL_DARK = 0x364448;
-    static final int DIAL_SIZE = 32;
 
     static void rect(BufferedImage image, int x, int y, int w, int h, int color) {
         for (int j = y; j < y + h; j++) for (int i = x; i < x + w; i++)
@@ -102,48 +98,6 @@ class GenerateMachineTextures {
         return image;
     }
 
-    static BufferedImage climateDial(int selected) {
-        var image = new BufferedImage(DIAL_SIZE, DIAL_SIZE, BufferedImage.TYPE_INT_ARGB);
-        double center = (DIAL_SIZE - 1) / 2.0;
-        for (int y = 0; y < DIAL_SIZE; y++) for (int x = 0; x < DIAL_SIZE; x++) {
-            double radius = Math.hypot(x - center, y - center);
-            if (radius <= 15.5) image.setRGB(x, y, 0xFF000000 |
-                    (radius > 14 ? DIAL_EDGE : radius > 12.5 ? DIAL_RIM : DIAL_DARK));
-        }
-        // Thirteen evenly spaced, short ticks fit inside the rim. Every third
-        // tick is one of the five climate settings and extends one pixel inward.
-        var ticks = image.createGraphics();
-        ticks.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                java.awt.RenderingHints.VALUE_ANTIALIAS_OFF);
-        for (int mark = 0; mark <= 12; mark++) {
-            double angle = Math.toRadians(135 + mark * 22.5);
-            double inner = mark % 3 == 0 ? 8.5 : 10.0;
-            ticks.setColor(new java.awt.Color(mark == 0 ? BLUE : mark == 12 ? ORANGE : DIAL_LIGHT));
-            ticks.drawLine((int) Math.round(center + Math.cos(angle) * inner),
-                    (int) Math.round(center + Math.sin(angle) * inner),
-                    (int) Math.round(center + Math.cos(angle) * 11.0),
-                    (int) Math.round(center + Math.sin(angle) * 11.0));
-        }
-        ticks.dispose();
-        // Bake a rigid arrow into each setting, including its triangular tip.
-        // Rendering never rotates a separate texture off the pixel grid.
-        double angle = Math.toRadians(135 + selected * 67.5);
-        double ux = Math.cos(angle), uy = Math.sin(angle);
-        for (int y = 0; y < DIAL_SIZE; y++) for (int x = 0; x < DIAL_SIZE; x++) {
-            double dx = x - center, dy = y - center;
-            double forward = dx * ux + dy * uy, side = Math.abs(-dx * uy + dy * ux);
-            boolean shaft = forward >= 0 && forward <= 4.5 && side <= 0.8;
-            boolean tip = forward >= 3.5 && forward <= 7.7 && side <= (7.7 - forward) * 0.65;
-            if (shaft || tip) rect(image, x, y, 1, 1, 0xD92B36);
-        }
-        for (int y = 13; y <= 18; y++) for (int x = 13; x <= 18; x++) {
-            double radius = Math.hypot(x - center, y - center);
-            if (radius <= 2.8) rect(image, x, y, 1, 1,
-                    radius > 1.8 ? DIAL_EDGE : y < center ? DIAL_LIGHT : DIAL_RIM);
-        }
-        return image;
-    }
-
     static void save(String name, BufferedImage image) throws IOException {
         var path = ROOT.resolve(name + ".png");
         Files.createDirectories(path.getParent());
@@ -182,10 +136,6 @@ class GenerateMachineTextures {
                 "{\n  \"animation\": {\n    \"width\": 8,\n    \"height\": 8,\n    \"frametime\": 3,\n    \"frames\": [0, 1],\n    \"interpolate\": false\n  }\n}\n");
         Files.deleteIfExists(ROOT.resolve("block/air_conditioner_back_on.png.mcmeta"));
 
-        String[] climates = {"icy", "cold", "neutral", "warm", "hot"};
-        for (int i = 0; i < climates.length; i++) save("gui/temperature_dial_" + climates[i], climateDial(i));
-        var dial = climateDial(2);
-        save("gui/temperature_dial", dial);
         save("gui/energy_empty", energyGauge(false));
         save("gui/energy_filled", energyGauge(true));
         Files.deleteIfExists(ROOT.resolve("gui/temperature_needle.png"));
@@ -204,28 +154,13 @@ class GenerateMachineTextures {
             g.drawImage(face, 24 + i * 182, 36, 160, 160, null);
             g.drawString(names[i], 24 + i * 182, 222);
         }
-        g.drawImage(dial, 24, 272, 168, 168, null);
         g.setColor(java.awt.Color.WHITE);
-        g.drawString("32px dial / thirteen aligned ticks and fixed arrow pointers", 220, 300);
-        g.drawString("16px faces / shared casing palette / 12px fan", 220, 330);
+        g.drawString("16px faces / shared casing palette / 12px fan", 24, 300);
         g.drawImage(activeFanPreview(0), 720, 272, 160, 160, null);
         g.drawImage(activeFanPreview(1), 906, 272, 160, 160, null);
         g.dispose();
         Files.createDirectories(Path.of("build"));
         ImageIO.write(preview, "PNG", Path.of("build/machine-textures-preview.png").toFile());
 
-        var dialPreview = new BufferedImage(800, 190, BufferedImage.TYPE_INT_ARGB);
-        var d = dialPreview.createGraphics();
-        d.setColor(new java.awt.Color(0xC6C6C6));
-        d.fillRect(0, 0, dialPreview.getWidth(), dialPreview.getHeight());
-        d.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
-                java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        d.setColor(new java.awt.Color(0x404040));
-        for (int i = 0; i < climates.length; i++) {
-            d.drawImage(climateDial(i), 16 + i * 160, 16, 128, 128, null);
-            d.drawString(climates[i], 64 + i * 160, 166);
-        }
-        d.dispose();
-        ImageIO.write(dialPreview, "PNG", Path.of("build/dial-pixel-preview.png").toFile());
     }
 }

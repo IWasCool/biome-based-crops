@@ -118,7 +118,8 @@ public final class ToughAsNailsGreenhouseGameTests {
             CropClimate baseline = GreenhouseEnvironment.currentClimate(level, query);
             for (boolean heating : new boolean[] { true, false }) {
                 level.removeBlock(machine, false);
-                level.setBlock(machine, regulator.defaultBlockState().setValue(BlockStateProperties.ENABLED, true), Block.UPDATE_ALL);
+                level.setBlock(machine, regulator.defaultBlockState().setValue(BlockStateProperties.ENABLED, true)
+                        .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Block.UPDATE_ALL);
                 Container fuel = (Container) level.getBlockEntity(machine);
                 fuel.setItem(heating ? 1 : 0, new ItemStack(heating ? Items.COAL : Items.ICE));
                 tickRegulator(level.getBlockEntity(machine));
@@ -128,8 +129,9 @@ public final class ToughAsNailsGreenhouseGameTests {
                 Object gauge = Class.forName("toughasnails.temperature.TemperatureHelperImpl")
                         .getMethod("getTemperatureAtPosWithoutProximity", Level.class, BlockPos.class).invoke(null, level, query);
                 helper.assertTrue(gauge.toString().equals(desired.name()), "Optional gauge did not use the climate category: " + gauge);
-                helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, machine.east(15)).isPresent(), "Controller did not reach across its expanded radius");
-                helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, machine.east(17)).isEmpty(), "Controller exceeded its climate radius");
+                helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, machine.east(4)).isPresent(), "Controller missed the four-block front edge");
+                helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, machine.east(5)).isEmpty(), "Controller exceeded its four-block reach");
+                helper.assertTrue(ThermoregulatorDetector.nearbyClimate(level, machine.west()).isEmpty(), "Controller conditioned behind itself");
             }
             level.setBlock(machine.below(), Blocks.REDSTONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
             helper.assertTrue(GreenhouseEnvironment.currentClimate(level, query) == baseline, "Disabled regulator still changes the climate");

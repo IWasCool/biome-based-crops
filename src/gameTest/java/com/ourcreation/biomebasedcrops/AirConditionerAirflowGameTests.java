@@ -28,12 +28,13 @@ public final class AirConditionerAirflowGameTests {
             Direction side = face.getClockWise();
             for (BlockPos at : new BlockPos[] { machine.relative(face), machine.relative(face, 4),
                     machine.relative(face, 3).relative(side), machine.relative(face, 3).relative(side, -1),
-                    machine.relative(face, 3).above(), machine.relative(face, 4).relative(side, 2) }) {
+                    machine.relative(face, 3).above(), machine.relative(face).relative(side, 3) }) {
                 helper.assertTrue(AirConditionerAirflow.climateAt(level, at) == CropClimate.HOT, "Missing outlet wind at " + at + " facing " + face);
             }
             for (BlockPos at : new BlockPos[] { machine, machine.relative(side), machine.relative(side, -1),
                     machine.relative(face.getOpposite()), machine.above(), machine.relative(face, 5),
-                    machine.relative(face).relative(side, 2), machine.relative(face).above(2) })
+                    machine.relative(face, 4).relative(side), machine.relative(face, 3).relative(side, 3),
+                    machine.relative(face).above(2) })
                 helper.assertTrue(AirConditionerAirflow.climateAt(level, at) == null, "Proximity outside the outlet wind changed climate at " + at);
             BlockPos barrier = machine.relative(face, 2);
             level.setBlock(barrier, Blocks.GLASS.defaultBlockState(), Block.UPDATE_ALL);

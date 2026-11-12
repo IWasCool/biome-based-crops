@@ -25,6 +25,9 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
     private static final int ENERGY_X = 13, ENERGY_Y = 28, ENERGY_WIDTH = 18, ENERGY_HEIGHT = 60;
     private static final int ENERGY_TEXTURE_SIZE = 16;
     private static final int STATUS_X = 157, STATUS_Y = 3;
+    private static final int CLIMATE_X = 42, CLIMATE_Y = 57;
+    private static final int CLIMATE_ARROW_WIDTH = 18, CLIMATE_WIDTH = 80, CLIMATE_GAP = 4;
+    private static final int CLIMATE_CENTER_X = CLIMATE_X + CLIMATE_ARROW_WIDTH + CLIMATE_GAP + CLIMATE_WIDTH / 2;
     private CropClimate selectedClimate;
     private int pendingTicks;
 
@@ -38,12 +41,14 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
         super.init();
         selectedClimate = menu.targetClimate();
         addRenderableWidget(Button.builder(Component.literal("<"), button -> cycleClimate(-1))
-                .bounds(leftPos + 47, topPos + 48, 20, 20)
+                .bounds(leftPos + CLIMATE_X, topPos + CLIMATE_Y, CLIMATE_ARROW_WIDTH, 20)
                 .createNarration(message -> Component.translatable("biome_based_crops.ac.previous_climate")).build());
-        addRenderableWidget(new ClimateModeButton(leftPos + 69, topPos + 48, 72,
+        addRenderableWidget(new ClimateModeButton(leftPos + CLIMATE_X + CLIMATE_ARROW_WIDTH + CLIMATE_GAP,
+                topPos + CLIMATE_Y, CLIMATE_WIDTH,
                 () -> selectedClimate, this::selectClimate));
         addRenderableWidget(Button.builder(Component.literal(">"), button -> cycleClimate(1))
-                .bounds(leftPos + 143, topPos + 48, 20, 20)
+                .bounds(leftPos + CLIMATE_X + CLIMATE_ARROW_WIDTH + CLIMATE_WIDTH + CLIMATE_GAP * 2,
+                        topPos + CLIMATE_Y, CLIMATE_ARROW_WIDTH, 20)
                 .createNarration(message -> Component.translatable("biome_based_crops.ac.next_climate")).build());
         addRenderableWidget(new RoomStatusIndicator(leftPos + STATUS_X, topPos + STATUS_Y));
     }
@@ -98,7 +103,7 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
         g.pose().popPose();
         g.drawString(font, Component.translatable("container.inventory"), inventoryLabelX, inventoryLabelY, 0x404040, false);
         String modeLabel = Component.translatable("biome_based_crops.ac.climate_label").getString();
-        g.drawString(font, modeLabel, 105 - font.width(modeLabel) / 2, 29, 0x404040, false);
+        g.drawString(font, modeLabel, CLIMATE_CENTER_X - font.width(modeLabel) / 2, CLIMATE_Y - 18, 0x404040, false);
         g.drawString(font, "FE", ENERGY_X + (ENERGY_WIDTH - font.width("FE")) / 2, 94, 0x404040, false);
     }
 
@@ -134,10 +139,9 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
                 ? ChatFormatting.GREEN : menu.roomStatus() == AirConditionerMenu.RoomStatus.SCANNING
                 ? ChatFormatting.GRAY : ChatFormatting.GOLD));
         if (menu.roomStatus() != AirConditionerMenu.RoomStatus.VALID
-                && menu.roomStatus() != AirConditionerMenu.RoomStatus.SCANNING) lines.add(menu.roomStatus().message());
+                && menu.roomStatus() != AirConditionerMenu.RoomStatus.SCANNING
+                && menu.roomStatus() != AirConditionerMenu.RoomStatus.WRONG_CLIMATE) lines.add(menu.roomStatus().message());
         if (hasDetectedRoom()) {
-            lines.add(Component.translatable("biome_based_crops.ac.ceiling_glass", number(menu.roofGlassFound()))
-                    .withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable("biome_based_crops.ac.room_climate", menu.roomClimate().component()));
             lines.add(Component.translatable("biome_based_crops.ac.interior_capacity",
                     number(menu.roomInteriorBlocks()), number(menu.roomInteriorCapacity())));
@@ -162,15 +166,8 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
         }
 
         @Override protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-            int color = menu.roomStatus() == AirConditionerMenu.RoomStatus.VALID ? 0xFF3F6645
-                    : menu.roomStatus() == AirConditionerMenu.RoomStatus.SCANNING ? 0xFF4E5C5B : 0xFF805B37;
+            int color = 0xFF404040;
             int x = getX() + 1, y = getY() + 1;
-            int frame = isHoveredOrFocused() ? 0xFF858585 : 0x70858585;
-            g.fill(x + 1, y + 1, x + 13, y + 13, 0x30FFFFFF);
-            g.fill(x, y, x + 14, y + 1, frame);
-            g.fill(x, y + 13, x + 14, y + 14, frame);
-            g.fill(x, y + 1, x + 1, y + 13, frame);
-            g.fill(x + 13, y + 1, x + 14, y + 13, frame);
             // Center the actual pixels instead of a font glyph's advance width.
             g.fill(x + 6, y + 2, x + 8, y + 8, color);
             g.fill(x + 6, y + 10, x + 8, y + 12, color);

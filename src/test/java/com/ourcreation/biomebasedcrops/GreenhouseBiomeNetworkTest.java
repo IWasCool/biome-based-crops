@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -20,6 +21,28 @@ import org.junit.jupiter.api.Test;
 class GreenhouseBiomeNetworkTest {
     private static final ResourceLocation OVERWORLD = id("minecraft:overworld");
     private static final ResourceLocation DESERT = id("minecraft:desert");
+
+    @Test
+    void smallRoomsOnlyEvaluateCoverageInsideTheSyncedWindow() {
+        BlockPos player = new BlockPos(-1, 64, -1);
+        BlockPos lowEdge = new BlockPos(-32, 48, -32);
+        BlockPos highEdge = new BlockPos(15, 95, 15);
+        Set<Long> positions = Set.of(player.asLong(), lowEdge.asLong(), highEdge.asLong(),
+                new BlockPos(-33, 48, -32).asLong(), new BlockPos(16, 95, 15).asLong(),
+                new BlockPos(0, 96, 0).asLong(), new BlockPos(1000, 64, 1000).asLong());
+        var expected = GreenhouseBiomeNetwork.masksFor(Set.of(player.asLong(), highEdge.asLong()), player);
+
+        for (Set<Long> geometry : List.of(positions, new LongOpenHashSet(positions))) {
+            var evaluations = new AtomicInteger();
+            var actual = GreenhouseBiomeNetwork.masksFor(geometry, player, position -> {
+                evaluations.incrementAndGet();
+                return position.getY() >= 64;
+            });
+
+            assertEquals(expected, actual, "Window filtering must preserve the exact covered masks");
+            assertEquals(3, evaluations.get(), "Only the three cells within the signed section window need climate checks");
+        }
+    }
 
     @Test
     void enormousRoomSendsOnly27NearbySectionsAndFullSectionsCompressUnder300Bytes() {

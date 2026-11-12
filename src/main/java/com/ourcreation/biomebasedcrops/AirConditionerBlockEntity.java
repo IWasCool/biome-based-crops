@@ -43,7 +43,10 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
     public boolean hasThermalInfluence() { return hasPaidAirflow(); }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, AirConditionerBlockEntity unit) {
-        if (state.getValue(AirConditionerBlock.ACTIVE)) AirConditionerBlock.emitAirflow(level, pos, state);
+        if (state.getValue(AirConditionerBlock.ACTIVE)) {
+            AirConditionerBlock.emitAirflow(level, pos, state);
+            AirConditionerBlock.emitIntakeAirflow(level, pos, state);
+        }
     }
 
     private RoomClimateState roomState(boolean discover) {
@@ -103,7 +106,6 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
         if (level.isClientSide || unit.lastTickedGameTime == level.getGameTime()) return;
         unit.lastTickedGameTime = level.getGameTime();
         unit.updateTargetIndicator();
-        if (!GreenhouseSettings.enabled()) { unit.setActive(false); return; }
         RoomClimateState room = unit.roomState(true);
         int cost = unit.currentEnergyCost();
         boolean working = cost > 0 && !level.hasNeighborSignal(pos) && unit.battery.getEnergyStored() >= cost;

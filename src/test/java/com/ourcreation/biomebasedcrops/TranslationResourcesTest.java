@@ -83,9 +83,30 @@ class TranslationResourcesTest {
                 "ja_jp", "ko_kr", "zh_cn", "ar_sa", "hi_in", "tr_tr")) {
             JsonObject language = read(locale);
             for (String key : List.of("biome_based_crops.guide.setup_text", "biome_based_crops.ac.selector_usage",
-                    "biome_based_crops.ac.capacity_hint", "biome_based_crops.message.blocked")) {
+                    "biome_based_crops.ac.capacity_hint", "biome_based_crops.message.blocked",
+                    "biome_based_crops.ac.sky_requirement", "biome_based_crops.greenhouse.status.no_glass")) {
                 assertNotEquals(english.get(key).getAsString(), language.get(key).getAsString(),
                         locale + ": " + key + " should not fall back to English");
+            }
+        }
+    }
+
+    @Test
+    void notebookNamesAndControllerGuidanceStayCurrentInEveryLocale() throws IOException {
+        try (var paths = Files.list(LANG)) {
+            for (Path path : paths.filter(p -> p.toString().endsWith(".json")).toList()) {
+                JsonObject language = JsonParser.parseString(Files.readString(path, StandardCharsets.UTF_8)).getAsJsonObject();
+                for (String key : List.of("item.biome_based_crops.farmer_field_guide", "biome_based_crops.guide.title",
+                        "itemGroup.biome_based_crops")) {
+                    assertEquals("Biomes Notebook", language.get(key).getAsString(), path + ": " + key);
+                }
+                assertTrue(language.get("biome_based_crops.message.blocked_biomes").getAsString().contains("Biomes Notebook"),
+                        path + " must point readers to the current notebook name");
+                String setup = language.get("biome_based_crops.guide.setup_text").getAsString();
+                assertTrue(setup.contains("Tough As Nails") && setup.contains("Sable"),
+                        path + " must include the current controller and ship guidance");
+                assertEquals(List.of(1), arguments(language.get("biome_based_crops.guide.required_climate").getAsString()),
+                        path + " climate headings need the selected climate argument");
             }
         }
     }
@@ -110,7 +131,7 @@ class TranslationResourcesTest {
             assertFalse(text.contains("thermoregulator") || text.contains("tough as nails"), key);
         }
         assertEquals("Needs %s climate or a greenhouse.", english.get("biome_based_crops.message.blocked").getAsString());
-        assertEquals("Needs a matching biome or greenhouse. See Field Guide.",
+        assertEquals("Needs a matching biome or greenhouse. See Biomes Notebook.",
                 english.get("biome_based_crops.message.blocked_biomes").getAsString());
         assertTrue(arguments(english.get("biome_based_crops.message.blocked_biomes").getAsString()).isEmpty());
     }

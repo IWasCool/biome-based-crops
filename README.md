@@ -12,7 +12,7 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 
 ## Features
 
-- Find every mod block and item in the dedicated **Biome Based Crops** creative tab after the vanilla tabs. Use the creative inventory's page arrows if the tab is on another page.
+- Find every mod block and item in the dedicated **Biomes Notebook** creative tab after the vanilla tabs. Use the creative inventory's page arrows if the tab is on another page.
 - Assign crops and saplings to climates, specific biomes, or biome tags.
 - Build greenhouses that automatically identify their biome from required native materials, matching climate, and breathable air.
 - Choose Icy, Cold, Neutral, Warm or Hot with an FE-powered Electrical Thermoregulator. Each AC supports 256 enclosed interior blocks when changing climate; naturally matching greenhouses need no AC.
@@ -20,8 +20,10 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 - Distinguish greenhouse biomes with characteristic flowers, trees, and rocks; mixed completed layouts never grant multiple biome identities.
 - Apply the detected biome inside the room, including its natural mob spawn lists, while the surrounding world keeps its native biome.
 - Grow greenhouse plants under sky-exposed glass.
+- Grow climate-based crops in the four-block circular front area of an active Electrical or Tough As Nails thermoregulator, without a greenhouse or glass.
+- On Sable ships, crop biome requirements follow the ship's actual world location; local thermoregulators move with the crops.
 - Open doors and holes release subtle air wisps; reseal the room before its climate drifts back toward the natural climate.
-- Read local conditions with a Thermometer and plan greenhouses using the Farmer's Field Guide.
+- Read local conditions with a Thermometer and plan greenhouses using the Biomes Notebook.
 - Control natural growth and bonemeal restrictions independently.
 - Disable restrictions separately for crops and trees with config settings or operator commands.
 - Show concise climate requirements in plant item tooltips.
@@ -30,25 +32,29 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 
 ## Greenhouses
 
-Plants grow normally in a natural biome that represents their allowed climate or explicit biome rule. Outside that natural biome, crops and saplings need all three conditions:
+Plants grow normally in a natural biome that represents their allowed climate or explicit biome rule. Active Electrical and Tough As Nails thermoregulators can also support climate-based crops and saplings directly: aim the front toward the plants, within a four-block horizontal radius and one block above or below. This rounded front half-circle needs no enclosure, habitat materials, or overhead glass. Solid obstructions block the airflow; fuel, FE, and redstone shutdowns still apply. Explicit biome rules require a matching biome.
+
+For plants outside both their natural biome and direct thermoregulator coverage, greenhouses provide another option with all three conditions:
 
 1. **Sky-exposed glass above the plant.** Keep an unobstructed path from the glass to the sky.
-2. **A matching greenhouse biome.** Build its native floor and every habitat material shown in the Farmer's Field Guide, inside a sealed room.
+2. **A matching greenhouse biome.** Build its native floor and every habitat material shown in the Biomes Notebook, inside a sealed room.
 3. **The biome's required climate.** The actual room must be Icy, Cold, Neutral, Warm or Hot as required. Matching natural climate is enough; use a powered controller when it does not match.
 
 A sealed room registers its greenhouse biome when its native floor, habitat, and climate qualify. **Glass is only a crop and sapling requirement; it is not needed to register the biome.** Put sky-exposed glass directly above each plant that needs greenhouse growth. The rest of the roof may be solid. The guide's **Greenhouse Setup** section explains these checks. Room detection is automatic, with no scanner block, probe, or manual survey.
 
 Desert needs 100% sand ground; Forest needs 90% native soil. Basalt Deltas needs a 90% basalt/blackstone floor, interior magma blocks equal to 3% of the enclosed interior volume, and Hot climate. Habitat materials must be inside the room; foundation, wall, and roof blocks do not count. The guide shows whole-number habitat percentages and keeps floor choices, climate requirements, and construction notes together. Item icons support JEI, EMI, or REI recipes and uses when installed.
 
-Craft the **Farmer's Field Guide** with a book and a crop, seed, or sapling. Its single 16-by-16 texture preserves the vanilla book's exact outline and transparent spacing, with brown leather, a recessed cover mark, pale pages, and a red binding ribbon with a small gold clasp. The open-book interface keeps the vanilla page layout with a matching leather border and plays Minecraft's book sound when opened.
+Craft the **Biomes Notebook** with a book and a crop, seed, or sapling. Its updated 16-by-16 item texture depicts a leather-bound notebook with pale pages. The open-book interface keeps the vanilla page layout with a matching leather border and plays Minecraft's book sound when opened.
 
-The **Electrical Thermoregulator** has exactly five settings: **Icy, Cold, Neutral, Warm, Hot**. Use the left and right buttons beside the climate readout to change the selected mode. Its front outlet must face into the room it conditions. A powered unit shares its climate through that sealed room; outdoors, it affects only the short breeze directly in front of its outlet. Nearby players at its sides or rear keep their natural climate. Supply FE from any side: it stores **100,000 FE**, accepts **10,000 FE per transfer**, and uses **360 FE/t** while running. Redstone or power loss stops it. A controller alone does not let crops bypass plant lighting or greenhouse-biome requirements.
+The **Electrical Thermoregulator** has exactly five settings: **Icy, Cold, Neutral, Warm, Hot**. Use the left and right buttons beside the climate readout to change the selected mode. Its front outlet must face the plants or room it conditions. A powered unit shares its climate through a sealed room and directly supports climate-based crops in its four-block front half-circle. Nearby players at its sides or rear keep their natural climate. Supply FE from any side: it stores **100,000 FE**, accepts **10,000 FE per transfer**, and uses **360 FE/t** while running. Redstone or power loss stops it. Direct crop support also works when the greenhouse feature is disabled; Minecraft's ordinary plant placement and lighting rules still apply.
+
+**Sable ships:** crop biome checks sample each plant's current world location, including after translation or rotation. Controller coverage stays local to the ship. This integration covers crop growth and local thermoregulator climate; moving greenhouse biomes and shipboard natural mob spawning are not included.
 
 When changing the natural climate, each installed AC supports **256 enclosed interior blocks** in its front room. Capacity counts the room's width, length, and height: an 8×8×4 interior uses 256 blocks, while 8×8×8 uses 512. Additional units combine their capacity: two support 512 interior blocks, four support 1,024. **A naturally matching greenhouse needs no AC, regardless of its interior volume.** Put units inside the room or in its wall with the outlets facing inward; units facing away do not count toward that room. The configured maximum interior volume still applies.
 
 A previously sealed room keeps its existing climate briefly when a door opens or a block is removed. Faint air particles flow from the opening. Close the door or repair the hole within about **one minute** to retain the room climate. If the opening remains, the room gradually steps through the five climate categories toward the natural climate; an AC cannot hold an open room at its selected setting.
 
-The AC retains its 16-pixel Power Grid-inspired green-gray and charcoal artwork, large animated fan, subtle airflow particles, and blue/orange front indicator. Its screen uses a single recessed climate readout with vanilla left/right buttons, a red FE gauge, and a small hoverable **!** indicator at the top right. Opening the unit prioritizes the room in front. The indicator reports **No greenhouse detected** when no room is found. An enclosed room shows its **greenhouse biome valid/not-valid** result, followed by room statistics. Plant-lighting guidance appears at the bottom of the tooltip. Ceiling-glass counts are informational; they do not impose a whole-roof quota. Climate, AC interior capacity, and any remaining biome requirement are included below those checks. Resource packs can replace the artwork.
+The AC retains its 16-pixel Power Grid-inspired green-gray and charcoal artwork, large animated fan, subtle airflow particles, and blue/orange front indicator. Its screen uses a single recessed climate readout with vanilla left/right buttons, a red FE gauge, and a small hoverable **!** indicator at the top right. Opening the unit prioritizes the room in front. The indicator reports **No greenhouse detected** when no room is found. An enclosed room shows its **greenhouse biome valid/not-valid** result, followed by room statistics. Plant-lighting guidance for greenhouse growth appears at the bottom of the tooltip. Climate and AC interior capacity are included below those checks. Resource packs can replace the artwork.
 
 Craft the **Thermometer** with glass, redstone, and an iron ingot in a vertical column. It reports **climate and biome at the player's position**, including when clicking blocks. The biome is the registered greenhouse biome where one is active, otherwise the natural biome. Its gray casing, small red bulb, tinted glass, and scale remain; the mercury readout shows the five climate categories. The glass renders separately from the solid readout to keep the bulb stable.
 

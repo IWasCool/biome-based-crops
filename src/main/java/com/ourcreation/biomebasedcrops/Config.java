@@ -10,7 +10,7 @@ public class Config {
     public static final ModConfigSpec.BooleanValue ENABLE_TOOLTIPS = ClientConfig.ENABLE_TOOLTIPS;
 
     public static final ModConfigSpec.BooleanValue BLOCK_NATURAL_GROWTH = BUILDER
-            .comment("Enforces matching natural biome or sky-lit greenhouse biome and climate requirements.")
+            .comment("Enforces matching natural biome, direct thermoregulator climate, or sky-lit greenhouse requirements.")
             .define("blockNaturalGrowth", true);
 
     public static final ModConfigSpec.BooleanValue BLOCK_BONEMEAL_GROWTH = BUILDER
@@ -30,11 +30,13 @@ public class Config {
             .define("enableSaplingBiomeDependencies", true);
 
     public static final ModConfigSpec.BooleanValue ENABLE_THERMOREGULATOR_COMPATIBILITY = BUILDER
-            .comment("Allows optional external climate controllers to condition greenhouse air; controllers alone never bypass plant requirements.")
+            .comment("Allows active external climate controllers to condition greenhouse air and Tough As Nails thermoregulators to support crops in their four-block front area.",
+                    "Direct crop climate support needs no greenhouse or glass; explicit biome rules still require a matching biome.")
             .define("enableThermoregulatorCompatibility", true);
 
     public static final ModConfigSpec.IntValue THERMOREGULATOR_RADIUS = BUILDER
-            .comment("Climate coverage radius checked for active external climate controllers.")
+            .comment("Search radius for other active external climate controllers, such as Northstar's sealed regulator.",
+                    "Electrical and Tough As Nails thermoregulators always have a four-block circular front area for direct crop support.")
             .defineInRange("thermoregulatorRadius", 16, 1, 64);
 
     public static final ModConfigSpec.IntValue CLIMATE_RULES_VERSION = BUILDER

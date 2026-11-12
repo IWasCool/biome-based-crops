@@ -85,4 +85,26 @@ public final class AirConditionerBlock extends BaseEntityBlock {
                 (face.getStepX() * forward + face.getStepZ() * sideways) * speed, 0.002,
                 (face.getStepZ() * forward - face.getStepX() * sideways) * speed);
     }
+
+    public static void emitIntakeAirflow(Level level, BlockPos pos, BlockState state) {
+        // A sparse rear wisp makes the intake visible without competing with the outlet fan.
+        if (Math.floorMod(level.getGameTime() + pos.asLong(), 4L) != 0) return;
+        Direction rear = state.getValue(FACING).getOpposite();
+        BlockPos intake = pos.relative(rear);
+        if (!level.hasChunkAt(intake) || !level.getFluidState(intake).isEmpty()
+                || !level.getBlockState(intake).getCollisionShape(level, intake).isEmpty()) return;
+
+        RandomSource random = level.random;
+        double distance = 0.85 + random.nextDouble() * 0.2;
+        double across = (random.nextDouble() - 0.5) * 0.44;
+        double height = 0.34 + random.nextDouble() * 0.4;
+        double x = pos.getX() + 0.5 + rear.getStepX() * distance + rear.getStepZ() * across;
+        double z = pos.getZ() + 0.5 + rear.getStepZ() * distance - rear.getStepX() * across;
+        // Converge toward the vent. Particle collision stops the wisp at the machine's face.
+        double targetX = pos.getX() + 0.5 + rear.getStepX() * 0.53;
+        double targetZ = pos.getZ() + 0.5 + rear.getStepZ() * 0.53;
+        level.addParticle(GreenhouseContent.AIRFLOW_PARTICLE.get(),
+                x, pos.getY() + height, z,
+                (targetX - x) * 0.07, (0.55 - height) * 0.07, (targetZ - z) * 0.07);
+    }
 }

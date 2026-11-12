@@ -27,5 +27,13 @@
   "writing_system_fallbacks": {
     "zlm_arab": "Malay Latin script for new text; existing Jawi text preserved"
   },
-  "fallback_policy": "Existing authored translations are retained. Unsupported new strings use English; regional variants may inherit their parent language."
+  "fallback_policy": "Existing authored translations are retained. Unsupported new strings use English; regional variants may inherit their parent language.",
+  "source_keys": 117,
+  "last_refreshed_keys": [
+    "biome_based_crops.ac.sky_requirement",
+    "biome_based_crops.greenhouse.status.no_glass",
+    "biome_based_crops.guide.setup_text",
+    "biome_based_crops.message.blocked_biomes"
+  ],
+  "translation_method": "Machine-assisted; native-speaker review is not complete."
 }

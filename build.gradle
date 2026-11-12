@@ -20,7 +20,7 @@ sourceSets.main.resources {
     srcDir('src/generated/resources')
 
     exclude("**/*.bbmodel")
-    exclude("src/generated/**/.cache")
+    exclude("**/.cache/**", "**/.DS_Store", "**/Thumbs.db")
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -38,6 +38,12 @@ sourceSets {
 
 repositories {
     mavenCentral()
+    exclusiveContent {
+        forRepository {
+            maven { url = 'https://maven.ryanhcode.dev/releases' }
+        }
+        filter { includeGroup 'dev.ryanhcode.sable-companion' }
+    }
     maven { url = 'https://maven.blamejared.com' }
     maven { url = 'https://maven.terraformersmc.com/releases' }
     maven { url = 'https://maven.shedaniel.me' }
@@ -122,6 +128,10 @@ configurations {
 }
 
 dependencies {
+    // Safe identity implementation without Sable; Sable supplies the live ship poses when installed.
+    jarJar(api('dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:[1.6.0,2.0)')) {
+        version { prefer '1.6.0' }
+    }
     compileOnly 'mezz.jei:jei-1.21.1-common-api:19.53.0.425'
     compileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1:api'
     compileOnly 'me.shedaniel:RoughlyEnoughItems-api-neoforge:16.0.799'
@@ -191,3 +201,92 @@ idea {
         downloadJavadoc = true
     }
 }
+
+// Inspect the artifact itself, so a future source-set or resource-copy change cannot ship tests or editor files.
+abstract class VerifyReleaseJar extends DefaultTask {
+    @InputFile
+    @PathSensitive(PathSensitivity.NONE)
+    abstract RegularFileProperty getReleaseJar()
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    abstract ConfigurableFileCollection getMainClassDirectories()
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    abstract ConfigurableFileCollection getMainResourceDirectories()
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    abstract ConfigurableFileCollection getTestResourceDirectories()
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    abstract ConfigurableFileCollection getTestSourceDirectories()
+
+    @Input
+    abstract ListProperty<String> getRequiredEntries()
+
+    private static Set<String> filesBelow(Set<File> roots) {
+        Set<String> paths = new HashSet<>()
+        roots.findAll { it.isDirectory() }.each { root ->
+            java.nio.file.Files.walk(root.toPath()).withCloseable { files ->
+                files.filter { java.nio.file.Files.isRegularFile(it) }.forEach { path ->
+                    paths.add(root.toPath().relativize(path).toString().replace('\\', '/'))
+                }
+            }
+        }
+        return paths
+    }
+
+    @TaskAction
+    void verify() {
+        Set<String> classes = filesBelow(mainClassDirectories.files).findAll { it.endsWith('.class') } as Set
+        Set<String> resources = filesBelow(mainResourceDirectories.files)
+        Set<String> testResources = filesBelow(testResourceDirectories.files)
+        Set<String> testClasses = filesBelow(testSourceDirectories.files).findAll { it.endsWith('.java') }
+                .collect { it.substring(0, it.length() - 5) } as Set
+        List<String> problems = []
+        new java.util.zip.ZipFile(releaseJar.get().asFile).withCloseable { archive ->
+            Set<String> entries = Collections.list(archive.entries()).findAll { !it.directory }.collect { it.name } as Set
+            entries.each { name ->
+                String className = name.endsWith('.class') ? name.substring(0, name.length() - 6).tokenize('$').first() : null
+                if (testResources.contains(name)) {
+                    problems.add("test resource: ${name}")
+                } else if (className != null && testClasses.contains(className)) {
+                    problems.add("test class: ${name}")
+                } else if (name ==~ /(?i).*\.(java|kt|scala|groovy|py|bbmodel|snbt|psd|xcf|blend|log|jfr|hprof)$/
+                        || name ==~ /.*(^|\/)(\.git|\.gradle|\.idea|\.vscode|__pycache__|\.cache)(\/|$).*/
+                        || name.tokenize('/').last() in ['.DS_Store', 'Thumbs.db']) {
+                    problems.add("development file: ${name}")
+                } else if (name.endsWith('.class') && !classes.contains(name)) {
+                    problems.add("class outside the main source set: ${name}")
+                } else if (!classes.contains(name) && !resources.contains(name)
+                        && !requiredEntries.get().contains(name) && name != 'META-INF/MANIFEST.MF'
+                        && name != 'META-INF/jarjar/metadata.json'
+                        && !(name.startsWith('META-INF/jarjar/') && name.endsWith('.jar'))) {
+                    problems.add("unexpected packaged file: ${name}")
+                }
+            }
+            (classes + requiredEntries.get()).findAll { !entries.contains(it) }.each {
+                problems.add("missing runtime file: ${it}")
+            }
+        }
+        if (!problems.isEmpty()) throw new GradleException("Release JAR hygiene check failed:\n" + problems.sort().join('\n'))
+        logger.lifecycle("Verified release JAR: main runtime classes/resources only; test and development files excluded.")
+    }
+}
+
+var verifyReleaseJar = tasks.register('verifyReleaseJar', VerifyReleaseJar) {
+    group = 'verification'
+    description = 'Checks the mod JAR for main classes, required metadata/licenses, and accidentally bundled test or development files.'
+    dependsOn tasks.named('jar')
+    releaseJar.set(tasks.named('jar', Jar).flatMap { it.archiveFile })
+    mainClassDirectories.from(sourceSets.main.output.classesDirs)
+    mainResourceDirectories.from(sourceSets.main.resources.srcDirs)
+    testResourceDirectories.from(sourceSets.test.resources.srcDirs, sourceSets.gameTest.resources.srcDirs)
+    testSourceDirectories.from(sourceSets.test.java.srcDirs, sourceSets.gameTest.java.srcDirs)
+    requiredEntries.set(['META-INF/LICENSE', 'META-INF/TEMPLATE_LICENSE.txt', 'META-INF/neoforge.mods.toml', "${mod_id}.mixins.json".toString()])
+}
+
+tasks.named('check').configure { dependsOn verifyReleaseJar }

@@ -70,12 +70,16 @@ class InstrumentArtworkTest {
     }
 
     @Test
-    void dialUsesThirtyTwoPixelsAndOtherInstrumentTexturesStayAtSixteen() throws IOException {
+    void instrumentTexturesStayAtSixteenAndObsoleteDialArtworkIsRemoved() throws IOException {
         try (var files = Files.walk(ASSETS.resolve("textures"))) {
             for (Path path : files.filter(p -> p.toString().endsWith(".png")).toList()) checkSize(path);
         }
         assertFalse(Files.exists(ASSETS.resolve("textures/gui/temperature_needle.png")),
-                "The fixed arrow belongs to each dial state rather than a separately rotated texture");
+                "The climate selector no longer uses a dial or separate needle texture");
+        for (String name : List.of("temperature_dial", "temperature_dial_icy", "temperature_dial_cold",
+                "temperature_dial_neutral", "temperature_dial_warm", "temperature_dial_hot", "temperature_hub"))
+            assertFalse(Files.exists(ASSETS.resolve("textures/gui/" + name + ".png")),
+                    "The climate selector no longer uses " + name);
         assertFalse(Files.exists(ASSETS.resolve("textures/block/air_conditioner_back_on.png.mcmeta")),
                 "The fixed casing must not retain the old oversized animation metadata");
     }
@@ -86,9 +90,6 @@ class InstrumentArtworkTest {
         if (path.equals(ASSETS.resolve("textures/gui/field_guide_book.png"))) {
             assertEquals(256, image.getWidth(), path.toString());
             assertEquals(256, image.getHeight(), path.toString());
-        } else if (path.getFileName().toString().startsWith("temperature_dial")) {
-            assertEquals(32, image.getWidth(), path.toString());
-            assertEquals(32, image.getHeight(), path.toString());
         } else {
             assertTrue(image.getWidth() <= 16 && image.getHeight() <= 16, path.toString());
         }

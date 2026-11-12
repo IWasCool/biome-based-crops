@@ -69,10 +69,10 @@ public final class GreenhouseBiomeNetwork {
                 var positions = primitive.iterator();
                 while (positions.hasNext()) {
                     long packed = positions.nextLong();
-                    if (coverage.test(BlockPos.of(packed))) addLocalPosition(masks, packed, centerX, centerY, centerZ);
+                    addLocalPosition(masks, packed, centerX, centerY, centerZ, coverage);
                 }
             } else {
-                for (long packed : geometry) if (coverage.test(BlockPos.of(packed))) addLocalPosition(masks, packed, centerX, centerY, centerZ);
+                for (long packed : geometry) addLocalPosition(masks, packed, centerX, centerY, centerZ, coverage);
             }
         } else {
             LongSet primitive = geometry instanceof LongSet values ? values : null;
@@ -100,10 +100,13 @@ public final class GreenhouseBiomeNetwork {
         return List.copyOf(sections);
     }
 
-    private static void addLocalPosition(Long2ObjectOpenHashMap<long[]> masks, long packed, int centerX, int centerY, int centerZ) {
+    private static void addLocalPosition(Long2ObjectOpenHashMap<long[]> masks, long packed, int centerX, int centerY, int centerZ,
+                                         java.util.function.Predicate<BlockPos> coverage) {
         int x = BlockPos.getX(packed), y = BlockPos.getY(packed), z = BlockPos.getZ(packed);
         int sx = x >> 4, sy = y >> 4, sz = z >> 4;
         if (Math.abs(sx - centerX) > 1 || Math.abs(sy - centerY) > 1 || Math.abs(sz - centerZ) > 1) return;
+        // Coverage may query local controllers. Cells outside the transmitted window need no such work.
+        if (!coverage.test(BlockPos.of(packed))) return;
         long section = SectionPos.asLong(sx, sy, sz);
         long[] words = masks.get(section);
         if (words == null) { words = new long[64]; masks.put(section, words); }

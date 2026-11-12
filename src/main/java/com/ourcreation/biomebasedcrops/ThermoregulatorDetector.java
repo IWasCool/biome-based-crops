@@ -6,18 +6,18 @@ import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.neoforged.fml.ModList;
 
 public final class ThermoregulatorDetector {
     private static final ResourceLocation THERMOREGULATOR_ID = ResourceLocation.fromNamespaceAndPath("toughasnails", "thermoregulator");
@@ -47,19 +47,26 @@ public final class ThermoregulatorDetector {
     }
 
     public static boolean canSupportProfile(Level level, BlockPos cropPos, CropProfile profile) {
-        return !profile.hasBiomeRule() && hasMatchingThermoregulator(level, cropPos, profile.climates());
+        return !profile.hasBiomeRule() && hasMatchingThermoregulator(level, cropPos, profile.climates(), true);
+    }
+
+    /** Only TAN's local outlet can support crops directly; sealed external controllers keep their room contract. */
+    public static boolean canSupportProfileDirectly(Level level, BlockPos cropPos, CropProfile profile) {
+        return !profile.hasBiomeRule() && hasMatchingThermoregulator(level, cropPos, profile.climates(), false);
     }
 
     public static boolean hasThermoregulatorNearby(Level level, BlockPos cropPos) {
-        return hasMatchingThermoregulator(level, cropPos, ALL_CLIMATES);
+        return hasMatchingThermoregulator(level, cropPos, ALL_CLIMATES, true);
     }
 
     /** Optional active regulator climate, selected by proximity rather than averaged degrees. */
     public static Optional<CropClimate> nearbyClimate(Level level, BlockPos query) {
-        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()) return Optional.empty();
-        int radius = Config.THERMOREGULATOR_RADIUS.get();
+        if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
+                || !controllersRegistered(true)) return Optional.empty();
+        int externalRadius = Config.THERMOREGULATOR_RADIUS.get();
+        int radius = Math.max(AirConditionerAirflow.WIND_REACH, externalRadius);
         CropClimate selected = null;
-        double nearest = radius * radius;
+        double nearest = Double.POSITIVE_INFINITY;
         long chosen = Long.MAX_VALUE;
         for (int chunkX = (query.getX() - radius) >> 4; chunkX <= (query.getX() + radius) >> 4; chunkX++) {
             for (int chunkZ = (query.getZ() - radius) >> 4; chunkZ <= (query.getZ() + radius) >> 4; chunkZ++) {
@@ -70,8 +77,14 @@ public final class ThermoregulatorDetector {
                     BlockPos at = entity.getBlockPos();
                     double distance = at.distSqr(query);
                     if (distance > nearest || distance == nearest && at.asLong() >= chosen) continue;
+                    BlockState state = entity.getBlockState();
+                    ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+                    if (id.equals(THERMOREGULATOR_ID)) {
+                        if (!localTanCoverage(level, at, state, query)) continue;
+                    } else if (!id.equals(NORTHSTAR_REGULATOR_ID) || distance > externalRadius * externalRadius
+                            || !AirConditionerAirflow.canReach(level, at, query)) continue;
                     var output = providedClimateAt(level, at, query);
-                    if (output.isEmpty() || !AirConditionerAirflow.canReach(level, at, query)) continue;
+                    if (output.isEmpty()) continue;
                     selected = output.get();
                     nearest = distance;
                     chosen = at.asLong();
@@ -81,13 +94,16 @@ public final class ThermoregulatorDetector {
         return Optional.ofNullable(selected);
     }
 
-    private static boolean hasMatchingThermoregulator(Level level, BlockPos cropPos, Set<CropClimate> climates) {
+    private static boolean hasMatchingThermoregulator(Level level, BlockPos cropPos, Set<CropClimate> climates,
+                                                     boolean includeSealedControllers) {
         if (!Config.SPEC.isLoaded() || !Config.ENABLE_THERMOREGULATOR_COMPATIBILITY.get()
-                || climates.isEmpty()) {
+                || climates.isEmpty() || !controllersRegistered(includeSealedControllers)) {
             return false;
         }
 
-        int radius = Config.THERMOREGULATOR_RADIUS.get();
+        int radius = includeSealedControllers
+                ? Math.max(AirConditionerAirflow.WIND_REACH, Config.THERMOREGULATOR_RADIUS.get())
+                : AirConditionerAirflow.WIND_REACH;
         int minX = cropPos.getX() - radius;
         int maxX = cropPos.getX() + radius;
         int minY = cropPos.getY() - 1;
@@ -113,6 +129,15 @@ public final class ThermoregulatorDetector {
                     }
 
                     BlockState state = blockEntity.getBlockState();
+                    ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+                    if (id.equals(THERMOREGULATOR_ID)) {
+                        if (supportsClimates(state, climates) && localTanCoverage(level, pos, state, cropPos)) return true;
+                        continue;
+                    }
+                    if (!includeSealedControllers || !id.equals(NORTHSTAR_REGULATOR_ID)) continue;
+                    int externalRadius = Config.THERMOREGULATOR_RADIUS.get();
+                    if (Math.abs(pos.getX() - cropPos.getX()) > externalRadius
+                            || Math.abs(pos.getZ() - cropPos.getZ()) > externalRadius) continue;
                     for (CropClimate climate : climates) {
                         if (supportsClimateAt(level, pos, state, cropPos, climate)) return true;
                     }
@@ -121,6 +146,19 @@ public final class ThermoregulatorDetector {
         }
 
         return false;
+    }
+
+    private static boolean controllersRegistered(boolean includeSealedControllers) {
+        // Check live registries only after config load; do not retain a bootstrap-time absence.
+        return BuiltInRegistries.BLOCK.containsKey(THERMOREGULATOR_ID)
+                || includeSealedControllers && BuiltInRegistries.BLOCK.containsKey(NORTHSTAR_REGULATOR_ID);
+    }
+
+    private static boolean localTanCoverage(Level level, BlockPos machine, BlockState state, BlockPos query) {
+        Property<?> property = state.getBlock().getStateDefinition().getProperty("facing");
+        if (!(property instanceof DirectionProperty direction)) return false;
+        Direction face = state.getValue(direction);
+        return face.getAxis().isHorizontal() && AirConditionerAirflow.canReach(level, machine, face, query);
     }
 
     /** Only the verified active machine contract may provide a greenhouse climate. */

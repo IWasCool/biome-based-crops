@@ -19,8 +19,15 @@ public final class AirConditionerAirflow {
         return visible(level, start, start.relative(face, 0.48));
     }
 
+    /** Local conditioning can grow climate-based crops without an enclosure. */
+    public static boolean canSupportProfile(Level level, BlockPos cropPos, CropProfile profile) {
+        if (profile.hasBiomeRule()) return false;
+        CropClimate climate = climateAt(level, cropPos);
+        return climate != null && profile.allows(climate);
+    }
+
     @Nullable public static CropClimate climateAt(Level level, BlockPos query) {
-        if (!GreenhouseSettings.enabled() || !level.hasChunkAt(query)) return null;
+        if (!level.hasChunkAt(query)) return null;
         CropClimate result = null;
         double nearest = Double.POSITIVE_INFINITY;
         long chosen = Long.MAX_VALUE;
@@ -34,9 +41,7 @@ public final class AirConditionerAirflow {
                     double distance = at.distSqr(query);
                     if (distance > nearest || distance == nearest && at.asLong() >= chosen) continue;
                     Direction face = unit.getBlockState().getValue(AirConditionerBlock.FACING);
-                    if (!inOutletStream(at, face, query)) continue;
-                    Vec3 start = Vec3.atCenterOf(at).relative(face, 0.51);
-                    if (!visible(level, start, Vec3.atCenterOf(query))) continue;
+                    if (!canReach(level, at, face, query)) continue;
                     nearest = distance;
                     chosen = at.asLong();
                     result = unit.outletClimate();
@@ -46,13 +51,18 @@ public final class AirConditionerAirflow {
         return result;
     }
 
-    /** A short forward cone, never a proximity aura to the sides or rear. */
+    /** A four-block horizontal half-disc in front of the outlet, one block above and below. */
     static boolean inOutletStream(BlockPos machine, Direction face, BlockPos query) {
         int dx = query.getX() - machine.getX(), dy = query.getY() - machine.getY(), dz = query.getZ() - machine.getZ();
         int forward = dx * face.getStepX() + dz * face.getStepZ();
-        int sideways = dx * face.getStepZ() - dz * face.getStepX();
-        return forward > 0 && forward <= WIND_REACH && Math.abs(dy) <= 1
-                && Math.abs(sideways) <= 0.5 + forward * 0.5;
+        return forward > 0 && Math.abs(dy) <= 1 && (long) dx * dx + (long) dz * dz <= WIND_REACH * WIND_REACH;
+    }
+
+    /** Both regulator types use the same clear front outlet and rounded local coverage. */
+    public static boolean canReach(Level level, BlockPos machine, Direction face, BlockPos query) {
+        return inOutletStream(machine, face, query) && ShipCropEnvironment.sameSpace(level, machine, query)
+                && clearOutlet(level, machine, face)
+                && visible(level, Vec3.atCenterOf(machine).relative(face, 0.51), Vec3.atCenterOf(query));
     }
 
     public static boolean canReach(Level level, BlockPos machine, BlockPos query) {
@@ -68,7 +78,12 @@ public final class AirConditionerAirflow {
         int steps = Math.max(1, (int) Math.ceil(start.distanceTo(end) * 2));
         for (int i = 0; i <= steps; i++)
             if (!level.hasChunkAt(BlockPos.containing(start.lerp(end, i / (double) steps)))) return false;
-        return level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER,
-                ClipContext.Fluid.NONE, CollisionContext.empty())).getType() == HitResult.Type.MISS;
+        var hit = level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE, CollisionContext.empty()));
+        // Bamboo, cocoa and other plants can have a collider of their own. Their
+        // target cell is being conditioned, rather than forming a wall before it.
+        return hit.getType() == HitResult.Type.MISS
+                || hit.getBlockPos().equals(BlockPos.containing(end))
+                && CropMatcher.categoryForState(level.getBlockState(hit.getBlockPos())).isPresent();
     }
 }

@@ -22,6 +22,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -35,6 +36,7 @@ public final class FieldGuideScreen extends Screen {
     private static final int INK = 0x3D2D20;
     private static final int FADED_INK = 0x6C5740;
     private static final ResourceLocation BOOK = ResourceLocation.fromNamespaceAndPath("biome_based_crops", "textures/gui/field_guide_book.png");
+    private static NotebookBookmark lastBookmark = NotebookBookmark.EMPTY;
     private int biomeOffset, materialOffset, floorOffset, roomVolume, roomFloorArea;
     private int bookX, bookY, bookWidth, bookHeight, pageWidth, visibleBiomes;
     private EditBox search;
@@ -45,13 +47,35 @@ public final class FieldGuideScreen extends Screen {
     private PageButton indexPrevious, indexNext;
     private final List<IngredientHit> ingredients = new ArrayList<>();
     private final List<BiomeLink> biomeLinks = new ArrayList<>();
+    private final NotebookSummaryLayout summaryLayout = new NotebookSummaryLayout();
     private ResourceLocation summaryBiome;
     private float summaryScale = 1;
     private int summaryScroll, maxSummaryScroll;
     private boolean drawingSummary;
     private Rect2i materialStrip, floorStrip;
 
-    public FieldGuideScreen() { super(Component.translatable("biome_based_crops.guide.title")); }
+    public FieldGuideScreen() {
+        super(Component.translatable("biome_based_crops.guide.title"));
+        restoreBookmark(lastBookmark);
+    }
+
+    private NotebookBookmark bookmark() {
+        return new NotebookBookmark(selectedBiome, query, biomeOffset, materialOffset, floorOffset, summaryScroll);
+    }
+
+    private void restoreBookmark(NotebookBookmark bookmark) {
+        selectedBiome = summaryBiome = bookmark.selectedBiome();
+        query = bookmark.query();
+        biomeOffset = bookmark.biomeOffset();
+        materialOffset = bookmark.materialOffset();
+        floorOffset = bookmark.floorOffset();
+        summaryScroll = bookmark.summaryScroll();
+    }
+
+    @Override public void removed() {
+        lastBookmark = bookmark();
+        super.removed();
+    }
     public static void open() { open(0); }
     public static void open(int roomVolume) { open(roomVolume, 0); }
     public static void open(int roomVolume, int floorArea) {
@@ -73,6 +97,7 @@ public final class FieldGuideScreen extends Screen {
         }
     }
     @Override protected void init() {
+        summaryLayout.clear();
         bookWidth = Math.min(456, width - 12);
         bookHeight = Math.min(300, height - 12);
         bookX = (width - bookWidth) / 2;
@@ -122,9 +147,7 @@ public final class FieldGuideScreen extends Screen {
         String needle = query.trim().toLowerCase(Locale.ROOT);
         filtered = biomes.stream().filter(holder -> holder.key().location().toString().contains(needle)
                 || EnglishGuideText.biomeName(holder.key().location()).getString().toLowerCase(Locale.ROOT).contains(needle)).toList();
-        biomeOffset = Math.min(biomeOffset, Math.max(0, filtered.size() - visibleBiomes));
-        if (!filtered.isEmpty() && filtered.stream().noneMatch(holder -> holder.key().location().equals(selectedBiome)))
-            selectedBiome = filtered.getFirst().key().location();
+        restoreBookmark(bookmark().reconcile(filtered.stream().map(holder -> holder.key().location()).toList(), visibleBiomes));
     }
     private void updateControls() {
         for (BiomeLink link : biomeLinks) {
@@ -198,14 +221,14 @@ public final class FieldGuideScreen extends Screen {
             summaryBiome = selectedBiome;
             floorOffset = summaryScroll = 0;
         }
-        // Fit the right page as one unit; native input rectangles follow the same transform.
+        // LanguageManager replaces Language on every resource reload, including font-pack reloads.
+        // Only the measured fit is cached; drawing and ingredient hitboxes remain live every frame.
         int availableHeight = bookHeight - 44;
-        int fit = 40;
-        while (fit > 28 && summaryContents(null, recipe, pageWidth * 40 / fit)
-                > availableHeight * 40 / fit) fit--;
-        summaryScale = fit / 40.0F;
-        int contentHeight = summaryContents(null, recipe, (int) (pageWidth / summaryScale));
-        maxSummaryScroll = Math.max(0, (int) Math.ceil(contentHeight * summaryScale) - availableHeight);
+        var layout = summaryLayout.get(new NotebookSummaryLayout.Context(selectedBiome, recipe,
+                pageWidth, availableHeight, roomVolume, floorArea(), GreenhouseRecipes.referenceVolume(),
+                Language.getInstance(), font), contentWidth -> summaryContents(null, recipe, contentWidth));
+        summaryScale = layout.scale();
+        maxSummaryScroll = layout.maxScroll();
         summaryScroll = Math.clamp(summaryScroll, 0, maxSummaryScroll);
         materialStrip = floorStrip = null;
         drawingSummary = true;
@@ -223,21 +246,14 @@ public final class FieldGuideScreen extends Screen {
 
     private int summaryContents(GuiGraphics g, GreenhouseRecipes.Recipe recipe, int width) {
         int y = summaryText(g, EnglishGuideText.biomeName(selectedBiome).copy().withStyle(ChatFormatting.BOLD), 0, 0, width) + 12;
-        y += summaryText(g, bold("biome_based_crops.guide.required_climate"), 0, y, width) + 3;
-        Component requiredClimate = Component.literal(EnglishGuideText.requiredClimate(recipe.climate()));
-        int separatorX = climateControllers.size() * 20 + 2;
-        int climateTextX = separatorX + 2 + 5;
-        int textHeight = summaryText(null, requiredClimate, climateTextX, 0, width - climateTextX);
-        int climateHeight = Math.max(16, textHeight);
+        Component requiredClimate = Component.translatable("biome_based_crops.guide.required_climate",
+                EnglishGuideText.requiredClimate(recipe.climate())).withStyle(ChatFormatting.BOLD);
+        y += summaryText(g, requiredClimate, 0, y, width) + 5;
         if (g != null) {
             for (int i = 0; i < climateControllers.size(); i++)
-                drawIngredient(g, climateControllers.get(i), i * 20, y + (climateHeight - 16) / 2);
-            int separatorY = y + (climateHeight - 14) / 2;
-            g.fill(separatorX, separatorY, separatorX + 2, separatorY + 14, 0xFF000000 | INK);
+                drawIngredient(g, climateControllers.get(i), i * 20, y);
         }
-        // Vanilla font rows include a blank baseline pixel; compensate to center the visible letters.
-        summaryText(g, requiredClimate, climateTextX, y + (climateHeight - textHeight) / 2 + 1, width - climateTextX);
-        y += climateHeight + 8;
+        y += 16 + 8;
         var floor = recipe.floor();
         int area = floorArea();
         y += summaryText(g, bold("biome_based_crops.guide.floor_blocks"), 0, y, width) + 3;
@@ -413,7 +429,12 @@ public final class FieldGuideScreen extends Screen {
         @Override public void onPress() {
             int index=biomeOffset+row;
             if(index<filtered.size()) {
-                selectedBiome=filtered.get(index).key().location(); materialOffset=0; updateControls();
+                ResourceLocation biome=filtered.get(index).key().location();
+                if (!biome.equals(selectedBiome)) {
+                    selectedBiome = summaryBiome = biome;
+                    materialOffset = floorOffset = summaryScroll = 0;
+                }
+                updateControls();
             }
         }
         @Override protected void updateWidgetNarration(NarrationElementOutput output) { defaultButtonNarrationText(output); }

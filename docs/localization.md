@@ -1,7 +1,13 @@
 # Localization
 
-The language resources cover all 137 languages selectable in Minecraft 1.21.1, using asset index 17 and the bundled US English locale as the reference list. Every locale includes all mod translation keys. New biome-rule labels currently use English fallbacks.
+The language resources cover all 137 languages selectable in Minecraft 1.21.1, using asset index 17 and the bundled US English locale as the reference list. Every locale includes all 117 mod translation keys, with matching formatting arguments and five distinct climate names.
 
-These initial translations are machine-assisted and have not all been reviewed by native speakers. Regional, historical, and constructed-language variants are adapted separately. A few less documented languages use compact labels and symbols with Minecraft's existing terminology.
+These translations are machine-assisted and have not all been reviewed by native speakers. Regional and historical writing styles are adapted separately. Shared terms and product names can correctly remain identical to English; **Biomes Notebook**, **Tough As Nails**, and **Sable** keep their names in every language.
 
-Corrections are welcome. Keep the JSON keys unchanged, preserve `%s` arguments or their numbered forms such as `%1$s`, and keep the five climate names distinct. The resource test checks locale coverage, keys, formatting arguments, and climate names.
+The November 2026 audit refreshed four gameplay guidance keys across all 137 locales: the notebook reference, greenhouse setup, sky-glass guidance, and missing-glass status. The setup explains four-block front thermoregulator coverage, its one-block vertical reach, greenhouse-free crop support, exact biome restrictions, and Sable ships using their current world biome. The audit also repaired 46 English-only configuration entries and nine other English-only interface entries in supported non-English locales, while preserving unrelated authored text.
+
+New text retains explicit English fallbacks in ten less documented languages: Ido (`io_en`), Interslavic (`isv`), Lojban (`jbo_en`), Nahuatl (`nah`), Popoloca (`pls`), Quenya (`qya_aa`), Klingon (`tlh_aa`), Toki Pona (`tok`), Tzotzil (`tzo_mx`), and Viossa (`vp_vl`). Regional variants may inherit a related language. New Jawi (`zlm_arab`) messages use Malay Latin script; existing Jawi text is preserved. [The coverage report](../tools/translation-coverage.json) records these exceptions.
+
+Use `py tools/UpdateTranslations.py --only-keys key1,key2 --refresh-keys key1,key2` for a terminology update. This limits changes to the requested keys, preserves other entries, and protects product names and substitution arguments. Translation responses are cached in ignored `build/translation-cache`; the cache is a development aid and is not included in the mod JAR.
+
+Corrections are welcome. Keep the JSON keys unchanged, preserve `%s` arguments or their numbered forms such as `%1$s`, and keep the five climate names distinct. The resource tests check locale coverage, keys, formatting arguments, climate names, notebook branding, and the current controller/ship guidance.
