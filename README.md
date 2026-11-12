@@ -2,7 +2,7 @@
 
 Configurable biome-based growth for crops, trees, and other plants.
 
-Version **1.0.0** (in development) for **Minecraft 1.21.1**, **NeoForge 21.1.251+**, and **Java 21**.
+Version **1.0.0** for **Minecraft 1.21.1**, **NeoForge 21.1.251+**, and **Java 21**.
 
 [Development builds](https://github.com/IWasCool/biome-based-crops/actions/workflows/build.yml) | [Source](https://github.com/IWasCool/biome-based-crops) | [Issues](https://github.com/IWasCool/biome-based-crops/issues)
 
@@ -50,11 +50,11 @@ The **Electrical Thermoregulator** has exactly five settings: **Icy, Cold, Neutr
 
 **Sable ships:** crop biome checks sample each plant's current world location, including after translation or rotation. Controller coverage stays local to the ship. This integration covers crop growth and local thermoregulator climate; moving greenhouse biomes and shipboard natural mob spawning are not included.
 
-When changing the natural climate, each installed AC supports **256 enclosed interior blocks** in its front room. Capacity counts the room's width, length, and height: an 8×8×4 interior uses 256 blocks, while 8×8×8 uses 512. Additional units combine their capacity: two support 512 interior blocks, four support 1,024. **A naturally matching greenhouse needs no AC, regardless of its interior volume.** Put units inside the room or in its wall with the outlets facing inward; units facing away do not count toward that room. The configured maximum interior volume still applies.
+When changing the natural climate, each installed AC supports **256 enclosed interior blocks** in its front room. Capacity counts the room's width, length, and height: an 8×8×4 interior uses 256 blocks, while 8×8×8 uses 512. Additional units combine their capacity: two support 512 interior blocks, four support 1,024. **Registering a naturally matching greenhouse biome still requires an installed Electrical or Tough As Nails thermoregulator, but no fuel or FE.** Put units inside the room or in its wall with the outlets facing inward; units facing away do not count toward that room. The configured maximum interior volume still applies.
 
 A previously sealed room keeps its existing climate briefly when a door opens or a block is removed. Faint air particles flow from the opening. Close the door or repair the hole within about **one minute** to retain the room climate. If the opening remains, the room gradually steps through the five climate categories toward the natural climate; an AC cannot hold an open room at its selected setting.
 
-The AC retains its 16-pixel Power Grid-inspired green-gray and charcoal artwork, large animated fan, subtle airflow particles, and blue/orange front indicator. Its screen uses a single recessed climate readout with vanilla left/right buttons, a red FE gauge, and a small hoverable **!** indicator at the top right. Opening the unit prioritizes the room in front. The indicator reports **No greenhouse detected** when no room is found. An enclosed room shows its **greenhouse biome valid/not-valid** result, followed by room statistics. Plant-lighting guidance for greenhouse growth appears at the bottom of the tooltip. Climate and AC interior capacity are included below those checks. Resource packs can replace the artwork.
+The AC retains its 16-pixel Power Grid-inspired green-gray and charcoal artwork, large animated fan, and subtle airflow particles. Its front indicator shows cyan for Icy, blue for Cold, gray for Neutral, yellow for Warm, and orange for Hot. Its screen uses a single recessed climate readout with vanilla left/right buttons, a red FE gauge, and a small hoverable **!** indicator at the top right. Opening the unit prioritizes the room in front. The indicator reports **No greenhouse detected** when no room is found. An enclosed room shows its **greenhouse biome valid/not-valid** result, followed by climate, interior capacity, and AC counts. Plant-lighting guidance for greenhouse growth appears at the bottom of the tooltip. Resource packs can replace the artwork.
 
 Craft the **Thermometer** with glass, redstone, and an iron ingot in a vertical column. It reports **climate and biome at the player's position**, including when clicking blocks. The biome is the registered greenhouse biome where one is active, otherwise the natural biome. Its gray casing, small red bulb, tinted glass, and scale remain; the mercury readout shows the five climate categories. The glass renders separately from the solid readout to keep the bulb stable.
 
@@ -82,14 +82,9 @@ Use a Java 21 JDK:
 
 ```powershell
 .\gradlew.bat build -PincludeLocalMods=false
-.\gradlew.bat runGameTestServer -PenableGameTests=true -PincludeLocalMods=true
 ```
 
-On Linux and macOS use `bash ./gradlew`. The built JAR is `build/libs/biome_based_crops-1.0.0.jar`. Optional local test mods belong in `libs/` and are never bundled. Test code is excluded from the release JAR.
-
-For local electricity testing, place Create **6.0.10** and Create Crafts & Additions **1.6.0** in `libs/`, then run `./gradlew.bat runClient` to load them. Connect a Crafts & Additions power source or accumulator to the Electrical Thermoregulator using its FE connections. The game tests check that a real Crafts & Additions energy source charges and runs it when those optional mods are installed.
-
-After adding or restoring JARs in `libs/`, reload the Gradle project in IntelliJ so its Client launch includes them. The game-test command above includes local mods; use `-PincludeLocalMods=false` only for a standalone run, which skips optional-mod compatibility checks. `-PcompatModsDir=...` uses that directory instead of `libs/`.
+On Linux and macOS use `bash ./gradlew build -PincludeLocalMods=false`. The built JAR is `build/libs/biome_based_crops-1.0.0.jar`. The build verifies that the JAR contains runtime classes, assets, metadata, and licenses, with no source, tests, or development files. Local validation suites and asset-authoring tools are excluded from this repository.
 
 The field guide, climate controls, greenhouse feedback, and instrument text have entries for all 137 Minecraft 1.21.1 locales and follow the selected game language. Regional variants may inherit a related language; unsupported rare and constructed languages retain English fallback text for newly added messages. Existing authored translations are preserved.
 

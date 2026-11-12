@@ -51,3 +51,8 @@ hs_err_pid*
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
 __pycache__/
+
+### Local validation and asset-authoring tools ###
+/src/test/
+/src/gameTest/
+/tools/

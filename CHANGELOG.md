@@ -1,19 +1,21 @@
 # Changelog
 
-## 1.0.0 (in development)
+## 1.0.0
 
 - Added automatic greenhouse biome recognition from a sealed room, native floor coverage, interior habitat materials, matching climate, and breathable air. Room detection no longer needs a core, probe, or manual survey.
 - Applied a reversible biome overlay inside qualifying rooms, including the biome's natural mob spawn lists, without rewriting saved chunk biomes. Normal Minecraft spawning rules still apply.
 - Separated biome registration from plant lighting: crops and saplings using greenhouse growth need sky-exposed glass directly above them; other roof cells and walls may be solid.
 - Added scalable native-floor and habitat recipes, distinct vanilla and Biomes O' Plenty habitat plans, generated plans for other installed biomes, and configurable overrides. A room provides only one complete biome habitat at a time.
 - Added an FE-powered Electrical Thermoregulator with exactly five modes: Icy, Cold, Neutral, Warm, and Hot. Retained the `air_conditioner` registry ID; it stores 100,000 FE, accepts 10,000 FE per transfer, and uses 360 FE/t while running.
-- Made controller outlets directional. Each eligible AC supports 256 enclosed interior blocks when changing the natural climate, and installed units combine their capacity. Naturally matching greenhouses need no AC.
+- Made controller outlets directional. Each eligible AC supports 256 enclosed interior blocks when changing the natural climate, and installed units combine their capacity. Biome registration always requires an installed inward-facing Electrical or Tough As Nails thermoregulator; a naturally matching room needs no fuel or FE.
 - Added direct crop support from Electrical and Tough As Nails thermoregulators in a four-block circular area in front, up to one block above or below. Compatible climate-based plants need no greenhouse materials or overhead glass in this area; fuel, FE, redstone shutdowns, obstructions, and explicit biome requirements still apply.
+- Added gradual climate falloff outside that four-block core, stepping one category toward the natural climate per additional block for both thermoregulator types.
 - Added optional Sable crop compatibility: native biome checks follow each plant's actual world location as the ship moves and rotates, while local controller coverage remains attached to the same ship. Sable Companion is bundled; Sable itself remains optional. Moving greenhouse biomes and shipboard natural spawning are outside this integration.
 - Added a one-minute leak grace period with faint air wisps at openings, followed by gradual climate drift toward natural conditions if the room stays open.
 - Updated the thermoregulator with 16-pixel machine artwork, an animated fan, subtle outlet and rear intake particles, compressor sound, a red FE gauge, evenly spaced climate controls with individual mode icons, and a neutral borderless room-status indicator.
+- Added a saved ON/OFF switch, five distinct front-indicator colors, and a seamless compressor sound loop.
 - Added a searchable Biomes Notebook with Required Climate, Floor Blocks, Interior Requirements, and Greenhouse Setup sections. The required climate appears in its section heading above controller icons, and smaller screens can scroll long pages. The notebook remembers the selected biome, search, and scroll positions when reopened during the game session.
-- Updated the notebook's 16-by-16 leather-book item texture, added a matching leather border around the open-book UI, and kept Minecraft's book sound when opened. Craft it with a book and a crop, seed, or sapling.
+- Updated the notebook's 16-by-16 leather-book item texture, added a matching leather border around the open-book UI, and kept Minecraft's book sound when opened. Craft it with a book and an item in the common `c:crops` tag.
 - Added standard ingredient tooltips and optional JEI, EMI, and REI recipe/use links directly in the guide.
 - Added a Thermometer that reads the climate and biome at the player's position, including when clicking a block. Its solid mercury readout and separate glass layer show the five climate categories. Craft it with glass, redstone, and an iron ingot in a vertical column.
 - Shared greenhouse climate readings with Tough As Nails instruments and player temperature, and integrated room oxygen and climate with Northstar while preserving native conditions outside the controlled room. Optional external climate controllers remain supported.

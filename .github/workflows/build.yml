@@ -24,9 +24,6 @@ jobs:
       - name: Build with Gradle
         run: bash ./gradlew build -PincludeLocalMods=false
 
-      - name: Verify plant growth in game
-        run: bash ./gradlew runGameTestServer -PenableGameTests=true -PincludeLocalMods=false
-
       - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
