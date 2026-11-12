@@ -26,10 +26,10 @@ public final class AirConditionerScreen extends AbstractContainerScreen<AirCondi
     private static final int ENERGY_X = 13, ENERGY_Y = 28, ENERGY_WIDTH = 18, ENERGY_HEIGHT = 60;
     private static final int ENERGY_TEXTURE_SIZE = 16;
     private static final int STATUS_X = 157, STATUS_Y = 3;
-    private static final int CLIMATE_X = 42, CLIMATE_Y = 57;
+    private static final int CLIMATE_X = 42, CLIMATE_Y = 49;
     private static final int CLIMATE_ARROW_WIDTH = 18, CLIMATE_WIDTH = 80, CLIMATE_GAP = 4;
     private static final int CLIMATE_CENTER_X = CLIMATE_X + CLIMATE_ARROW_WIDTH + CLIMATE_GAP + CLIMATE_WIDTH / 2;
-    private static final int POWER_Y = 84, POWER_WIDTH = CLIMATE_ARROW_WIDTH * 2 + CLIMATE_WIDTH + CLIMATE_GAP * 2;
+    private static final int POWER_Y = 76, POWER_WIDTH = CLIMATE_ARROW_WIDTH * 2 + CLIMATE_WIDTH + CLIMATE_GAP * 2;
     private CropClimate selectedClimate;
     private int pendingTicks;
     private Button powerButton;

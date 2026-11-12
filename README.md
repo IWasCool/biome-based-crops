@@ -28,6 +28,7 @@ Place `biome_based_crops-1.0.0.jar` in the client and server `mods` folders. No 
 - Disable restrictions separately for crops and trees with config settings or operator commands.
 - Show concise climate requirements in plant item tooltips.
 - Open JEI, EMI, or REI recipes and uses from the field guide item icons.
+- Keep JEI's item list and bookmark controls below the open notebook; other menus retain their normal layout.
 - Optional support for Farmer's Delight crops, Biomes O' Plenty, Create tree fertilizer, Slice & Dice sprinklers, and snow-covered plants.
 
 ## Greenhouses

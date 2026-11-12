@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.ourcreation.biomebasedcrops.BiomeBasedCrops;
 import com.ourcreation.biomebasedcrops.client.FieldGuideScreen;
+import com.ourcreation.biomebasedcrops.client.NotebookJeiLayout;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
@@ -17,6 +18,7 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.runtime.IClickableIngredient;
 import mezz.jei.api.runtime.IJeiRuntime;
+import mezz.jei.common.Internal;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -45,7 +47,8 @@ public final class GreenhouseJeiPlugin implements IModPlugin {
                 var bounds = GreenhouseViewerBridge.initializedBounds(screen);
                 if (bounds == null) return null;
                 return new Properties(screen.getClass(), bounds.getX(), bounds.getY(), bounds.getWidth(),
-                        bounds.getHeight(), screen.width, screen.height);
+                        bounds.getHeight(), screen.width, screen.height,
+                        screen.hasJeiBottomPanels() ? screen.jeiLayout() : null);
             }
 
             @Override public Optional<? extends IClickableIngredient<?>> getClickableIngredientUnderMouse(
@@ -60,6 +63,27 @@ public final class GreenhouseJeiPlugin implements IModPlugin {
 
     @Override public void onRuntimeAvailable(IJeiRuntime available) { runtime = available; }
     @Override public void onRuntimeUnavailable() { runtime = null; }
+
+    static int bottomPanelHeight() {
+        if (runtime == null) return 0;
+        return Internal.getOptionalJeiClientConfigs().map(configs -> {
+            var config = configs.getClientConfig();
+            int baseHeight = NotebookJeiLayout.DEFAULT_DRAWER_HEIGHT;
+            if (configs.getIngredientListConfig().drawBackground().getValue()
+                    || configs.getBookmarkListConfig().drawBackground().getValue()) baseHeight += 14;
+            if (!config.lookupHistoryEnabled().getValue()) return baseHeight;
+            // Leave room for the configured history rows and its optional background padding.
+            int rows = Math.clamp(config.maxLookupHistoryRows().getValue(), 0, 20);
+            return baseHeight + (rows == 0 ? 0 : rows * 18 + 18);
+        }).orElse(NotebookJeiLayout.DEFAULT_DRAWER_HEIGHT);
+    }
+
+    /** The native JEI layouts use these bounds for drawing, scrolling and mouse interaction together. */
+    @Nullable
+    public static NotebookJeiLayout.Layout bottomLayout(IGuiProperties properties) {
+        return properties instanceof Properties notebook && notebook.screenClass() == FieldGuideScreen.class
+                ? notebook.bottomLayout() : null;
+    }
 
     public static boolean open(ItemStack stack, boolean uses) {
         if (runtime == null || focuses == null) return false;
@@ -83,5 +107,6 @@ public final class GreenhouseJeiPlugin implements IModPlugin {
     }
 
     private record Properties(Class<? extends Screen> screenClass, int guiLeft, int guiTop, int guiXSize,
-                              int guiYSize, int screenWidth, int screenHeight) implements IGuiProperties {}
+                              int guiYSize, int screenWidth, int screenHeight,
+                              @Nullable NotebookJeiLayout.Layout bottomLayout) implements IGuiProperties {}
 }

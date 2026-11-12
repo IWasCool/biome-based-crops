@@ -8,7 +8,6 @@ modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
 displayURL="https://github.com/IWasCool/biome-based-crops"
-logoFile="assets/icon.png"
 authors="Izcool"
 description='''
 Configurable crop and sapling growth using climates, biome IDs, and biome tags.

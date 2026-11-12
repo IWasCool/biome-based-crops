@@ -39,6 +39,7 @@ public final class FieldGuideScreen extends Screen {
     private static NotebookBookmark lastBookmark = NotebookBookmark.EMPTY;
     private int biomeOffset, materialOffset, floorOffset, roomVolume, roomFloorArea;
     private int bookX, bookY, bookWidth, bookHeight, pageWidth, visibleBiomes;
+    private NotebookJeiLayout.Layout jeiLayout = NotebookJeiLayout.calculate(0, 0, 0);
     private EditBox search;
     private String query = "";
     private List<Holder.Reference<Biome>> biomes = List.of(), filtered = List.of();
@@ -98,10 +99,12 @@ public final class FieldGuideScreen extends Screen {
     }
     @Override protected void init() {
         summaryLayout.clear();
-        bookWidth = Math.min(456, width - 12);
-        bookHeight = Math.min(300, height - 12);
-        bookX = (width - bookWidth) / 2;
-        bookY = (height - bookHeight) / 2;
+        jeiLayout = NotebookJeiLayout.calculate(width, height, GreenhouseViewerBridge.jeiBottomPanelHeight());
+        var book = jeiLayout.book();
+        bookWidth = book.width();
+        bookHeight = book.height();
+        bookX = book.x();
+        bookY = book.y();
         pageWidth = bookWidth / 2 - 48;
         visibleBiomes = Math.max(1, (bookHeight - 96) / 22);
         if (minecraft.level != null) {
@@ -375,6 +378,8 @@ public final class FieldGuideScreen extends Screen {
         return inside(mouseX, mouseY, rightX(), bookY + 18, pageWidth, bookHeight - 44);
     }
     public Rect2i bookBounds() { return new Rect2i(bookX, bookY, bookWidth, bookHeight); }
+    public NotebookJeiLayout.Layout jeiLayout() { return jeiLayout; }
+    public boolean hasJeiBottomPanels() { return jeiLayout.hasBottomPanels(); }
     public Optional<IngredientHit> ingredientAt(double mouseX, double mouseY) {
         if (!inSummary(mouseX, mouseY)) return Optional.empty();
         return ingredients.stream().filter(hit -> inside(mouseX, mouseY, hit.bounds().getX(), hit.bounds().getY(),
