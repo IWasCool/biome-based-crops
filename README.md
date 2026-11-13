@@ -13,9 +13,9 @@ Place `biome_based_crops-neoforge-1.21.1-1.0.0.jar` in the client and server `mo
 Build with Java 21:
 
 ```powershell
-.\gradlew.bat build -PincludeLocalMods=false
+.\gradlew.bat build
 ```
 
-On Linux/macOS, use `bash ./gradlew build -PincludeLocalMods=false`. The JAR is written to `build/libs/`.
+On Linux/macOS, use `bash ./gradlew build`. The JAR is written to `build/libs/`.
 
 [MIT license](LICENSE). [NeoForge template notice](TEMPLATE_LICENSE.txt).

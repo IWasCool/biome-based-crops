@@ -60,3 +60,26 @@ __pycache__/
 /src/test/
 /src/gameTest/
 /tools/
+
+# Production-source repository: keep local development material untracked.
+/.github/
+/.run/
+/.idea/
+/.vscode/
+/src/gametest/
+/src/clientSmoke/
+/src/testFixtures/
+/docs/
+/scripts/
+/exports/
+/screenshots/
+/AGENTS.md
+/CHANGELOG.md
+/CONTRIBUTING.md
+/MODPACK_STATUS.md
+/MODPACK_STATUS.example.md
+/build/
+/.gradle/
+/logs/
+/run/
+/run-*/

@@ -1,8 +1,6 @@
 plugins {
     id 'java-library'
-    id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.147'
-    id 'idea'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -13,8 +11,6 @@ version = mod_version
 group = mod_group_id
 
 sourceSets.main.resources {
-    srcDir('src/generated/resources')
-
     exclude("**/*.bbmodel")
     exclude("**/.cache/**", "**/.DS_Store", "**/Thumbs.db")
 }
@@ -44,13 +40,6 @@ base {
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-java.withSourcesJar()
-
-tasks.named('sourcesJar', Jar).configure {
-    from(['LICENSE', 'TEMPLATE_LICENSE.txt']) {
-        into 'META-INF'
-    }
-}
 
 neoForge {
     version = project.neo_version
@@ -60,44 +49,11 @@ neoForge {
         minecraftVersion = project.parchment_minecraft_version
     }
 
-    runs {
-        client {
-            client()
-            if (providers.gradleProperty('clientGameDir').isPresent()) {
-                gameDirectory = file(providers.gradleProperty('clientGameDir').get())
-            }
-            if (providers.gradleProperty('previewWorld').isPresent()) {
-                programArguments.addAll '--quickPlaySingleplayer', providers.gradleProperty('previewWorld').get(), '--width', '1280', '--height', '800'
-            }
-        }
-
-        server {
-            server()
-            programArgument '--nogui'
-        }
-
-        data {
-            data()
-
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
-        }
-
-        configureEach {
-            systemProperty 'forge.logging.markers', 'REGISTRIES'
-
-            logLevel = org.slf4j.event.Level.INFO
-        }
-    }
-
     mods {
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
     }
-}
-
-configurations {
-    runtimeClasspath.extendsFrom localRuntime
 }
 
 dependencies {
@@ -110,13 +66,6 @@ dependencies {
     compileOnly('mezz.jei:jei-1.21.1-neoforge:19.53.0.425') { transitive = false }
     compileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1:api'
     compileOnly 'me.shedaniel:RoughlyEnoughItems-api-neoforge:16.0.799'
-
-    if (providers.gradleProperty('compatModsDir').isPresent()) {
-        localRuntime fileTree(dir: providers.gradleProperty('compatModsDir').get(), include: ['*.jar'],
-                exclude: ['biome_based_crops-*.jar'])
-    } else if (providers.gradleProperty('includeLocalMods').getOrElse('true').toBoolean()) {
-        localRuntime fileTree(dir: 'libs', include: ['*.jar'])
-    }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
@@ -138,100 +87,6 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
 sourceSets.main.resources.srcDir generateModMetadata
 neoForge.ideSyncTask generateModMetadata
 
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            url = "file://${project.projectDir}/repo"
-        }
-    }
-}
-
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
-
-idea {
-    module {
-        downloadSources = true
-        downloadJavadoc = true
-    }
-}
-
-// Inspect the artifact itself, so a future source-set or resource-copy change cannot ship tests or editor files.
-abstract class VerifyReleaseJar extends DefaultTask {
-    @InputFile
-    @PathSensitive(PathSensitivity.NONE)
-    abstract RegularFileProperty getReleaseJar()
-
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
-    abstract ConfigurableFileCollection getMainClassDirectories()
-
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
-    abstract ConfigurableFileCollection getMainResourceDirectories()
-
-    @Input
-    abstract ListProperty<String> getRequiredEntries()
-
-    private static Set<String> filesBelow(Set<File> roots) {
-        Set<String> paths = new HashSet<>()
-        roots.findAll { it.isDirectory() }.each { root ->
-            java.nio.file.Files.walk(root.toPath()).withCloseable { files ->
-                files.filter { java.nio.file.Files.isRegularFile(it) }.forEach { path ->
-                    paths.add(root.toPath().relativize(path).toString().replace('\\', '/'))
-                }
-            }
-        }
-        return paths
-    }
-
-    @TaskAction
-    void verify() {
-        Set<String> classes = filesBelow(mainClassDirectories.files).findAll { it.endsWith('.class') } as Set
-        Set<String> resources = filesBelow(mainResourceDirectories.files)
-        List<String> problems = []
-        new java.util.zip.ZipFile(releaseJar.get().asFile).withCloseable { archive ->
-            Set<String> entries = Collections.list(archive.entries()).findAll { !it.directory }.collect { it.name } as Set
-            entries.each { name ->
-                if (name ==~ /(?i).*(GameTests?|Tests?|Harness)(\$[^\/]*)?\.class$/
-                        || name ==~ /(?i).*(^|\/)(tests?|gametest|tools)(\/|$).*/) {
-                    problems.add("test or development file: ${name}")
-                } else if (name ==~ /(?i).*\.(java|kt|scala|groovy|py|pyc|pyo|bbmodel|snbt|psd|xcf|blend|log|jfr|hprof)$/
-                        || name ==~ /.*(^|\/)(\.git|\.gradle|\.idea|\.vscode|__pycache__|\.cache)(\/|$).*/
-                        || name.tokenize('/').last() in ['.DS_Store', 'Thumbs.db']) {
-                    problems.add("development file: ${name}")
-                } else if (name.endsWith('.class') && !classes.contains(name)) {
-                    problems.add("class outside the main source set: ${name}")
-                } else if (!classes.contains(name) && !resources.contains(name)
-                        && !requiredEntries.get().contains(name) && name != 'META-INF/MANIFEST.MF'
-                        && name != 'META-INF/jarjar/metadata.json'
-                        && !(name.startsWith('META-INF/jarjar/') && name.endsWith('.jar'))) {
-                    problems.add("unexpected packaged file: ${name}")
-                }
-            }
-            (classes + requiredEntries.get()).findAll { !entries.contains(it) }.each {
-                problems.add("missing runtime file: ${it}")
-            }
-        }
-        if (!problems.isEmpty()) throw new GradleException("Release JAR hygiene check failed:\n" + problems.sort().join('\n'))
-        logger.lifecycle("Verified release JAR: main runtime classes/resources only; test and development files excluded.")
-    }
-}
-
-var verifyReleaseJar = tasks.register('verifyReleaseJar', VerifyReleaseJar) {
-    group = 'verification'
-    description = 'Checks the mod JAR for main classes, required metadata/licenses, and accidentally bundled test or development files.'
-    dependsOn tasks.named('jar')
-    releaseJar.set(tasks.named('jar', Jar).flatMap { it.archiveFile })
-    mainClassDirectories.from(sourceSets.main.output.classesDirs)
-    mainResourceDirectories.from(sourceSets.main.resources.srcDirs)
-    requiredEntries.set(['META-INF/LICENSE', 'META-INF/TEMPLATE_LICENSE.txt', 'META-INF/neoforge.mods.toml', "${mod_id}.mixins.json".toString()])
-}
-
-tasks.named('check').configure { dependsOn verifyReleaseJar }
