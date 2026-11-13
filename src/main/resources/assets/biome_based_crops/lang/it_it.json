@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "Trova un bioma",
   "biome_based_crops.guide.find_biome_hint": "Trova un bioma...",
   "biome_based_crops.guide.no_matches": "Nessuna corrispondenza",
-  "biome_based_crops.guide.scroll_more": "Scorrere per visualizzare altro testo",
-  "biome_based_crops.guide.scroll_previous": "Scorrere per il testo precedente",
   "biome_based_crops.guide.required_climate": "Clima richiesto %s:",
   "biome_based_crops.guide.floor_blocks": "Blocchi del pavimento:",
   "biome_based_crops.guide.scroll_floor": "Scorrere per le scelte del piano.",

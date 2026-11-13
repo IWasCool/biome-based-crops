@@ -240,8 +240,6 @@ public final class FieldGuideScreen extends Screen {
         g.pose().popPose();
         g.disableScissor();
         drawingSummary = false;
-        if (maxSummaryScroll > 0) drawFolio(g, Component.translatable(summaryScroll < maxSummaryScroll
-                ? "biome_based_crops.guide.scroll_more" : "biome_based_crops.guide.scroll_previous").getString(), rightX());
     }
 
     private int summaryContents(GuiGraphics g, GreenhouseRecipes.Recipe recipe, int width) {

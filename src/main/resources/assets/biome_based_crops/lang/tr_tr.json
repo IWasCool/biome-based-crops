@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "Bir biyom bulun",
   "biome_based_crops.guide.find_biome_hint": "Bir biyom bulun...",
   "biome_based_crops.guide.no_matches": "Eşleşme yok",
-  "biome_based_crops.guide.scroll_more": "Daha fazla metin için kaydırın",
-  "biome_based_crops.guide.scroll_previous": "Önceki metin için ilerleyin",
   "biome_based_crops.guide.required_climate": "Gerekli İklim %s:",
   "biome_based_crops.guide.floor_blocks": "Kat Blokları:",
   "biome_based_crops.guide.scroll_floor": "Kat seçenekleri için kaydırın.",

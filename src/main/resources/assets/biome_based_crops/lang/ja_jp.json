@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "バイオームを探す",
   "biome_based_crops.guide.find_biome_hint": "バイオームを見つけてください...",
   "biome_based_crops.guide.no_matches": "一致しません",
-  "biome_based_crops.guide.scroll_more": "スクロールしてさらにテキストを表示します",
-  "biome_based_crops.guide.scroll_previous": "前のテキストまでスクロールします",
   "biome_based_crops.guide.required_climate": "必要な気候 %s:",
   "biome_based_crops.guide.floor_blocks": "フロアブロック:",
   "biome_based_crops.guide.scroll_floor": "スクロールしてフロアを選択します。",

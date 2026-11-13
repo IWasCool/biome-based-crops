@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "尋找生物群系",
   "biome_based_crops.guide.find_biome_hint": "尋找生物群系...",
   "biome_based_crops.guide.no_matches": "沒有匹配項",
-  "biome_based_crops.guide.scroll_more": "捲動看更多文字",
-  "biome_based_crops.guide.scroll_previous": "捲動查看上一個文本",
   "biome_based_crops.guide.required_climate": "所需氣候 %s：",
   "biome_based_crops.guide.floor_blocks": "地板塊：",
   "biome_based_crops.guide.scroll_floor": "捲動查看樓層選擇。",

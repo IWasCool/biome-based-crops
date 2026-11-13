@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "Tìm quần xã",
   "biome_based_crops.guide.find_biome_hint": "Tìm một quần xã...",
   "biome_based_crops.guide.no_matches": "Không có trận đấu nào",
-  "biome_based_crops.guide.scroll_more": "Cuộn để xem thêm văn bản",
-  "biome_based_crops.guide.scroll_previous": "Cuộn về văn bản trước đó",
   "biome_based_crops.guide.required_climate": "Khí hậu yêu cầu %s:",
   "biome_based_crops.guide.floor_blocks": "Khối sàn:",
   "biome_based_crops.guide.scroll_floor": "Cuộn để lựa chọn tầng.",

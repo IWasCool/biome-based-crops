@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "Trouver un biome",
   "biome_based_crops.guide.find_biome_hint": "Trouver un biome...",
   "biome_based_crops.guide.no_matches": "Aucune correspondance",
-  "biome_based_crops.guide.scroll_more": "Faites défiler pour plus de texte",
-  "biome_based_crops.guide.scroll_previous": "Faire défiler pour le texte précédent",
   "biome_based_crops.guide.required_climate": "Climat requis %s :",
   "biome_based_crops.guide.floor_blocks": "Blocs de plancher :",
   "biome_based_crops.guide.scroll_floor": "Faites défiler pour les choix d'étages.",

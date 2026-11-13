@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "생물 군계 찾기",
   "biome_based_crops.guide.find_biome_hint": "생물군계를 찾아보세요...",
   "biome_based_crops.guide.no_matches": "일치하는 항목 없음",
-  "biome_based_crops.guide.scroll_more": "더 많은 텍스트를 보려면 스크롤하세요.",
-  "biome_based_crops.guide.scroll_previous": "이전 텍스트로 스크롤",
   "biome_based_crops.guide.required_climate": "필수 기후 %s:",
   "biome_based_crops.guide.floor_blocks": "바닥 블록:",
   "biome_based_crops.guide.scroll_floor": "층 선택을 스크롤하세요.",

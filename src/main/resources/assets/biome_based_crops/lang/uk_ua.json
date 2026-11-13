@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "Знайти біом",
   "biome_based_crops.guide.find_biome_hint": "Знайти біом...",
   "biome_based_crops.guide.no_matches": "Немає збігів",
-  "biome_based_crops.guide.scroll_more": "Прокрутіть для отримання додаткового тексту",
-  "biome_based_crops.guide.scroll_previous": "Перейдіть до попереднього тексту",
   "biome_based_crops.guide.required_climate": "Необхідний клімат %s:",
   "biome_based_crops.guide.floor_blocks": "Підлогові блоки:",
   "biome_based_crops.guide.scroll_floor": "Прокрутіть для вибору поверху.",

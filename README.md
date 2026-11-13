@@ -10,7 +10,7 @@ Version **1.0.1** for **Minecraft 1.21.1**, **NeoForge 21.1.251+**, and **Java 2
 
 Place `biome_based_crops-neoforge-1.21.1-1.0.1.jar` in the client and server `mods` folders. Config files are generated on first launch.
 
-1.0.1 fixes the creative inventory tab name to **Biome Based Crops**. The **Biomes Notebook** item keeps its name. Language support matches Create New World Core?s **18 locales**: `de_de`, `en_us`, `es_es`, `es_mx`, `fr_fr`, `id_id`, `it_it`, `ja_jp`, `ko_kr`, `pl_pl`, `pt_br`, `pt_pt`, `ru_ru`, `tr_tr`, `uk_ua`, `vi_vn`, `zh_cn`, `zh_tw`. Other languages use the English fallback.
+1.0.1 fixes the creative inventory tab name to **Biome Based Crops**, aligns the Electrical Thermoregulator controls with its power bar, and removes the notebook's text-scroll instructions. The **Biomes Notebook** item keeps its name. Language support matches Create New World Core's **18 locales**: `de_de`, `en_us`, `es_es`, `es_mx`, `fr_fr`, `id_id`, `it_it`, `ja_jp`, `ko_kr`, `pl_pl`, `pt_br`, `pt_pt`, `ru_ru`, `tr_tr`, `uk_ua`, `vi_vn`, `zh_cn`, `zh_tw`. Other languages use the English fallback.
 
 Build with Java 21:
 

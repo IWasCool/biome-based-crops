@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "Найти биом",
   "biome_based_crops.guide.find_biome_hint": "Найти биом...",
   "biome_based_crops.guide.no_matches": "Нет совпадений",
-  "biome_based_crops.guide.scroll_more": "Прокрутите, чтобы увидеть больше текста",
-  "biome_based_crops.guide.scroll_previous": "Прокрутка до предыдущего текста",
   "biome_based_crops.guide.required_climate": "Требуемый климат %s:",
   "biome_based_crops.guide.floor_blocks": "Блоки пола:",
   "biome_based_crops.guide.scroll_floor": "Пролистайте для выбора этажа.",

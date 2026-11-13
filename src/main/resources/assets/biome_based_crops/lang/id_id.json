@@ -92,8 +92,6 @@
   "biome_based_crops.guide.find_biome": "Temukan bioma",
   "biome_based_crops.guide.find_biome_hint": "Temukan bioma...",
   "biome_based_crops.guide.no_matches": "Tidak ada kecocokan",
-  "biome_based_crops.guide.scroll_more": "Gulir untuk melihat teks lainnya",
-  "biome_based_crops.guide.scroll_previous": "Gulir ke teks sebelumnya",
   "biome_based_crops.guide.required_climate": "Iklim yang Dibutuhkan %s:",
   "biome_based_crops.guide.floor_blocks": "Blok Lantai:",
   "biome_based_crops.guide.scroll_floor": "Gulir untuk pilihan lantai.",
