@@ -44,6 +44,13 @@ base {
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.withSourcesJar()
+
+tasks.named('sourcesJar', Jar).configure {
+    from(['LICENSE', 'TEMPLATE_LICENSE.txt']) {
+        into 'META-INF'
+    }
+}
 
 neoForge {
     version = project.neo_version
