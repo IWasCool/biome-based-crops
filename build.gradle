@@ -5,19 +5,71 @@ plugins {
     id 'idea'
 }
 
+// Every target has its own dependencies, sources and build output. Never widen a
+// release JAR's Minecraft range to substitute for compiling a real port.
+def requestedMinecraft = providers.gradleProperty('mcVersion')
+def targetMinecraft = requestedMinecraft.getOrElse(minecraft_version)
+if (targetMinecraft == '1.21.0') targetMinecraft = '1.21'
+def targetProfileFile = file("versions/${targetMinecraft}.properties")
+if (!targetProfileFile.isFile()) {
+    throw new GradleException("Unsupported Minecraft target '${targetMinecraft}'. See versions/ for available targets.")
+}
+def targetProfile = new Properties()
+targetProfileFile.withInputStream { targetProfile.load(it) }
+targetProfile.each { key, value -> extensions.extraProperties.set(key.toString(), value.toString()) }
+if (minecraft_version != targetMinecraft) throw new GradleException('Minecraft profile does not match the requested target')
+if (requestedMinecraft.isPresent()) layout.buildDirectory.set(file("build/versions/${targetMinecraft}"))
+if (requestedMinecraft.isPresent() && gradle.startParameter.projectCacheDir == null) {
+    throw new GradleException('Version builds need an isolated Gradle history. Use build-all.ps1/build-all.sh, or add --project-cache-dir .gradle/versions/' + targetMinecraft)
+}
+def compatibilitySmoke = providers.gradleProperty('compatSmoke').getOrElse('false').toBoolean()
+if (compatibilitySmoke) {
+    def prepareVersionTests = tasks.register('prepareVersionTests', Sync) {
+        from('src/compatTest/java')
+        into layout.buildDirectory.dir('versionSources/tests')
+        filteringCharset = 'UTF-8'
+        if (targetMinecraft == '1.21.11') {
+            filter { String line -> line.replaceAll(/\bResourceLocation\b/, 'Identifier')
+                    .replace('.location()', '.identifier()')
+                    .replace('readResourceLocation', 'readIdentifier').replace('writeResourceLocation', 'writeIdentifier') }
+        }
+    }
+    sourceSets.test.java.setSrcDirs([prepareVersionTests])
+}
+
+def overlayVersions = targetProfile.getProperty('overlay_parents', '').tokenize(',') + [targetMinecraft]
+def overlayDirectories = (targetMinecraft == '1.21.1' ? [] : [file('src/versions/common')]) +
+        overlayVersions.collect { file("src/versions/${it}") }
+def prepareVersionJava = tasks.register('prepareVersionJava', Sync) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    overlayDirectories.reverseEach { from(new File(it, 'java')) }
+    from('src/main/java')
+    filteringCharset = 'UTF-8'
+    if (targetMinecraft == '1.21.11') {
+        // Mojang renamed the identifier type without changing its representation.
+        filter { String line -> line.replaceAll(/\bResourceLocation\b/, 'Identifier')
+                .replace('.location()', '.identifier()')
+                .replace('readResourceLocation', 'readIdentifier').replace('writeResourceLocation', 'writeIdentifier') }
+    }
+    into layout.buildDirectory.dir('versionSources/java')
+}
+def prepareVersionResources = tasks.register('prepareVersionResources', Sync) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    overlayDirectories.reverseEach { from(new File(it, 'resources')) }
+    from('src/main/resources')
+    from('src/generated/resources')
+    exclude('**/*.bbmodel', '**/.cache/**', '**/.DS_Store', '**/Thumbs.db')
+    into layout.buildDirectory.dir('versionSources/resources')
+}
+sourceSets.main.java.setSrcDirs([prepareVersionJava])
+sourceSets.main.resources.setSrcDirs([prepareVersionResources])
+
 tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
 
-version = mod_version
+version = requestedMinecraft.isPresent() ? "${mod_version}+mc${targetMinecraft}" : mod_version
 group = mod_group_id
-
-sourceSets.main.resources {
-    srcDir('src/generated/resources')
-
-    exclude("**/*.bbmodel")
-    exclude("**/.cache/**", "**/.DS_Store", "**/Thumbs.db")
-}
 
 tasks.named('processResources', ProcessResources).configure {
     from(['LICENSE', 'TEMPLATE_LICENSE.txt']) {
@@ -53,11 +105,16 @@ tasks.named('sourcesJar', Jar).configure {
 }
 
 neoForge {
-    version = project.neo_version
+    enable {
+        version = project.neo_version
+        disableRecompilation = providers.gradleProperty('fastBuild').getOrElse('false').toBoolean()
+    }
 
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
+    if (targetMinecraft == '1.21.1') {
+        parchment {
+            mappingsVersion = project.parchment_mappings_version
+            minecraftVersion = project.parchment_minecraft_version
+        }
     }
 
     runs {
@@ -77,12 +134,20 @@ neoForge {
         }
 
         data {
-            data()
+            if (targetMinecraft.tokenize('.').last().toInteger() >= 5 && targetMinecraft != '1.21') clientData()
+            else data()
 
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+            def dataOutput = requestedMinecraft.isPresent()
+                    ? layout.buildDirectory.dir('generatedData').get().asFile : file('src/generated/resources/')
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', dataOutput.absolutePath,
+                    '--existing', layout.buildDirectory.dir('versionSources/resources').get().asFile.absolutePath
         }
 
         configureEach {
+            if (requestedMinecraft.isPresent()
+                    && !(name == 'client' && providers.gradleProperty('clientGameDir').isPresent())) {
+                gameDirectory = layout.buildDirectory.dir("run/${name}").get().asFile
+            }
             systemProperty 'forge.logging.markers', 'REGISTRIES'
 
             logLevel = org.slf4j.event.Level.INFO
@@ -94,6 +159,12 @@ neoForge {
             sourceSet(sourceSets.main)
         }
     }
+    if (compatibilitySmoke) {
+        unitTest {
+            enable()
+            testedMod = mods."${mod_id}"
+        }
+    }
 }
 
 configurations {
@@ -101,20 +172,34 @@ configurations {
 }
 
 dependencies {
-    // Safe identity implementation without Sable; Sable supplies the live ship poses when installed.
-    jarJar(api('dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:[1.6.0,2.0)')) {
-        version { prefer '1.6.0' }
+    if (targetMinecraft == '1.21') {
+        // The final 1.21 NeoForge predates WrapMethod; bootstrap the newer
+        // MixinExtras implementation required by the greenhouse mutation guard.
+        jarJar(implementation('io.github.llamalad7:mixinextras-neoforge:0.5.3')) {
+            version { strictly '[0.5.3,0.6)'; prefer '0.5.3' }
+        }
     }
-    compileOnly 'mezz.jei:jei-1.21.1-common-api:19.53.0.425'
+    if (compatibilitySmoke) {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        testImplementation "net.neoforged:testframework:${neo_version}"
+    }
+    // Safe identity implementation without Sable; Sable supplies the live ship poses when installed.
+    if (targetMinecraft == '1.21.1') {
+        jarJar(api('dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:[1.6.0,2.0)')) {
+            version { prefer '1.6.0' }
+        }
+    }
+    compileOnly "mezz.jei:jei-${jei_minecraft_version}-common-api:${jei_version}"
     // Optional, client-only JEI utility button hooks; never bundled in the release JAR.
-    compileOnly('mezz.jei:jei-1.21.1-neoforge:19.53.0.425') { transitive = false }
+    compileOnly("mezz.jei:jei-${jei_minecraft_version}-neoforge:${jei_version}") { transitive = false }
     compileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1:api'
     compileOnly 'me.shedaniel:RoughlyEnoughItems-api-neoforge:16.0.799'
 
     if (providers.gradleProperty('compatModsDir').isPresent()) {
         localRuntime fileTree(dir: providers.gradleProperty('compatModsDir').get(), include: ['*.jar'],
                 exclude: ['biome_based_crops-*.jar'])
-    } else if (providers.gradleProperty('includeLocalMods').getOrElse('true').toBoolean()) {
+    } else if (providers.gradleProperty('includeLocalMods').getOrElse(targetMinecraft == '1.21.1' ? 'true' : 'false').toBoolean()) {
         localRuntime fileTree(dir: 'libs', include: ['*.jar'])
     }
 }
@@ -128,7 +213,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
-            mod_version            : mod_version,
+            mod_version            : project.version.toString(),
     ]
     inputs.properties replaceProperties
     expand replaceProperties
@@ -153,6 +238,27 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+tasks.named('test', Test).configure {
+    if (compatibilitySmoke) {
+        useJUnitPlatform()
+        maxHeapSize = '1G'
+        maxParallelForks = 1
+        workingDir = layout.buildDirectory.dir('compatSmoke').get().asFile
+        doFirst { workingDir.mkdirs() }
+        testLogging { events 'passed', 'failed', 'skipped' }
+    }
+}
+
+// ModDevGradle configures its JUnit working directory after project evaluation.
+// Apply ours afterwards so parallel version tests cannot share configs or logs.
+afterEvaluate {
+    if (compatibilitySmoke) {
+        tasks.named('test', Test).configure {
+            workingDir = layout.buildDirectory.dir('compatSmoke').get().asFile
+        }
+    }
 }
 
 idea {

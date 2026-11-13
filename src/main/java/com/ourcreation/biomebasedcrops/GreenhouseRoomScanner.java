@@ -46,7 +46,7 @@ public final class GreenhouseRoomScanner {
     private GreenhouseRoomScanner() { }
 
     public static boolean hasTracking(Level level) {
-        if (level.isClientSide || level.getServer() != null && !level.getServer().isSameThread()) return false;
+        if (level.isClientSide() || level.getServer() != null && !level.getServer().isSameThread()) return false;
         State state = STATES.get(level);
         return state != null && state.epoch == EPOCH.get()
                 && (!state.completed.isEmpty() || !state.pending.isEmpty() || !state.negative.isEmpty()
@@ -84,7 +84,7 @@ public final class GreenhouseRoomScanner {
 
     /** Explicit surveys take precedence over incidental underground biome queries. */
     public static void prioritize(Level level, BlockPos pos) {
-        if (level.isClientSide) return;
+        if (level.isClientSide()) return;
         State state = state(level);
         state.priority = pos.immutable();
         state.negative.remove(pos.asLong());
@@ -202,7 +202,7 @@ public final class GreenhouseRoomScanner {
     @SubscribeEvent
     public static void onLevelTick(LevelTickEvent.Post event) {
         Level level = event.getLevel();
-        if (level.isClientSide) return;
+        if (level.isClientSide()) return;
         if (!STATES.containsKey(level)) return;
         State state = state(level);
         GreenhouseEnvironment.withoutOverlay(() -> {
@@ -278,7 +278,7 @@ public final class GreenhouseRoomScanner {
 
     @SubscribeEvent
     public static void onChunkUnload(ChunkEvent.Unload event) {
-        if (!(event.getLevel() instanceof Level level) || level.isClientSide) return;
+        if (!(event.getLevel() instanceof Level level) || level.isClientSide()) return;
         State state = STATES.get(level);
         if (state == null) return;
         long chunk = event.getChunk().getPos().toLong();
@@ -293,7 +293,7 @@ public final class GreenhouseRoomScanner {
 
     public static void blockChanged(Level level, BlockPos pos, BlockState before, BlockState after) {
         State state = STATES.get(level);
-        if (state == null || level.isClientSide || before == after) return;
+        if (state == null || level.isClientSide() || before == after) return;
         boolean oldSeal = GreenhouseEnvironment.sealedState(level, pos, before);
         boolean newSeal = GreenhouseEnvironment.sealedState(level, pos, after);
         ResourceLocation oldId = BuiltInRegistries.BLOCK.getKey(before.getBlock());

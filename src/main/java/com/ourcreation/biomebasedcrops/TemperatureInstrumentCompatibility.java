@@ -32,14 +32,14 @@ public final class TemperatureInstrumentCompatibility {
     public static void onUseItem(PlayerInteractEvent.RightClickItem event) {
         if (!thermometer(event.getItemStack())) return;
         read(event);
-        event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+        event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
         event.setCanceled(true);
     }
 
     public static void onUseBlock(PlayerInteractEvent.RightClickBlock event) {
         if (thermometer(event.getItemStack())) {
             read(event);
-            event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+            event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
             event.setCanceled(true);
         } else if (DEVICES.contains(BuiltInRegistries.BLOCK.getKey(event.getLevel().getBlockState(event.getPos()).getBlock()).toString())
                 && event.getEntity() instanceof ServerPlayer player) {

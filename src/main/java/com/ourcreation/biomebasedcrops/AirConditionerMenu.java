@@ -171,7 +171,7 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
     }
 
     @Override public boolean clickMenuButton(Player player, int button) {
-        if (player.level().isClientSide || button < 0 || button > TOGGLE_POWER || !stillValid(player)) return false;
+        if (player.level().isClientSide() || button < 0 || button > TOGGLE_POWER || !stillValid(player)) return false;
         if (player.level().getBlockEntity(position) instanceof AirConditionerBlockEntity unit) {
             if (button == TOGGLE_POWER) unit.setEnabled(!unit.enabled());
             else unit.setClimate(CropClimate.values()[button]);

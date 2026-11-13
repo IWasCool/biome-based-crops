@@ -37,7 +37,7 @@ public final class CommonEvents {
     }
 
     public static void onCropGrow(CropGrowEvent.Pre event) {
-        if (!(event.getLevel() instanceof Level level) || level.isClientSide) {
+        if (!(event.getLevel() instanceof Level level) || level.isClientSide()) {
             return;
         }
         BlockState state = event.getState();
@@ -65,7 +65,7 @@ public final class CommonEvents {
 
         event.setSuccessful(false);
         Player player = event.getPlayer();
-        if (player != null && !event.getLevel().isClientSide) {
+        if (player != null && !event.getLevel().isClientSide()) {
             player.displayClientMessage(blockedMessage(profile.get()), true);
         }
     }
@@ -90,7 +90,7 @@ public final class CommonEvents {
     }
 
     private static void showThermometerClimate(Player player, InteractionHand hand) {
-        if (player.level().isClientSide || !CropMatcher.isThermometer(player.getItemInHand(hand))) {
+        if (player.level().isClientSide() || !CropMatcher.isThermometer(player.getItemInHand(hand))) {
             return;
         }
 

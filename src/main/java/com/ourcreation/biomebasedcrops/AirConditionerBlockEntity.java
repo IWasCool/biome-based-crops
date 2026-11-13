@@ -40,7 +40,7 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
     public IEnergyStorage energy() { return battery; }
     public boolean hasPaidAirflow() {
         return enabled && level != null && !isRemoved() && getBlockState().getValue(AirConditionerBlock.ACTIVE)
-                && (level.isClientSide || lastPaidTick >= level.getGameTime() - 1);
+                && (level.isClientSide() || lastPaidTick >= level.getGameTime() - 1);
     }
     public boolean hasThermalInfluence() { return hasPaidAirflow(); }
 
@@ -52,7 +52,7 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
     }
 
     private RoomClimateState roomState(boolean discover) {
-        if (level == null || level.isClientSide) return null;
+        if (level == null || level.isClientSide()) return null;
         RoomClimateState current = GreenhouseEnvironment.controllerAirState(level, worldPosition, discover);
         if (lastRoomState != null && lastRoomState != current) lastRoomState.removeDrive(worldPosition.asLong());
         lastRoomState = current;
@@ -97,7 +97,7 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
         this.enabled = enabled;
         if (!enabled) {
             lastPaidTick = Long.MIN_VALUE;
-            if (level != null && !level.isClientSide) {
+            if (level != null && !level.isClientSide()) {
                 RoomClimateState room = roomState(false);
                 if (room != null) room.removeDrive(worldPosition.asLong());
                 setActive(false);
@@ -106,7 +106,7 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
         changed(true);
     }
     private void updateTargetIndicator() {
-        if (level == null || level.isClientSide) return;
+        if (level == null || level.isClientSide()) return;
         BlockState state = getBlockState();
         if (state.getValue(AirConditionerBlock.CLIMATE) != selectedClimate)
             level.setBlock(worldPosition, state.setValue(AirConditionerBlock.CLIMATE, selectedClimate), Block.UPDATE_CLIENTS);
@@ -118,7 +118,7 @@ public final class AirConditionerBlockEntity extends BlockEntity implements Menu
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState blockState, AirConditionerBlockEntity unit) {
-        if (level.isClientSide || unit.lastTickedGameTime == level.getGameTime()) return;
+        if (level.isClientSide() || unit.lastTickedGameTime == level.getGameTime()) return;
         unit.lastTickedGameTime = level.getGameTime();
         unit.updateTargetIndicator();
         if (!unit.enabled) {

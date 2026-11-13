@@ -21,12 +21,12 @@ public final class ThermometerItem extends Item {
     @Override public InteractionResult useOn(UseOnContext context) {
         if (context.getPlayer() instanceof ServerPlayer player)
             read(player);
-        return InteractionResult.sidedSuccess(context.getLevel().isClientSide);
+        return InteractionResult.sidedSuccess(context.getLevel().isClientSide());
     }
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) read(serverPlayer);
-        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide);
+        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
     }
 
     private void read(ServerPlayer player) {

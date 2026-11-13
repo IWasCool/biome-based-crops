@@ -12,7 +12,7 @@ authors="Izcool"
 description='''
 Configurable crop and sapling growth using climates, biome IDs, and biome tags.
 Build biome greenhouses with an electric Air Conditioner and an illustrated field guide.
-Includes optional support for Farmer's Delight, Biomes O' Plenty, Tough As Nails, Sable ships, Northstar, JEI, EMI, and REI.
+Optional integrations activate when matching mod releases are available for this Minecraft version.
 '''
 
 [[mixins]]

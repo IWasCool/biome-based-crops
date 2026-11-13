@@ -52,16 +52,16 @@ public final class AirConditionerBlock extends BaseEntityBlock {
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof AirConditionerBlockEntity unit) {
             serverPlayer.openMenu(unit, pos);
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         return createTickerHelper(type, GreenhouseContent.AIR_CONDITIONER_ENTITY.get(),
-                level.isClientSide ? AirConditionerBlockEntity::clientTick : AirConditionerBlockEntity::serverTick);
+                level.isClientSide() ? AirConditionerBlockEntity::clientTick : AirConditionerBlockEntity::serverTick);
     }
 
     @Override protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos neighbor, boolean moving) {
-        if (!level.isClientSide) GreenhouseEnvironment.invalidateClimate();
+        if (!level.isClientSide()) GreenhouseEnvironment.invalidateClimate();
         super.neighborChanged(state, level, pos, block, neighbor, moving);
     }
 

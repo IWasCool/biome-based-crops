@@ -1,0 +1,6 @@
+{
+    "model":  {
+                  "model":  "biome_based_crops:item/air_conditioner",
+                  "type":  "minecraft:model"
+              }
+}
