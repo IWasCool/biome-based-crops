@@ -1,0 +1,37 @@
+// Matches Create New World Core's native and NeoForge 1.21.1 locale sets.
+def supportedLocales = ['de_de', 'en_us', 'es_es', 'es_mx', 'fr_fr', 'id_id', 'it_it',
+        'ja_jp', 'ko_kr', 'pl_pl', 'pt_br', 'pt_pt', 'ru_ru', 'tr_tr', 'uk_ua',
+        'vi_vn', 'zh_cn', 'zh_tw']
+def languageDirectory = layout.projectDirectory.dir('src/main/resources/assets/biome_based_crops/lang')
+def languageFileTree = fileTree(languageDirectory).matching { include '*.json' }
+
+def validateLanguages = tasks.register('validateLanguages') {
+    group = 'verification'
+    description = 'Verify the Core-matched locale set and complete Biome Based Crops translation keys.'
+    inputs.dir languageDirectory
+    inputs.property 'supportedLocales', supportedLocales
+    doLast {
+        def languageFiles = languageFileTree.files
+        def actualLocales = languageFiles.collect { it.name - '.json' }.sort()
+        if (actualLocales != supportedLocales.sort(false)) {
+            throw new GradleException("Biome Based Crops locales must match Create New World Core: ${supportedLocales.join(', ')}; found ${actualLocales.join(', ')}")
+        }
+        def parser = new groovy.json.JsonSlurper()
+        def english = parser.parse(languageDirectory.file('en_us.json').asFile, 'UTF-8')
+        if (!(english instanceof Map) || english.isEmpty()) {
+            throw new GradleException('Biome Based Crops English translations must be a nonempty JSON object')
+        }
+        languageFiles.each { languageFile ->
+            def translations = parser.parse(languageFile, 'UTF-8')
+            if (!(translations instanceof Map) || translations.keySet() != english.keySet()) {
+                throw new GradleException("${languageFile.name} must contain exactly the English translation keys")
+            }
+            if (translations.values().any { !(it instanceof String) || it.isBlank() }) {
+                throw new GradleException("${languageFile.name} has an empty or non-string translation")
+            }
+        }
+        logger.lifecycle("Verified ${languageFiles.size()} Core-matched Biome Based Crops locales with ${english.size()} keys each.")
+    }
+}
+tasks.named('check') { dependsOn validateLanguages }
+tasks.named('processResources') { dependsOn validateLanguages }
