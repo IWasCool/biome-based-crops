@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Requisiti pavimento del bioma",
   "biome_based_crops.configuration.constructionRulesVersion": "Regołe de costrusión version",
   "subtitles.biome_based_crops.compressor": "El conpresor el ronza",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "El clima deła stansa nol corisponde al bioma obietivo",
   "biome_based_crops.configuration.climateRulesVersion": "Version dełe regołe del clima",
   "biome_based_crops.message.climate_reading": "Clima: %s | Bioma: %s",

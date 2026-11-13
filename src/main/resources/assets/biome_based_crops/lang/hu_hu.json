@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Biome padlóra vonatkozó követelmények",
   "biome_based_crops.configuration.constructionRulesVersion": "Építési szabályok változata",
   "subtitles.biome_based_crops.compressor": "A kompresszor zúg",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "A helyiség klímája nem egyezik a megcélzott biomával",
   "biome_based_crops.configuration.climateRulesVersion": "Az éghajlati szabályok változata",
   "biome_based_crops.message.climate_reading": "Éghajlat: %s | Életrajz: %s",

@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Biome gulvkrav",
   "biome_based_crops.configuration.constructionRulesVersion": "Konstruksjonsregler versjon",
   "subtitles.biome_based_crops.compressor": "Kompressoren brummer",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Romklimaet samsvarer ikke med målbiomet",
   "biome_based_crops.configuration.climateRulesVersion": "Versjon av klimaregler",
   "biome_based_crops.message.climate_reading": "Klima: %s | Biom: %s",

@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Biome floor requirements",
   "biome_based_crops.configuration.constructionRulesVersion": "Construction rules version",
   "subtitles.biome_based_crops.compressor": "Compressor hums",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Da room wether does not match da target biome",
   "biome_based_crops.configuration.climateRulesVersion": "Wether Rules Version",
   "biome_based_crops.message.climate_reading": "Wether: %s | Biome: %s",

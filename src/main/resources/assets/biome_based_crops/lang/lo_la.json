@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "ຄວາມຕ້ອງການຊັ້ນ Biome",
   "biome_based_crops.configuration.constructionRulesVersion": "ສະບັບກົດລະບຽບການກໍ່ສ້າງ",
   "subtitles.biome_based_crops.compressor": "ອັດລົມ",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "ສະພາບອາກາດໃນຫ້ອງບໍ່ກົງກັບ biome ເປົ້າຫມາຍ",
   "biome_based_crops.configuration.climateRulesVersion": "ສະບັບກົດລະບຽບສະພາບອາກາດ",
   "biome_based_crops.message.climate_reading": "ສະພາບອາກາດ: %s | ຊີວະພາບ: %s",

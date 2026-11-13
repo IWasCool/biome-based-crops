@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Rekwiżiti tal-art tal-bijoma",
   "biome_based_crops.configuration.constructionRulesVersion": "Verżjoni tar-regoli tal-kostruzzjoni",
   "subtitles.biome_based_crops.compressor": "Il-kompressur hums",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Il-klima tal-kamra ma taqbilx mal-bijoma fil-mira",
   "biome_based_crops.configuration.climateRulesVersion": "Verżjoni tar-Regoli dwar il-Klima",
   "biome_based_crops.message.climate_reading": "Klima: %s | Bijoma: %s",

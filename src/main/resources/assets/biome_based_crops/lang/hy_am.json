@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Բիոմի հատակի պահանջները",
   "biome_based_crops.configuration.constructionRulesVersion": "Շինարարության կանոնների տարբերակ",
   "subtitles.biome_based_crops.compressor": "Կոմպրեսորը բզզում է",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Սենյակի կլիման չի համապատասխանում թիրախային բիոմին",
   "biome_based_crops.configuration.climateRulesVersion": "Կլիմայի կանոնների տարբերակ",
   "biome_based_crops.message.climate_reading": "Կլիման՝ %s | Կենսագրություն՝ %s",

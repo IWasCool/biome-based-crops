@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Biomaren zoruaren baldintzak",
   "biome_based_crops.configuration.constructionRulesVersion": "Eraikuntza-arauen bertsioa",
   "subtitles.biome_based_crops.compressor": "Konpresoreak burrunba egiten du",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Gelako klima ez dator bat xede biomarekin",
   "biome_based_crops.configuration.climateRulesVersion": "Klima Arauen Bertsioa",
   "biome_based_crops.message.climate_reading": "Klima: %s | Bioma: %s",

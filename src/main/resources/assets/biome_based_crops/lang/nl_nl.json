@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Biome-vloervereisten",
   "biome_based_crops.configuration.constructionRulesVersion": "Versie met bouwregels",
   "subtitles.biome_based_crops.compressor": "Compressor zoemt",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Het binnenklimaat komt niet overeen met het doelbioom",
   "biome_based_crops.configuration.climateRulesVersion": "Versie klimaatregels",
   "biome_based_crops.message.climate_reading": "Klimaat: %s | Bioom: %s",

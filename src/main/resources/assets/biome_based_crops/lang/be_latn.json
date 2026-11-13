@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Patrabavanni da padlohi biiama",
   "biome_based_crops.configuration.constructionRulesVersion": "Redakcyia pravilaŭ budaŭnictva",
   "subtitles.biome_based_crops.compressor": "Kampresar hudzie",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Klimat pamiaškannia nie adpaviadaie metavamu biiomu",
   "biome_based_crops.configuration.climateRulesVersion": "Viersiia klimatyčnych pravilaŭ",
   "biome_based_crops.message.climate_reading": "Klimat: %s | Biiama: %s",

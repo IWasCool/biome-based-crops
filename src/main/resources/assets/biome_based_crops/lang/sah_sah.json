@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Биом дьиэтин ирдэбиллэрэ",
   "biome_based_crops.configuration.constructionRulesVersion": "Тутуу быраабылаларын вариана",
   "subtitles.biome_based_crops.compressor": "Компрессор тыаһыыр",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Хос климата сыаллаах биомҥа сөп түбэспэт",
   "biome_based_crops.configuration.climateRulesVersion": "Климат быраабылаларын вариана",
   "biome_based_crops.message.climate_reading": "Климат: %s | Биом: %s",

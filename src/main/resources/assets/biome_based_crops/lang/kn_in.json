@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "ಬಯೋಮ್ ನೆಲದ ಅವಶ್ಯಕತೆಗಳು",
   "biome_based_crops.configuration.constructionRulesVersion": "ನಿರ್ಮಾಣ ನಿಯಮಗಳ ಆವೃತ್ತಿ",
   "subtitles.biome_based_crops.compressor": "ಸಂಕೋಚಕ ಹಮ್ಸ್",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "ಕೋಣೆಯ ಹವಾಮಾನವು ಗುರಿಯ ಬಯೋಮ್‌ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ",
   "biome_based_crops.configuration.climateRulesVersion": "ಹವಾಮಾನ ನಿಯಮಗಳ ಆವೃತ್ತಿ",
   "biome_based_crops.message.climate_reading": "ಹವಾಮಾನ: %s | ಬಯೋಮ್: %s",

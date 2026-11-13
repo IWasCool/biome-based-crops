@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "生物群系地面需求",
   "biome_based_crops.configuration.constructionRulesVersion": "建構規則版本",
   "subtitles.biome_based_crops.compressor": "壓縮機嗡嗡聲",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "房間氣候與目標生物群係不匹配",
   "biome_based_crops.configuration.climateRulesVersion": "氣候規則版本",
   "biome_based_crops.message.climate_reading": "氣候：%s |生物群落：%s",

@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Требования к этажу биома",
   "biome_based_crops.configuration.constructionRulesVersion": "Версия строительных правил",
   "subtitles.biome_based_crops.compressor": "Компрессор гудит.",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Климат в помещении не соответствует целевому биому.",
   "biome_based_crops.configuration.climateRulesVersion": "Версия климатических правил",
   "biome_based_crops.message.climate_reading": "Климат: %s | Биом: %s",

@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Nā koi papahele biome",
   "biome_based_crops.configuration.constructionRulesVersion": "Mana o na rula kukulu",
   "subtitles.biome_based_crops.compressor": "ʻO ka compressor hum",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "ʻAʻole kūlike ke ea o ka lumi me ka biome",
   "biome_based_crops.configuration.climateRulesVersion": "Ka Manawa Rula Version",
   "biome_based_crops.message.climate_reading": "Ke ea: %s | Biome: %s",

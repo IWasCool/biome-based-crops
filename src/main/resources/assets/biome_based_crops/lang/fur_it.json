@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Recuisîts dal paviment dal biome",
   "biome_based_crops.configuration.constructionRulesVersion": "Version des regulis di costruzion",
   "subtitles.biome_based_crops.compressor": "Il compressôr al ronze",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Il clime de cjamare nol corispuint al biome di destinazion",
   "biome_based_crops.configuration.climateRulesVersion": "Version des regulis dal clime",
   "biome_based_crops.message.climate_reading": "Clima: %s | Biome: %s",

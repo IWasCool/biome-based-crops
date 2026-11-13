@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "생물군계 층 요구 사항",
   "biome_based_crops.configuration.constructionRulesVersion": "건설 규칙 버전",
   "subtitles.biome_based_crops.compressor": "압축기에서 윙윙거리는 소리가 난다",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "실내 기후가 대상 생물 군계와 일치하지 않습니다.",
   "biome_based_crops.configuration.climateRulesVersion": "기후 규칙 버전",
   "biome_based_crops.message.climate_reading": "기후: %s | 생물군계: %s",

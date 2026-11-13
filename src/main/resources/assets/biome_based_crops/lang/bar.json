@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Anforderungen an den Biomboden",
   "biome_based_crops.configuration.constructionRulesVersion": "Bauregelversion",
   "subtitles.biome_based_crops.compressor": "Kompressor brummt",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Das Raumklima passt nicht zum Zielbiom",
   "biome_based_crops.configuration.climateRulesVersion": "Version der Klimaregeln",
   "biome_based_crops.message.climate_reading": "Klima: %s | Biom: %s",

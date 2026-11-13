@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "ביאָמע שטאָק רעקווירעמענץ",
   "biome_based_crops.configuration.constructionRulesVersion": "קאַנסטראַקשאַן כּללים ווערסיע",
   "subtitles.biome_based_crops.compressor": "קאַמפּרעסער כאַמז",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "דער צימער קלימאַט שטימט נישט מיט דעם ציל ביאָמע",
   "biome_based_crops.configuration.climateRulesVersion": "קלימאַט רולעס ווערסיע",
   "biome_based_crops.message.climate_reading": "קלימאַט: %s | ביאָמע: %s",

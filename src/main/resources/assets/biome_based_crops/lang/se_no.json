@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Bioma latnjagáibádusat",
   "biome_based_crops.configuration.constructionRulesVersion": "Huksennjuolggadusaid veršuvdna",
   "subtitles.biome_based_crops.compressor": "Kompressor čuorvu",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Ruovttu dálkkádat ii heive ulbmilbiomii",
   "biome_based_crops.configuration.climateRulesVersion": "Dálkkádatnjuolggadusaid veršuvdna",
   "biome_based_crops.message.climate_reading": "Dálkkádat: %s | Bioma: %s",

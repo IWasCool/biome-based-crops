@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Požiadavky na podlahu biomu",
   "biome_based_crops.configuration.constructionRulesVersion": "Verzia stavebných pravidiel",
   "subtitles.biome_based_crops.compressor": "Hučanie kompresora",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Klíma v miestnosti nezodpovedá cieľovému biómu",
   "biome_based_crops.configuration.climateRulesVersion": "Verzia klimatických pravidiel",
   "biome_based_crops.message.climate_reading": "Podnebie: %s | Bióm: %s",

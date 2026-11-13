@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Mga kinakailangan sa sahig ng biome",
   "biome_based_crops.configuration.constructionRulesVersion": "Bersyon ng mga panuntunan sa pagtatayo",
   "subtitles.biome_based_crops.compressor": "Humihinga ang compressor",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Ang klima ng silid ay hindi tumutugma sa target na biome",
   "biome_based_crops.configuration.climateRulesVersion": "Bersyon ng Mga Panuntunan sa Klima",
   "biome_based_crops.message.climate_reading": "Klima: %s | Biome: %s",

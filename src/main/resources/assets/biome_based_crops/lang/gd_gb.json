@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Riatanasan làr biome",
   "biome_based_crops.configuration.constructionRulesVersion": "Tionndadh riaghailtean togail",
   "subtitles.biome_based_crops.compressor": "Tha an compressor air a chromadh",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Chan eil gnàth-shìde an t-seòmair a’ freagairt ris an targaid biome",
   "biome_based_crops.configuration.climateRulesVersion": "Tionndadh Riaghailtean Gnàth-shìde",
   "biome_based_crops.message.climate_reading": "Gnàth-shìde: %s | Biome: %s",

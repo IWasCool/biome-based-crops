@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Bioma grīdas prasības",
   "biome_based_crops.configuration.constructionRulesVersion": "Būvniecības noteikumu versija",
   "subtitles.biome_based_crops.compressor": "Kompresors dūko",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Telpas klimats neatbilst mērķa biomam",
   "biome_based_crops.configuration.climateRulesVersion": "Klimata noteikumu versija",
   "biome_based_crops.message.climate_reading": "Klimats: %s | Bioms: %s",

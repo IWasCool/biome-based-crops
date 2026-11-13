@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "الزامات کف بیوم",
   "biome_based_crops.configuration.constructionRulesVersion": "نسخه قوانین ساخت و ساز",
   "subtitles.biome_based_crops.compressor": "کمپرسور زمزمه می کند",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "آب و هوای اتاق با بیوم هدف مطابقت ندارد",
   "biome_based_crops.configuration.climateRulesVersion": "نسخه قوانین آب و هوا",
   "biome_based_crops.message.climate_reading": "آب و هوا: %s | بیوم: %s",

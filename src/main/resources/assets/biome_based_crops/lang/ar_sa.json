@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "متطلبات أرضية المنطقة الحيوية",
   "biome_based_crops.configuration.constructionRulesVersion": "نسخة قواعد البناء",
   "subtitles.biome_based_crops.compressor": "طنين الضاغط",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "لا يتطابق مناخ الغرفة مع المنطقة الحيوية المستهدفة",
   "biome_based_crops.configuration.climateRulesVersion": "نسخة قواعد المناخ",
   "biome_based_crops.message.climate_reading": "المناخ: %s | المنطقة الأحيائية: %s",

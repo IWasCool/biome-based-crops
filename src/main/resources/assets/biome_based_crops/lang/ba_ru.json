@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Биом иҙән талаптары",
   "biome_based_crops.configuration.constructionRulesVersion": "Төҙөлөш ҡағиҙәләре версияһы 1.1.",
   "subtitles.biome_based_crops.compressor": "Компрессор һыҙғыра",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Бүлмә климаты маҡсатлы биомға тап килмәй .",
   "biome_based_crops.configuration.climateRulesVersion": "Климат ҡағиҙәләре версияһы",
   "biome_based_crops.message.climate_reading": "Климат: %s | Биом: %s",

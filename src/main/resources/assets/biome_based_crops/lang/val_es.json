@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Requisits del sòl del bioma",
   "biome_based_crops.configuration.constructionRulesVersion": "Versió de normes de construcció",
   "subtitles.biome_based_crops.compressor": "El compressor zumba",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "El clima de l'habitació no coincideix amb el bioma objectiu",
   "biome_based_crops.configuration.climateRulesVersion": "Versió de les regles climàtiques",
   "biome_based_crops.message.climate_reading": "Clima: %s | Bioma: %s",

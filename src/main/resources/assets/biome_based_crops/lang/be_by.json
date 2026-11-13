@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Патрабаванні да падлогі біяма",
   "biome_based_crops.configuration.constructionRulesVersion": "Рэдакцыя правілаў будаўніцтва",
   "subtitles.biome_based_crops.compressor": "Кампрэсар гудзе",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Клімат памяшкання не адпавядае мэтаваму біёму",
   "biome_based_crops.configuration.climateRulesVersion": "Версія кліматычных правілаў",
   "biome_based_crops.message.climate_reading": "Клімат: %s | Біяма: %s",

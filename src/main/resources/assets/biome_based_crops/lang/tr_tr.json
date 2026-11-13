@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Biyom zemin gereksinimleri",
   "biome_based_crops.configuration.constructionRulesVersion": "Yapım kuralları versiyonu",
   "subtitles.biome_based_crops.compressor": "Kompresör uğultu yapıyor",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Oda iklimi hedef biyomla eşleşmiyor",
   "biome_based_crops.configuration.climateRulesVersion": "İklim Kuralları Versiyonu",
   "biome_based_crops.message.climate_reading": "İklim: %s | Biyom: %s",

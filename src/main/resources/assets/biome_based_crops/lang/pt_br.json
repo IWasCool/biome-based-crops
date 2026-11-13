@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Requisitos de piso do bioma",
   "biome_based_crops.configuration.constructionRulesVersion": "Versão das regras de construção",
   "subtitles.biome_based_crops.compressor": "O compressor zumbe",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "O clima ambiente não corresponde ao bioma alvo",
   "biome_based_crops.configuration.climateRulesVersion": "Versão das regras climáticas",
   "biome_based_crops.message.climate_reading": "Clima: %s | Bioma: %s",

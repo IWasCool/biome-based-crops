@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Requisitos do chan do bioma",
   "biome_based_crops.configuration.constructionRulesVersion": "Versión das normas de construción",
   "subtitles.biome_based_crops.compressor": "Zumbido do compresor",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "O clima da habitación non coincide co bioma obxectivo",
   "biome_based_crops.configuration.climateRulesVersion": "Versión das regras climáticas",
   "biome_based_crops.message.climate_reading": "Clima: %s | Bioma: %s",

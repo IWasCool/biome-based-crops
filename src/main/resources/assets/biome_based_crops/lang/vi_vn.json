@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Yêu cầu về tầng sinh học",
   "biome_based_crops.configuration.constructionRulesVersion": "Phiên bản quy tắc xây dựng",
   "subtitles.biome_based_crops.compressor": "Máy nén có tiếng ồn",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Khí hậu trong phòng không phù hợp với quần xã mục tiêu",
   "biome_based_crops.configuration.climateRulesVersion": "Phiên bản quy tắc khí hậu",
   "biome_based_crops.message.climate_reading": "Khí hậu: %s | Quần xã: %s",

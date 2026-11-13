@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Захтеви за подове биома",
   "biome_based_crops.configuration.constructionRulesVersion": "Верзија правила изградње",
   "subtitles.biome_based_crops.compressor": "Компресор бруји",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Клима у просторији не одговара циљном биому",
   "biome_based_crops.configuration.climateRulesVersion": "Верзија климатских правила",
   "biome_based_crops.message.climate_reading": "Клима: %s | Биом: %s",

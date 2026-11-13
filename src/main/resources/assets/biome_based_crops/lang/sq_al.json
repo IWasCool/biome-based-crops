@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Kërkesat e dyshemesë së biomes",
   "biome_based_crops.configuration.constructionRulesVersion": "Versioni i rregullave të ndërtimit",
   "subtitles.biome_based_crops.compressor": "Kompresori gumëzhon",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Klima e dhomës nuk përputhet me biomën e synuar",
   "biome_based_crops.configuration.climateRulesVersion": "Versioni i Rregullave të Klimës",
   "biome_based_crops.message.climate_reading": "Klima: %s | Biome: %s",

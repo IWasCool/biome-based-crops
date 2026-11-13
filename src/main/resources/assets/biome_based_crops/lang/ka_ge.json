@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "ბიომის იატაკის მოთხოვნები",
   "biome_based_crops.configuration.constructionRulesVersion": "სამშენებლო წესების ვერსია",
   "subtitles.biome_based_crops.compressor": "კომპრესორი გუგუნებს",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "ოთახის კლიმატი არ ემთხვევა სამიზნე ბიომს",
   "biome_based_crops.configuration.climateRulesVersion": "კლიმატის წესების ვერსია",
   "biome_based_crops.message.climate_reading": "კლიმატი: %s | ბიომი: %s",

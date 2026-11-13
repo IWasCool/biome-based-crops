@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Biomo grindų reikalavimai",
   "biome_based_crops.configuration.constructionRulesVersion": "Statybos taisyklių versija",
   "subtitles.biome_based_crops.compressor": "Kompresorius ūžia",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Kambario klimatas neatitinka tikslinio biomo",
   "biome_based_crops.configuration.climateRulesVersion": "Klimato taisyklių versija",
   "biome_based_crops.message.climate_reading": "Klimatas: %s | Biumas: %s",

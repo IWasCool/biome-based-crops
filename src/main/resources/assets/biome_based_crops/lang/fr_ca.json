@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Exigences du sol du biome",
   "biome_based_crops.configuration.constructionRulesVersion": "Version règles de construction",
   "subtitles.biome_based_crops.compressor": "Le compresseur bourdonne",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Le climat ambiant ne correspond pas au biome cible",
   "biome_based_crops.configuration.climateRulesVersion": "Version Règles Climat",
   "biome_based_crops.message.climate_reading": "Climat : %s | Biome : %s",

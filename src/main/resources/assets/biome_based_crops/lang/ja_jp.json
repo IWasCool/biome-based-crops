@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "バイオームフロアの要件",
   "biome_based_crops.configuration.constructionRulesVersion": "構築ルールのバージョン",
   "subtitles.biome_based_crops.compressor": "コンプレッサーのハム音",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "部屋の気候が対象の生物群系と一致しません",
   "biome_based_crops.configuration.climateRulesVersion": "気候変動ルールのバージョン",
   "biome_based_crops.message.climate_reading": "気候: %s |バイオーム: %s",

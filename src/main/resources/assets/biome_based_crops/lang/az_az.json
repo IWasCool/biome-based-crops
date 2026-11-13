@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Biome mərtəbə tələbləri",
   "biome_based_crops.configuration.constructionRulesVersion": "Tikinti qaydaları versiyası",
   "subtitles.biome_based_crops.compressor": "Kompressor uğuldayır",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Otaq iqlimi hədəf bioma uyğun gəlmir",
   "biome_based_crops.configuration.climateRulesVersion": "İqlim Qaydaları Versiyası",
   "biome_based_crops.message.climate_reading": "İqlim: %s | Biom: %s",

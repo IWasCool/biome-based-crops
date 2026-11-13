@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "बायोम फ़्लोर आवश्यकताएँ",
   "biome_based_crops.configuration.constructionRulesVersion": "निर्माण नियम संस्करण",
   "subtitles.biome_based_crops.compressor": "कंप्रेसर गुनगुनाता है",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "कमरे की जलवायु लक्ष्य बायोम से मेल नहीं खाती",
   "biome_based_crops.configuration.climateRulesVersion": "जलवायु नियम संस्करण",
   "biome_based_crops.message.climate_reading": "जलवायु: %s | बायोम: %s",

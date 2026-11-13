@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "ข้อกำหนดพื้นชีวนิเวศ",
   "biome_based_crops.configuration.constructionRulesVersion": "เวอร์ชันกฎการก่อสร้าง",
   "subtitles.biome_based_crops.compressor": "คอมเพรสเซอร์ฮัม",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "สภาพอากาศในห้องไม่ตรงกับชีวนิเวศเป้าหมาย",
   "biome_based_crops.configuration.climateRulesVersion": "เวอร์ชันกฎสภาพภูมิอากาศ",
   "biome_based_crops.message.climate_reading": "ภูมิอากาศ: %s | ชีวนิเวศน์: %s",

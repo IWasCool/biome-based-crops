@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Cerințe pentru podeaua biomului",
   "biome_based_crops.configuration.constructionRulesVersion": "Versiunea regulilor de construcție",
   "subtitles.biome_based_crops.compressor": "Compresorul bâzâie",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Clima camerei nu se potrivește cu biomul țintă",
   "biome_based_crops.configuration.climateRulesVersion": "Versiunea regulilor climatice",
   "biome_based_crops.message.climate_reading": "Clima: %s | Biom: %s",

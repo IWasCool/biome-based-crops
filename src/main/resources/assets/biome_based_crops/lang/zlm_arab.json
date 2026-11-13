@@ -66,7 +66,7 @@
   "biome_based_crops.configuration.biomeFloorRules": "Keperluan lantai biome",
   "biome_based_crops.configuration.constructionRulesVersion": "Versi peraturan pembinaan",
   "subtitles.biome_based_crops.compressor": "Pemampat berdengung",
-  "itemGroup.biome_based_crops": "Biomes Notebook",
+  "itemGroup.biome_based_crops": "Biome Based Crops",
   "biome_based_crops.greenhouse.status.wrong_climate": "Iklim bilik tidak sepadan dengan bioma sasaran",
   "biome_based_crops.configuration.climateRulesVersion": "Versi Peraturan Iklim",
   "biome_based_crops.message.climate_reading": "Iklim: %s | Bioma: %s",
