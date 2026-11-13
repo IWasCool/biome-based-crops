@@ -19,6 +19,6 @@ public final class FarmersGuideItem extends Item {
             GreenhouseNetwork.showGuide(serverPlayer);
             player.getCooldowns().addCooldown(this, 10);
         }
-        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide);
     }
 }

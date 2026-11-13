@@ -29,7 +29,7 @@ abstract class GreenhouseBlockChangeMixin {
     private boolean biomeBasedCrops$changedRoom(BlockPos pos, BlockState state, int flags, int recursion,
             Operation<Boolean> original) {
         Level level = (Level) (Object) this;
-        if (level.isClientSide() || !(level instanceof ServerLevel server)
+        if (level.isClientSide || !(level instanceof ServerLevel server)
                 || !server.getServer().isSameThread() || !GreenhouseRoomScanner.hasTracking(level)
                 || level.isOutsideBuildHeight(pos)) {
             return original.call(pos, state, flags, recursion);

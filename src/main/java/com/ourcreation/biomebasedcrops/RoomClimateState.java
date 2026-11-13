@@ -185,6 +185,6 @@ public final class RoomClimateState {
     private record Drive(long tick, CropClimate climate, boolean suppliesAir) { }
 
     @SubscribeEvent public static void tickRooms(LevelTickEvent.Post event) {
-        if (!event.getLevel().isClientSide()) GreenhouseEnvironment.advanceRoomAir(event.getLevel());
+        if (!event.getLevel().isClientSide) GreenhouseEnvironment.advanceRoomAir(event.getLevel());
     }
 }
