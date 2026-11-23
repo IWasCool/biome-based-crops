@@ -1,25 +1,35 @@
 # Biome Based Crops
 
-Configurable climate and biome requirements for crops, saplings, and other plants. Grow plants in their native environment or build greenhouses with matching climates.
+Biome Based Crops makes crops, saplings, and other plants grow only in suitable climates. Find a climate that supports what you want to grow, or build a greenhouse and create the right conditions yourself. Greenhouses can also recreate biomes for biome-specific mob spawning, making them useful for skyblock worlds and farms built outside their native biomes.
 
-Version **1.0.1** for **Minecraft 1.21.1**, **NeoForge 21.1.251+**, and **Java 21**.
+## Features
 
-- **Biomes Notebook:** browse biome habitats and greenhouse requirements.
-- **Electrical Thermoregulator:** five climate settings, directional airflow, and an on/off switch.
-- **Thermometer:** read the local climate and biome.
+- **Climate-based growth:** Plants have climate requirements ranging from Icy to Hot. Bone meal follows the same rules as natural growth.
+- **Biome greenhouses:** Recreate a biome by matching its climate, floor blocks, and interior materials.
+- **Electrical Thermoregulator:** Heat or cool an area or greenhouse using Forge Energy (FE).
+- **Biomes Notebook:** Browse biomes and look up their climate, floor, and interior requirements.
+- **Thermometer:** Check the local climate and biome.
 
-Version 1.0.2 supports greenhouse biomes inside **Sable structures**. Assemble a sealed greenhouse with the normal habitat materials and an inward-facing Electrical Thermoregulator (Air Conditioner), Northstar Temperature Regulator, or Tough As Nails Thermoregulator. The loaded structure discovers its room automatically. Its interior biome, crop support, and climate follow it as it moves and rotates. Ambient biome sampling follows the structure's world location, and the saved chunk biomes stay intact. Use matching Biome Based Crops and Sable versions on the client and server.
+## Compatibility
 
-Place `biome_based_crops-neoforge-1.21.1-1.0.2.jar` in the client and server `mods` folders. Config files are generated on first launch.
+- **Plants:** Supports vanilla plants, Farmer’s Delight, and compatible add-ons.
+- **Recipe viewers:** Integrates with JEI, EMI, and REI.
+- **Climate systems:** Offers optional integrations with Tough As Nails and Northstar.
+- **Fertilizers:** Applies environmental checks to Create’s Tree Fertilizer and Slice & Dice’s fertilizer sprinklers.
 
-1.0.1 fixes the creative inventory tab name to **Biome Based Crops**, aligns the Electrical Thermoregulator controls with its power bar, and removes the notebook's text-scroll instructions. The **Biomes Notebook** item keeps its name. Language support matches Create New World Core's **18 locales**: `de_de`, `en_us`, `es_es`, `es_mx`, `fr_fr`, `id_id`, `it_it`, `ja_jp`, `ko_kr`, `pl_pl`, `pt_br`, `pt_pt`, `ru_ru`, `tr_tr`, `uk_ua`, `vi_vn`, `zh_cn`, `zh_tw`. Other languages use the English fallback.
+## Configuration
 
-Build with Java 21:
+- Set the climates required for each plant to grow.
+- Restrict plants to specific biomes or biome tags.
+- Adjust greenhouse floor and interior requirements.
 
-```powershell
-.\gradlew.bat build
-```
+## Language Support
 
-On Linux/macOS, use `bash ./gradlew build`. The JAR is written to `build/libs/`.
+`de_de`, `en_us`, `es_es`, `es_mx`, `fr_fr`, `id_id`, `it_it`, `ja_jp`, `ko_kr`, `pl_pl`, `pt_br`, `pt_pt`, `ru_ru`, `tr_tr`, `vi_vn`, `zh_cn`, `zh_tw`
 
-[MIT license](LICENSE). [NeoForge template notice](TEMPLATE_LICENSE.txt).
+Other locales fall back to English.
+
+## License
+
+- [MIT License](LICENSE)
+- [NeoForge template notice](TEMPLATE_LICENSE.txt)
