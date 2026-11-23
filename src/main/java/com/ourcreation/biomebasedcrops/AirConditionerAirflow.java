@@ -42,7 +42,7 @@ public final class AirConditionerAirflow {
             for (int cz = (query.getZ() - INFLUENCE_REACH) >> 4; cz <= (query.getZ() + INFLUENCE_REACH) >> 4; cz++) {
                 var chunk = level.getChunkSource().getChunkNow(cx, cz);
                 if (chunk == null) continue;
-                for (var entity : chunk.getBlockEntities().values()) {
+                for (var entity : ((ChunkClimateControllers) chunk).biomeBasedCrops$climateControllers()) {
                     if (!(entity instanceof AirConditionerBlockEntity unit) || !unit.hasPaidAirflow()) continue;
                     BlockPos at = unit.getBlockPos();
                     double distance = at.distSqr(query);

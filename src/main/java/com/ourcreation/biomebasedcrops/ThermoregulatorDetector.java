@@ -1,17 +1,26 @@
 package com.ourcreation.biomebasedcrops;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.Optional;
+import java.util.WeakHashMap;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -19,21 +28,30 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 
 public final class ThermoregulatorDetector {
     private static final ResourceLocation THERMOREGULATOR_ID = ResourceLocation.fromNamespaceAndPath("toughasnails", "thermoregulator");
     private static final ResourceLocation NORTHSTAR_REGULATOR_ID = ResourceLocation.parse("northstar:temperature_regulator");
+    private static final ResourceKey<Block> TAN_REGULATOR = ResourceKey.create(Registries.BLOCK, THERMOREGULATOR_ID);
+    private static final ResourceKey<Block> NORTHSTAR_REGULATOR = ResourceKey.create(Registries.BLOCK, NORTHSTAR_REGULATOR_ID);
     private static final Set<CropClimate> ALL_CLIMATES = Set.of(CropClimate.values());
     private static final AtomicBoolean NORTHSTAR_FAILURE_LOGGED = new AtomicBoolean();
+    private static final AtomicLong CONTROLLER_REVISION = new AtomicLong();
+    private static final Map<ServerLevel, EmptySearches> EMPTY_SEARCHES =
+            Collections.synchronizedMap(new WeakHashMap<>());
+    private static final int MAX_EMPTY_SEARCHES = 2048;
     private static final ClassValue<Optional<NorthstarAccess>> NORTHSTAR_ACCESS = new ClassValue<>() {
         @Override protected Optional<NorthstarAccess> computeValue(Class<?> type) {
             for (Class<?> parent = type; parent != null; parent = parent.getSuperclass()) {
                 if (parent.getName().equals("com.lightning.northstar.block.tech.temperature_regulator.TemperatureRegulatorBlockEntity")) {
                     try {
                         Method sealed = type.getMethod("isSealed", Vec3i.class);
+                        Method sealedAtWorldPosition = type.getMethod("isSealed", Vec3.class);
                         Method temperature = type.getMethod("getTemperature");
-                        return sealed.getReturnType() == boolean.class && temperature.getReturnType() == float.class
-                                ? Optional.of(new NorthstarAccess(sealed, temperature)) : Optional.empty();
+                        return sealed.getReturnType() == boolean.class && sealedAtWorldPosition.getReturnType() == boolean.class
+                                && temperature.getReturnType() == float.class
+                                ? Optional.of(new NorthstarAccess(sealed, sealedAtWorldPosition, temperature)) : Optional.empty();
                     } catch (ReflectiveOperationException exception) {
                         logNorthstarFailure(exception);
                         return Optional.empty();
@@ -45,6 +63,10 @@ public final class ThermoregulatorDetector {
     };
 
     private ThermoregulatorDetector() {
+    }
+
+    static void controllerRegistered() {
+        CONTROLLER_REVISION.incrementAndGet();
     }
 
     public static boolean canSupportProfile(Level level, BlockPos cropPos, CropProfile profile) {
@@ -70,27 +92,40 @@ public final class ThermoregulatorDetector {
                 || !controllersRegistered(true)) return Optional.empty();
         int externalRadius = Config.THERMOREGULATOR_RADIUS.get();
         int radius = Math.max(AirConditionerAirflow.INFLUENCE_REACH, externalRadius);
+        int minChunkX = (query.getX() - radius) >> 4, maxChunkX = (query.getX() + radius) >> 4;
+        int minChunkZ = (query.getZ() - radius) >> 4, maxChunkZ = (query.getZ() + radius) >> 4;
+        var emptySearches = emptySearches(level);
+        // Use the chunk window, so different entities in the same area share the empty result.
+        int span = (maxChunkX - minChunkX) * 16 + maxChunkZ - minChunkZ;
+        long window = BlockPos.asLong(minChunkX, span, minChunkZ);
+        if (emptySearches != null && emptySearches.windows.contains(window)) return Optional.empty();
+        boolean allChunksLoaded = true;
+        boolean hasControllers = false;
         CropClimate selected = null;
         double nearest = Double.POSITIVE_INFINITY;
         long chosen = Long.MAX_VALUE;
-        for (int chunkX = (query.getX() - radius) >> 4; chunkX <= (query.getX() + radius) >> 4; chunkX++) {
-            for (int chunkZ = (query.getZ() - radius) >> 4; chunkZ <= (query.getZ() + radius) >> 4; chunkZ++) {
+        for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
                 LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
-                if (chunk == null) continue;
-                for (BlockEntity entity : chunk.getBlockEntities().values()) {
+                if (chunk == null) {
+                    allChunksLoaded = false;
+                    continue;
+                }
+                for (BlockEntity entity : ((ChunkClimateControllers) chunk).biomeBasedCrops$climateControllers()) {
+                    if (entity instanceof AirConditionerBlockEntity) continue;
+                    hasControllers = true;
                     if (entity.isRemoved()) continue;
                     BlockPos at = entity.getBlockPos();
                     double distance = at.distSqr(query);
                     if (distance > nearest || distance == nearest && at.asLong() >= chosen) continue;
                     BlockState state = entity.getBlockState();
-                    ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-                    if (id.equals(THERMOREGULATOR_ID)) {
+                    boolean tan = state.is(TAN_REGULATOR);
+                    if (tan) {
                         if (!localTanCoverage(level, at, state, query)) continue;
-                    } else if (!id.equals(NORTHSTAR_REGULATOR_ID) || distance > externalRadius * externalRadius
-                            || !AirConditionerAirflow.canReach(level, at, query)) continue;
+                    } else if (!state.is(NORTHSTAR_REGULATOR) || distance > externalRadius * externalRadius) continue;
                     var output = providedClimateAt(level, at, query);
-                    if (output.isEmpty()) continue;
-                    CropClimate climate = id.equals(THERMOREGULATOR_ID)
+                    if (output.isEmpty() || !tan && !AirConditionerAirflow.canReach(level, at, query)) continue;
+                    CropClimate climate = tan
                             ? AirConditionerAirflow.conditionedClimateAt(level, at, query, output.get(), ambient) : output.get();
                     if (climate == null) continue;
                     selected = climate;
@@ -99,7 +134,29 @@ public final class ThermoregulatorDetector {
                 }
             }
         }
+        // A chunk that loads later in this tick may contain a controller. Cache only confirmed absences.
+        if (emptySearches != null && allChunksLoaded && !hasControllers
+                && emptySearches.windows.size() < MAX_EMPTY_SEARCHES) emptySearches.windows.add(window);
         return Optional.ofNullable(selected);
+    }
+
+    private static @Nullable EmptySearches emptySearches(Level level) {
+        if (!(level instanceof ServerLevel server) || !server.getServer().isSameThread()) return null;
+        var searches = EMPTY_SEARCHES.computeIfAbsent(server, ignored -> new EmptySearches());
+        long tick = level.getGameTime();
+        long revision = CONTROLLER_REVISION.get();
+        if (searches.tick != tick || searches.revision != revision) {
+            searches.windows.clear();
+            searches.tick = tick;
+            searches.revision = revision;
+        }
+        return searches;
+    }
+
+    private static final class EmptySearches {
+        final LongOpenHashSet windows = new LongOpenHashSet();
+        long tick = Long.MIN_VALUE;
+        long revision;
     }
 
     private static boolean hasMatchingThermoregulator(Level level, BlockPos cropPos, Set<CropClimate> climates,
@@ -128,7 +185,8 @@ public final class ThermoregulatorDetector {
                     continue;
                 }
 
-                for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
+                for (BlockEntity blockEntity : ((ChunkClimateControllers) chunk).biomeBasedCrops$climateControllers()) {
+                    if (blockEntity instanceof AirConditionerBlockEntity) continue;
                     BlockPos pos = blockEntity.getBlockPos();
                     if (blockEntity.isRemoved() || pos.getX() < minX || pos.getX() > maxX
                             || pos.getY() < minY || pos.getY() > maxY
@@ -167,6 +225,10 @@ public final class ThermoregulatorDetector {
                 || includeSealedControllers && BuiltInRegistries.BLOCK.containsKey(NORTHSTAR_REGULATOR_ID);
     }
 
+    public static boolean isExternalController(BlockState state) {
+        return state.is(TAN_REGULATOR) || state.is(NORTHSTAR_REGULATOR);
+    }
+
     private static boolean localTanCoverage(Level level, BlockPos machine, BlockState state, BlockPos query) {
         Property<?> property = state.getBlock().getStateDefinition().getProperty("facing");
         if (!(property instanceof DirectionProperty direction)) return false;
@@ -187,7 +249,7 @@ public final class ThermoregulatorDetector {
         try {
             // Northstar's isSealed includes active kinetic power, no leak, and
             // membership of this exact position in its sealed volume.
-            if (!(Boolean) access.get().sealed.invoke(entity, query)) return false;
+            if (!access.get().isSealed(level, machinePos, entity, query)) return false;
             float temperature = (Float) access.get().temperature.invoke(entity);
             return Float.isFinite(temperature) && northstarClimate(temperature) == climate;
         } catch (ReflectiveOperationException exception) {
@@ -215,7 +277,7 @@ public final class ThermoregulatorDetector {
         Optional<NorthstarAccess> access = NORTHSTAR_ACCESS.get(entity.getClass());
         if (access.isEmpty()) return Optional.empty();
         try {
-            if (!(Boolean) access.get().sealed.invoke(entity, query)) return Optional.empty();
+            if (!access.get().isSealed(level, machine, entity, query)) return Optional.empty();
             float temperature = (Float) access.get().temperature.invoke(entity);
             return Float.isFinite(temperature) ? Optional.of(LegacyClimate.fromCelsius(temperature)) : Optional.empty();
         } catch (ReflectiveOperationException exception) {
@@ -230,7 +292,16 @@ public final class ThermoregulatorDetector {
         }
     }
 
-    private record NorthstarAccess(Method sealed, Method temperature) { }
+    private record NorthstarAccess(Method sealed, Method sealedAtWorldPosition, Method temperature) {
+        boolean isSealed(Level level, BlockPos machine, BlockEntity entity, BlockPos query) throws ReflectiveOperationException {
+            var ship = dev.ryanhcode.sable.companion.SableCompanion.INSTANCE.getContaining(level, machine);
+            if (ship == null) return (Boolean) sealed.invoke(entity, query);
+            if (!ShipCropEnvironment.sameSpace(level, machine, query)) return false;
+            // Northstar's Sable transform expects a physical-world point, even for its Vec3i overload.
+            Vec3 world = ship.logicalPose().transformPosition(Vec3.atCenterOf(query));
+            return (Boolean) sealedAtWorldPosition.invoke(entity, world);
+        }
+    }
 
     static boolean supportsClimates(BlockState state, Set<CropClimate> climates) {
         return supportsClimates(state.getOptionalValue(BlockStateProperties.ENABLED).orElse(false),

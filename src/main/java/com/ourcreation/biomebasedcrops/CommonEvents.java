@@ -83,8 +83,6 @@ public final class CommonEvents {
         if (profile.allows(GreenhouseEnvironment.nativeBiome(level, pos), pos)) return true;
         if (AirConditionerAirflow.canSupportProfile(level, pos, profile)
                 || ThermoregulatorDetector.canSupportProfileDirectly(level, pos, profile)) return true;
-        // Ship crop climate follows its real location and local outlet wind, not a world-room overlay.
-        if (ShipCropEnvironment.isOnShip(level, pos)) return false;
         return GreenhouseEnvironment.hasGrowingLight(level, pos)
                 && GreenhouseEnvironment.canSupport(level, pos, profile);
     }

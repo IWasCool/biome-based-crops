@@ -14,6 +14,18 @@ public final class ShipCropEnvironment {
         return SableCompanion.INSTANCE.getContaining(level, pos) != null;
     }
 
+    /** Storage coordinates can be recycled; room caches must also identify their owning ship. */
+    public static java.util.UUID spaceId(Level level, BlockPos pos) {
+        SubLevelAccess ship = SableCompanion.INSTANCE.getContaining(level, pos);
+        return ship == null ? null : ship.getUniqueId();
+    }
+
+    /** Exact block center for interaction distances and sunlight checks on moving structures. */
+    public static Vector3d worldCenter(Level level, BlockPos pos) {
+        return SableCompanion.INSTANCE.projectOutOfSubLevel(level,
+                new Vector3d(pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5), new Vector3d());
+    }
+
     /** Adjacent storage plots do not mean that their ships share an outlet stream. */
     public static boolean sameSpace(Level level, BlockPos first, BlockPos second) {
         return sameSpace(level, first, second, SableCompanion.INSTANCE);

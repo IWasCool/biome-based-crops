@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -18,6 +19,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -30,30 +32,38 @@ public final class GreenhouseBiomeNetwork {
     private GreenhouseBiomeNetwork() { }
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        event.registrar("4").optional().playToClient(RoomPayload.TYPE, RoomPayload.CODEC,
+        event.registrar("5").optional().playToClient(RoomPayload.TYPE, RoomPayload.CODEC,
                 (payload, context) -> GreenhouseClientBiomes.accept(payload));
     }
 
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
                 || player.tickCount % 20 != 0 || !player.connection.hasChannel(RoomPayload.TYPE)) return;
-        var region = GreenhouseEnvironment.atmosphereRegionAt(player.level(), player.blockPosition());
-        ResourceLocation dimension = player.level().dimension().location();
-        ResourceLocation biome = region == null ? null : region.biome();
-        Set<Long> geometry = region == null ? Set.of() : region.interior();
-        long playerSection = sectionKey(player.blockPosition());
+        BlockPos sample = ShipGreenhouseQueries.knownRoomPosition(player);
+        var region = GreenhouseEnvironment.atmosphereRegionAt(player.level(), sample);
+        SentRegion next = snapshotFor(player.level(), sample, region);
         SentRegion last = LAST_SENT.get(player);
-        CropClimate climate = region == null ? CropClimate.NEUTRAL : region.climate();
-        float oxygen = region == null ? 100 : (float) Math.floor(region.oxygenPercent() * 10) / 10.0F;
-        boolean sameGeometry = last != null && last.dimension.equals(dimension)
-                && last.playerSection == playerSection && last.geometry == geometry;
-        List<SectionMask> sections = region == null ? List.of()
-                : masksFor(geometry, player.blockPosition(), region.coverage());
-        if (sameGeometry && Objects.equals(last.biome, biome) && last.climate == climate
-                && last.oxygen == oxygen && last.sections.equals(sections)) return;
-        RoomPayload payload = new RoomPayload(dimension, biome, sections, climate, oxygen);
-        LAST_SENT.put(player, new SentRegion(dimension, biome, playerSection, geometry, sections, climate, oxygen));
-        PacketDistributor.sendToPlayer(player, payload);
+        if (last != null && last.geometry == next.geometry && last.playerSection == next.playerSection
+                && last.dimension.equals(next.dimension) && Objects.equals(last.shipId, next.shipId)
+                && Objects.equals(last.biome, next.biome) && last.climate == next.climate
+                && last.oxygen == next.oxygen && last.sections.equals(next.sections)) return;
+        LAST_SENT.put(player, next);
+        PacketDistributor.sendToPlayer(player, next.payload());
+    }
+
+    static SentRegion snapshotFor(Level level, BlockPos sample, @Nullable GreenhouseEnvironment.AtmosphereRegion region) {
+        ResourceLocation dimension = level.dimension().location();
+        // The region resolves the final sample cell in the same coordinate space as its interior.
+        if (region != null) {
+            BlockPos center = region.position();
+            List<SectionMask> sections = masksFor(region.interior(), center, region.coverage());
+            if (!sections.isEmpty()) {
+                float oxygen = (float) Math.floor(region.oxygenPercent() * 10) / 10.0F;
+                return new SentRegion(dimension, region.biome(), sectionKey(center), region.interior(),
+                        sections, region.climate(), oxygen, ShipCropEnvironment.spaceId(level, center));
+            }
+        }
+        return new SentRegion(dimension, null, sectionKey(sample), Set.of(), List.of(), CropClimate.NEUTRAL, 100, null);
     }
 
     /** Build only the player's section and its 26 neighbors, never the entire barn. */
@@ -143,7 +153,8 @@ public final class GreenhouseBiomeNetwork {
     }
 
     public record RoomPayload(ResourceLocation dimension, @Nullable ResourceLocation biome,
-                              List<SectionMask> sections, CropClimate climate, float oxygenPercent) implements CustomPacketPayload {
+                              List<SectionMask> sections, CropClimate climate, float oxygenPercent,
+                              @Nullable UUID shipId) implements CustomPacketPayload {
         public static final Type<RoomPayload> TYPE = new Type<>(
                 ResourceLocation.fromNamespaceAndPath(BiomeBasedCrops.MODID, "greenhouse_biome"));
         public static final StreamCodec<FriendlyByteBuf, RoomPayload> CODEC = StreamCodec.of(RoomPayload::write, RoomPayload::read);
@@ -153,6 +164,7 @@ public final class GreenhouseBiomeNetwork {
             if (sections.size() > MAX_SECTIONS || biome != null && sections.isEmpty()) {
                 throw new IllegalArgumentException("Invalid greenhouse biome section count");
             }
+            if (shipId != null && sections.isEmpty()) throw new IllegalArgumentException("Ship atmosphere needs local room sections");
             Objects.requireNonNull(climate, "climate");
             if (!Float.isFinite(oxygenPercent) || oxygenPercent < 0 || oxygenPercent > 100)
                 throw new IllegalArgumentException("Invalid room atmosphere");
@@ -173,6 +185,10 @@ public final class GreenhouseBiomeNetwork {
         public RoomPayload(ResourceLocation dimension, @Nullable ResourceLocation biome, List<SectionMask> sections) {
             this(dimension, biome, sections, CropClimate.NEUTRAL, 100);
         }
+        public RoomPayload(ResourceLocation dimension, @Nullable ResourceLocation biome, List<SectionMask> sections,
+                           CropClimate climate, float oxygenPercent) {
+            this(dimension, biome, sections, climate, oxygenPercent, null);
+        }
         private static void write(FriendlyByteBuf buf, RoomPayload payload) {
             buf.writeResourceLocation(payload.dimension);
             buf.writeNullable(payload.biome, FriendlyByteBuf::writeResourceLocation);
@@ -192,6 +208,7 @@ public final class GreenhouseBiomeNetwork {
             }
             buf.writeEnum(payload.climate);
             buf.writeFloat(payload.oxygenPercent);
+            buf.writeNullable(payload.shipId, (buffer, id) -> buffer.writeUUID(id));
         }
         private static RoomPayload read(FriendlyByteBuf buf) {
             ResourceLocation dimension = buf.readResourceLocation();
@@ -219,11 +236,14 @@ public final class GreenhouseBiomeNetwork {
             }
             int climate = buf.readVarInt();
             if (climate < 0 || climate >= CropClimate.values().length) throw new IllegalArgumentException("Invalid room climate");
-            return new RoomPayload(dimension, biome, sections, CropClimate.values()[climate], buf.readFloat());
+            return new RoomPayload(dimension, biome, sections, CropClimate.values()[climate], buf.readFloat(),
+                    buf.readNullable(buffer -> buffer.readUUID()));
         }
         @Override public Type<RoomPayload> type() { return TYPE; }
     }
 
-    private record SentRegion(ResourceLocation dimension, ResourceLocation biome, long playerSection, Set<Long> geometry,
-                              List<SectionMask> sections, CropClimate climate, float oxygen) { }
+    record SentRegion(ResourceLocation dimension, ResourceLocation biome, long playerSection, Set<Long> geometry,
+                      List<SectionMask> sections, CropClimate climate, float oxygen, UUID shipId) {
+        RoomPayload payload() { return new RoomPayload(dimension, biome, sections, climate, oxygen, shipId); }
+    }
 }

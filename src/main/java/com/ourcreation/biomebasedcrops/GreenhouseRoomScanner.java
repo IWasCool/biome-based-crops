@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
@@ -13,6 +15,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
@@ -26,6 +29,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -42,6 +46,7 @@ public final class GreenhouseRoomScanner {
     private static final int HORIZONTAL = (1 << Direction.NORTH.ordinal()) | (1 << Direction.SOUTH.ordinal())
             | (1 << Direction.WEST.ordinal()) | (1 << Direction.EAST.ordinal());
     private static final int ROOF = 1 << Direction.UP.ordinal();
+    private static final int ROOM_RECHECK_TICKS = 30 * 20;
 
     private GreenhouseRoomScanner() { }
 
@@ -50,7 +55,8 @@ public final class GreenhouseRoomScanner {
         State state = STATES.get(level);
         return state != null && state.epoch == EPOCH.get()
                 && (!state.completed.isEmpty() || !state.pending.isEmpty() || !state.negative.isEmpty()
-                        || GreenhouseEnvironment.hasRetainedAir(level));
+                        || GreenhouseEnvironment.hasRetainedAir(level))
+                || ShipGreenhouseLight.hasTracking(level);
     }
 
     static Geometry completedAroundController(Level level, BlockPos pos) {
@@ -62,6 +68,8 @@ public final class GreenhouseRoomScanner {
         double distance = Double.MAX_VALUE;
         for (Geometry geometry : candidates) {
             if (!geometry.live || !geometry.ready) continue;
+            if (!geometry.spaceMatches(level)) { invalidate(state, geometry); continue; }
+            if (!ShipCropEnvironment.sameSpace(level, geometry.anchor, pos)) continue;
             boolean connected = geometry.interior.contains(pos.asLong());
             if (!connected) for (Direction direction : DIRECTIONS) {
                 if (geometry.interior.contains(pos.relative(direction).asLong())) { connected = true; break; }
@@ -79,7 +87,42 @@ public final class GreenhouseRoomScanner {
     /** Existing geometry containing this exact air cell; never guesses an adjacent room. */
     static Geometry completedAt(Level level, BlockPos pos) {
         State state = STATES.get(level);
-        return state == null || state.epoch != EPOCH.get() ? null : indexed(state, pos);
+        return state == null || state.epoch != EPOCH.get() ? null : indexed(level, state, pos);
+    }
+
+    static boolean hasCompletedShipRooms(Level level) {
+        State state = STATES.get(level);
+        return state != null && state.epoch == EPOCH.get() && state.completedShipRooms > 0;
+    }
+
+    public static void trackController(Level level, BlockPos pos) {
+        if (level instanceof ServerLevel server && server.getServer().isSameThread()) {
+            ThermoregulatorDetector.controllerRegistered();
+            state(level).controllers.add(pos.asLong());
+        }
+    }
+
+    public static void assemblyBlockChanged(Level level, BlockPos pos, BlockState before, BlockState after) {
+        if (!(level instanceof ServerLevel server) || !server.getServer().isSameThread() || before == after) return;
+        if (isRegistrationController(after)) {
+            ThermoregulatorDetector.controllerRegistered();
+            state(level).controllers.addAndMoveToFirst(pos.asLong());
+        }
+        if (hasTracking(level)) GreenhouseEnvironment.withoutOverlay(() -> {
+            blockChanged(level, pos, before, after);
+            return null;
+        });
+    }
+
+    @SubscribeEvent
+    public static void onChunkLoad(ChunkEvent.Load event) {
+        if (!(event.getChunk() instanceof LevelChunk chunk)
+                || !(chunk.getLevel() instanceof ServerLevel server) || !server.getServer().isSameThread()) return;
+        for (BlockPos pos : chunk.getBlockEntitiesPos()) {
+            if (isRegistrationController(chunk.getBlockState(pos))) {
+                trackController(server, pos);
+            }
+        }
     }
 
     /** Explicit surveys take precedence over incidental underground biome queries. */
@@ -91,25 +134,40 @@ public final class GreenhouseRoomScanner {
     }
 
     static Geometry find(Level level, BlockPos pos) {
+        return find(level, pos, false);
+    }
+
+    /** Exact air-cell lookup for biome and temperature queries, with no inspection result on a miss. */
+    static Geometry findInterior(Level level, BlockPos pos) {
+        Geometry geometry = find(level, pos, true);
+        return geometry != null && geometry.live && geometry.status.equals("closed")
+                && geometry.interior.contains(pos.asLong()) ? geometry : null;
+    }
+
+    private static Geometry find(Level level, BlockPos pos, boolean interiorOnly) {
         State state = state(level);
-        Geometry existing = indexed(state, pos);
+        Geometry existing = indexed(level, state, pos);
         if (existing != null) {
             if (state.priority != null && state.priority.distManhattan(pos) <= 1) state.priority = null;
             return existing;
         }
+        // An indexed room can still hold air while leaking through an open roof.
+        if (interiorOnly && (openToSky(level, pos) || GreenhouseEnvironment.sealed(level, pos))) return null;
         boolean urgent = state.priority != null && state.priority.distManhattan(pos) <= 1;
         Negative negative = state.negative.get(pos.asLong());
-        if (!urgent && negative != null && level.getGameTime() - negative.tick < 20) return Geometry.status(negative.status, pos);
+        if (!urgent && negative != null && negative.spaceMatches(level, pos)
+                && level.getGameTime() - negative.tick < 20) return interiorOnly ? null : Geometry.status(negative.status, pos);
         for (Scan scan : state.pending) {
+            if (!scan.done && !scan.spaceMatches()) scan.fail("scanning");
             if (!scan.done && scan.visited.contains(pos.asLong())) {
                 if (urgent) { scan.priority = true; state.priority = null; }
-                return Geometry.status("scanning", pos);
+                return interiorOnly ? null : Geometry.status("scanning", pos);
             }
         }
-        if (openToSky(level, pos)) return Geometry.status("open", pos);
+        if (!interiorOnly && openToSky(level, pos)) return Geometry.status("open", pos);
         int pendingLimit = Math.min(4, Math.max(1, 1048576 / GreenhouseSettings.maxRoomBlocks()));
         if (state.pending.size() >= pendingLimit) {
-            if (!urgent) return Geometry.status("scanning", pos);
+            if (!urgent) return interiorOnly ? null : Geometry.status("scanning", pos);
             Scan abandoned = state.pending.removeLast();
             abandoned.fail("scanning");
         }
@@ -126,7 +184,7 @@ public final class GreenhouseRoomScanner {
             state.pending.remove(scan);
             return scan.result;
         }
-        return Geometry.status("scanning", pos);
+        return interiorOnly ? null : Geometry.status("scanning", pos);
     }
 
     private static final int INSPECTION_WORK_PER_CALL = 1024;
@@ -138,18 +196,19 @@ public final class GreenhouseRoomScanner {
      */
     static Geometry findForControllerInspection(Level level, BlockPos pos) {
         State state = state(level);
-        Geometry existing = indexed(state, pos);
+        Geometry existing = indexed(level, state, pos);
         if (existing != null) {
             clearInspectionPriority(state, pos);
             return existing;
         }
         Negative negative = state.negative.get(pos.asLong());
-        if (negative != null && level.getGameTime() - negative.tick < 20)
+        if (negative != null && negative.spaceMatches(level, pos) && level.getGameTime() - negative.tick < 20)
             return Geometry.status(negative.status, pos);
         if (openToSky(level, pos)) return Geometry.status("open", pos);
 
         Scan inspection = null;
         for (Scan pending : state.pending) {
+            if (!pending.done && !pending.spaceMatches()) pending.fail("scanning");
             // Bounding boxes can enclose separate sealed rooms that the pending
             // flood fill never reaches. Only actual air membership is shared.
             if (!pending.done && pending.visited.contains(pos.asLong())) {
@@ -187,14 +246,17 @@ public final class GreenhouseRoomScanner {
         if (state.priority != null && state.priority.distManhattan(pos) <= 1) state.priority = null;
     }
 
-    private static Geometry indexed(State state, BlockPos pos) {
+    private static Geometry indexed(Level level, State state, BlockPos pos) {
         List<Geometry> rooms = state.sections.get(SectionPos.asLong(pos));
         if (rooms == null) return null;
         for (Iterator<Geometry> iterator = rooms.iterator(); iterator.hasNext();) {
             Geometry room = iterator.next();
             if (!room.live) { iterator.remove(); continue; }
+            if (!room.spaceMatches(level)) { invalidate(state, room); iterator.remove(); continue; }
             if (!room.ready) continue;
-            if (room.interior.contains(pos.asLong())) { room.lastUse = System.nanoTime(); return room; }
+            if (room.interior.contains(pos.asLong()) && ShipCropEnvironment.sameSpace(level, room.anchor, pos)) {
+                room.lastUse = System.nanoTime(); return room;
+            }
         }
         return null;
     }
@@ -206,6 +268,28 @@ public final class GreenhouseRoomScanner {
         if (!STATES.containsKey(level)) return;
         State state = state(level);
         GreenhouseEnvironment.withoutOverlay(() -> {
+            if (level.getGameTime() % 4 == 0 && GreenhouseSettings.enabled()) {
+                int jobs = Math.min(4, state.controllers.size());
+                // Avoid a second flood fill from a controller while a room survey is in progress.
+                while (jobs-- > 0 && state.pending.isEmpty()) {
+                    long packed = state.controllers.removeFirstLong();
+                    BlockPos controller = BlockPos.of(packed);
+                    if (!GreenhouseEnvironment.loaded(level, controller)) continue;
+                    BlockState block = level.getBlockState(controller);
+                    if (!isRegistrationController(block)) continue;
+                    state.controllers.add(packed);
+                    BlockPos front = GreenhouseEnvironment.regulatorFront(controller, block);
+                    if (front != null && GreenhouseEnvironment.loaded(level, front)
+                            && ShipCropEnvironment.sameSpace(level, controller, front)) {
+                        Geometry room = findInterior(level, front);
+                        if (room != null) room.bindController(controller, level.getGameTime());
+                    }
+                }
+            }
+            // Storage plots can be released and assigned to another ship without
+            // changing their coordinates. Their previous room must not survive that reuse.
+            for (Geometry room : new ArrayList<>(state.completed))
+                if (room.live && !room.spaceMatches(level)) invalidate(state, room);
             int budget = GreenhouseSettings.scanBudget() - (state.initialTick == level.getGameTime() ? state.initialSpent : 0);
             Scan urgent = null;
             for (Scan scan : state.pending) if (scan.priority && !scan.done) { urgent = scan; break; }
@@ -218,6 +302,7 @@ public final class GreenhouseRoomScanner {
                 if (!scan.done) state.pending.addLast(scan);
                 if (jobs == 0 && budget > 0 && !state.pending.isEmpty()) jobs = state.pending.size();
             }
+            if (GreenhouseSettings.enabled() && budget > 0) validateControllerRoom(level, state, Math.min(512, budget));
             int cleanupBudget = 1024;
             while (cleanupBudget-- > 0 && !state.cleanup.isEmpty()) {
                 Cleanup cleanup = state.cleanup.peekFirst();
@@ -235,6 +320,39 @@ public final class GreenhouseRoomScanner {
             emitLeaks(level, state);
             return null;
         });
+    }
+
+    private static void validateControllerRoom(Level level, State state, int budget) {
+        long tick = level.getGameTime();
+        for (Geometry room : state.completed) {
+            if (room.registrationController == null || tick < room.nextRecheck || room.leaking()) continue;
+            BlockPos controller = room.registrationController;
+            BlockState controllerState = GreenhouseEnvironment.loaded(level, controller)
+                    ? level.getBlockState(controller) : null;
+            BlockPos front = controllerState != null && isRegistrationController(controllerState)
+                    ? GreenhouseEnvironment.regulatorFront(controller, controllerState) : null;
+            if (front == null || !room.interior.contains(front.asLong())) {
+                room.registrationController = null;
+                room.recheckBoundary = null;
+                continue;
+            }
+            if (room.recheckBoundary == null) room.recheckBoundary = room.boundaryRoles.keySet().iterator();
+            while (budget > 0 && room.recheckBoundary.hasNext()) {
+                budget--;
+                BlockPos boundary = BlockPos.of(room.recheckBoundary.nextLong());
+                if (!GreenhouseEnvironment.loaded(level, boundary) || !GreenhouseEnvironment.sealed(level, boundary)) {
+                    invalidate(state, room);
+                    state.controllers.addAndMoveToFirst(controller.asLong());
+                    GreenhouseEnvironment.invalidateClimate();
+                    return;
+                }
+            }
+            if (!room.recheckBoundary.hasNext()) {
+                room.nextRecheck = tick + ROOM_RECHECK_TICKS;
+                room.recheckBoundary = null;
+            }
+            if (budget <= 0) return;
+        }
     }
 
     private static void emitLeaks(Level level, State state) {
@@ -270,7 +388,10 @@ public final class GreenhouseRoomScanner {
         synchronized (STATES) {
             State state = STATES.get(level);
             if (state == null || state.epoch != EPOCH.get()) {
-                state = new State(); STATES.put(level, state);
+                State replacement = new State();
+                if (state != null) replacement.controllers.addAll(state.controllers);
+                state = replacement;
+                STATES.put(level, state);
             }
             return state;
         }
@@ -284,7 +405,7 @@ public final class GreenhouseRoomScanner {
         long chunk = event.getChunk().getPos().toLong();
         List<Geometry> affected = state.chunks.remove(chunk);
         if (affected != null) for (Geometry room : new ArrayList<>(affected)) {
-            if (room.live) GreenhouseEnvironment.retainRoomAir(level, room);
+            if (room.live && room.spaceMatches(level)) GreenhouseEnvironment.retainRoomAir(level, room);
             invalidate(state, room);
         }
         for (Scan scan : state.pending) if (!scan.done && scan.chunks.contains(chunk)) scan.fail("unloaded");
@@ -292,6 +413,8 @@ public final class GreenhouseRoomScanner {
     }
 
     public static void blockChanged(Level level, BlockPos pos, BlockState before, BlockState after) {
+        // Sunlight can be queried before this level has any cached room scans.
+        if (before != after) ShipGreenhouseLight.blockChanged(level, pos);
         State state = STATES.get(level);
         if (state == null || level.isClientSide || before == after) return;
         boolean oldSeal = GreenhouseEnvironment.sealedState(level, pos, before);
@@ -355,7 +478,7 @@ public final class GreenhouseRoomScanner {
             } else if (oldSeal == newSeal && scan.observed.contains(pos.asLong())) {
                 adjustCounts(scan.counts, oldId, newId);
                 scan.machines.remove(pos.asLong());
-                if (machine(after)) scan.machines.add(pos.asLong());
+                if (isRegistrationController(after)) scan.machines.add(pos.asLong());
             }
         }
         GreenhouseEnvironment.invalidateClimate();
@@ -375,13 +498,13 @@ public final class GreenhouseRoomScanner {
         refreshFloorColumn(level, geometry, pos);
         geometry.materialRevision++;
         geometry.machines.remove(pos.asLong());
-        if (machine(after)) geometry.machines.add(pos.asLong());
+        if (isRegistrationController(after)) geometry.machines.add(pos.asLong());
         boolean oldGlass = GreenhouseEnvironment.isGlass(before), newGlass = GreenhouseEnvironment.isGlass(after);
         int roles = geometry.boundaryRoles.get(pos.asLong()), faces = Integer.bitCount(roles & HORIZONTAL);
         geometry.wall += ((glazingRequired(after) ? 1 : 0) - (glazingRequired(before) ? 1 : 0)) * faces;
         if (roles != 0) {
             geometry.entrances += (entrance(after) ? 1 : 0) - (entrance(before) ? 1 : 0);
-            geometry.devices += (machine(after) ? 1 : 0) - (machine(before) ? 1 : 0);
+            geometry.devices += (isRegistrationController(after) ? 1 : 0) - (isRegistrationController(before) ? 1 : 0);
         }
         if (oldGlass != newGlass) {
             int delta = newGlass ? 1 : -1;
@@ -395,7 +518,7 @@ public final class GreenhouseRoomScanner {
     private static void invalidate(State state, Geometry room) {
         if (!room.live) return;
         room.live = false;
-        state.completed.remove(room);
+        if (state.completed.remove(room) && room.key.spaceId != null) state.completedShipRooms--;
         state.cleanup.addLast(new Cleanup(room.sections.iterator()));
         // Drop the large cell set immediately; the lightweight section references
         // are cleaned a bounded number at a time on subsequent level ticks.
@@ -410,7 +533,7 @@ public final class GreenhouseRoomScanner {
     static void evictForMemoryPressure(Level level, Geometry room) {
         State state = STATES.get(level);
         if (state == null || !room.live) return;
-        GreenhouseEnvironment.retainRoomAir(level, room);
+        if (room.spaceMatches(level)) GreenhouseEnvironment.retainRoomAir(level, room);
         invalidate(state, room);
     }
 
@@ -434,11 +557,8 @@ public final class GreenhouseRoomScanner {
         if (after) counts.merge(newId, 1, Integer::sum);
     }
 
-    private static boolean machine(BlockState state) {
-        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        return id.equals(ResourceLocation.parse("biome_based_crops:air_conditioner"))
-                || id.equals(ResourceLocation.parse("toughasnails:thermoregulator"))
-                || id.equals(ResourceLocation.parse("northstar:temperature_regulator"));
+    public static boolean isRegistrationController(BlockState state) {
+        return state.is(GreenhouseContent.AIR_CONDITIONER.get()) || ThermoregulatorDetector.isExternalController(state);
     }
 
     private static boolean rootedWood(BlockState state) {
@@ -452,11 +572,11 @@ public final class GreenhouseRoomScanner {
                 || state.getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock;
     }
 
-    private static boolean glazingRequired(BlockState state) { return !entrance(state) && !machine(state); }
+    private static boolean glazingRequired(BlockState state) { return !entrance(state) && !isRegistrationController(state); }
 
     private static ResourceLocation floorMaterial(Level level, BlockPos support) {
         BlockState state = level.getBlockState(support);
-        if (state.getBlock() instanceof FarmBlock || machine(state)) {
+        if (state.getBlock() instanceof FarmBlock || isRegistrationController(state)) {
             BlockPos underlay = support.below();
             if (!GreenhouseEnvironment.loaded(level, underlay)) return ResourceLocation.withDefaultNamespace("air");
             state = level.getBlockState(underlay);
@@ -466,7 +586,7 @@ public final class GreenhouseRoomScanner {
 
     private static FloorSample sampleFloor(Level level, BlockPos support, int baseY) {
         BlockState state = level.getBlockState(support);
-        boolean scenery = support.getY() > baseY && !(state.getBlock() instanceof FarmBlock) && !machine(state);
+        boolean scenery = support.getY() > baseY && !(state.getBlock() instanceof FarmBlock) && !isRegistrationController(state);
         BlockPos base = new BlockPos(support.getX(), baseY, support.getZ());
         ResourceLocation baseMaterial = scenery && GreenhouseEnvironment.loaded(level, base)
                 ? BuiltInRegistries.BLOCK.getKey(level.getBlockState(base).getBlock()) : ResourceLocation.withDefaultNamespace("air");
@@ -510,7 +630,11 @@ public final class GreenhouseRoomScanner {
     }
 
     private static boolean openToSky(Level level, BlockPos pos) {
-        return level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) <= pos.getY();
+        // Ship blocks are stored away from their world pose. A world heightmap
+        // shortcut cannot decide whether their local room is open; the bounded
+        // flood fill instead discovers an opening or the edge of their space.
+        return !ShipCropEnvironment.isOnShip(level, pos)
+                && level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) <= pos.getY();
     }
 
     static final class Geometry {
@@ -533,6 +657,9 @@ public final class GreenhouseRoomScanner {
         int insideSolid;
         long materialRevision;
         long lastUse = System.nanoTime();
+        BlockPos registrationController;
+        long nextRecheck;
+        it.unimi.dsi.fastutil.longs.LongIterator recheckBoundary;
         private long leakStart = -1;
         private boolean originalGlassValid;
         private static final int MAX_TRACKED_OPENINGS = 4096;
@@ -546,6 +673,15 @@ public final class GreenhouseRoomScanner {
         static Geometry status(String status, BlockPos at) {
             return new Geometry(status, at.immutable(), LongSets.EMPTY_SET, LongSets.EMPTY_SET, new HashMap<>(),
                     new LongOpenHashSet(), new Long2ByteOpenHashMap(), null);
+        }
+        boolean spaceMatches(Level level) {
+            return key == null || Objects.equals(key.spaceId, ShipCropEnvironment.spaceId(level, anchor));
+        }
+        void bindController(BlockPos controller, long tick) {
+            if (registrationController == null) {
+                registrationController = controller.immutable();
+                nextRecheck = tick + ROOM_RECHECK_TICKS;
+            }
         }
         boolean glassValid() {
             return roof > 0 && roofGlass >= Math.ceil(roof * GreenhouseSettings.roofGlassRatio());
@@ -590,7 +726,11 @@ public final class GreenhouseRoomScanner {
     private record LeakOpening(BlockPos pos, Direction outward, BlockState original) { }
 
     /** The fingerprint identifies exact air cells without retaining their potentially huge set. */
-    record RoomKey(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int volume, long hashSum, long hashXor) {
+    record RoomKey(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int volume, long hashSum, long hashXor,
+                   UUID spaceId) {
+        RoomKey(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int volume, long hashSum, long hashXor) {
+            this(minX, minY, minZ, maxX, maxY, maxZ, volume, hashSum, hashXor, null);
+        }
         boolean touches(BlockPos pos) {
             return pos.getX() >= minX - 1 && pos.getX() <= maxX + 1
                     && pos.getY() >= minY - 1 && pos.getY() <= maxY + 1
@@ -607,19 +747,26 @@ public final class GreenhouseRoomScanner {
         final Long2ObjectOpenHashMap<List<Geometry>> sections = new Long2ObjectOpenHashMap<>();
         final Long2ObjectOpenHashMap<List<Geometry>> chunks = new Long2ObjectOpenHashMap<>();
         final ArrayDeque<Scan> pending = new ArrayDeque<>();
+        final LongLinkedOpenHashSet controllers = new LongLinkedOpenHashSet();
         final List<Geometry> completed = new ArrayList<>();
+        int completedShipRooms;
         final ArrayDeque<Cleanup> cleanup = new ArrayDeque<>();
         final it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap<Negative> negative = new it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap<>();
         BlockPos priority;
     }
 
     private record Cleanup(it.unimi.dsi.fastutil.longs.LongIterator sections) { }
-    private record Negative(long tick, String status) { }
+    private record Negative(long tick, String status, UUID spaceId) {
+        boolean spaceMatches(Level level, BlockPos pos) {
+            return Objects.equals(spaceId, ShipCropEnvironment.spaceId(level, pos));
+        }
+    }
 
     private static final class Scan {
         final Level level;
         final State owner;
         final BlockPos start;
+        final UUID spaceId;
         final LongOpenHashSet visited = new LongOpenHashSet();
         final LongOpenHashSet observed = new LongOpenHashSet();
         final LongArrayFIFOQueue queue = new LongArrayFIFOQueue();
@@ -650,19 +797,24 @@ public final class GreenhouseRoomScanner {
 
         Scan(Level level, BlockPos start, State owner) {
             this.level = level; this.start = start.immutable(); this.owner = owner;
+            this.spaceId = ShipCropEnvironment.spaceId(level, start);
             columns.defaultReturnValue(Integer.MAX_VALUE);
             columnTops.defaultReturnValue(Integer.MIN_VALUE);
             minX = maxX = start.getX(); minY = maxY = start.getY(); minZ = maxZ = start.getZ(); floorPoint = start.immutable();
             visited.add(start.asLong()); fingerprint(start.asLong()); queue.enqueue(start.asLong()); observe(start, true);
         }
+        boolean spaceMatches() { return Objects.equals(spaceId, ShipCropEnvironment.spaceId(level, start)); }
         int advance(int budget) {
             if (done) return 0;
+            if (!spaceMatches()) { fail("scanning"); return 0; }
             int used = 0;
             while (used < budget && !queue.isEmpty() && !done) {
                 BlockPos current = BlockPos.of(queue.dequeueLong()); used++;
                 if (openToSky(level, current)) { fail("open"); break; }
                 for (Direction direction : DIRECTIONS) {
                     BlockPos next = current.relative(direction);
+                    if (!ShipCropEnvironment.sameSpace(level, start, next)
+                            || spaceId != null && level.isOutsideBuildHeight(next)) { fail("open"); break; }
                     if (!GreenhouseEnvironment.loaded(level, next)) { fail("unloaded"); break; }
                     long packed = next.asLong();
                     if (visited.contains(packed)) continue;
@@ -708,7 +860,7 @@ public final class GreenhouseRoomScanner {
                     if (height >= 2) canopy.merge(material, 1, Integer::sum);
                     if (exterior != 0) {
                         if (entrance(observedState)) entrances++;
-                        if (machine(observedState)) devices++;
+                        if (isRegistrationController(observedState)) devices++;
                     }
                     if ((exterior & ROOF) != 0) { roof++; if (glazed) roofGlass++; }
                     int faces = Integer.bitCount(exterior & HORIZONTAL);
@@ -762,7 +914,7 @@ public final class GreenhouseRoomScanner {
                 }
             }
             if (GreenhouseEnvironment.isGlass(state)) glass++;
-            if (machine(state)) machines.add(pos.asLong());
+            if (isRegistrationController(state)) machines.add(pos.asLong());
             sections.add(SectionPos.asLong(pos));
             chunks.add(ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4));
         }
@@ -777,7 +929,7 @@ public final class GreenhouseRoomScanner {
         void beginFinish() {
             BlockPos anchor = new BlockPos((minX + maxX) >> 1, minY, (minZ + maxZ) >> 1);
             if (!visited.contains(anchor.asLong())) anchor = floorPoint;
-            RoomKey key = new RoomKey(minX, minY, minZ, maxX, maxY, maxZ, visited.size(), hashSum, hashXor);
+            RoomKey key = new RoomKey(minX, minY, minZ, maxX, maxY, maxZ, visited.size(), hashSum, hashXor, spaceId);
             result = new Geometry("closed", anchor, visited, sections, counts, machines, shell, key);
             result.floorSamples = floorSamples; result.floorCounts = floorCounts;
             result.columnTops = columnTops; result.columnBottoms = columns;
@@ -793,6 +945,7 @@ public final class GreenhouseRoomScanner {
             result.ready = true;
             done = true;
             owner.completed.add(result);
+            if (result.key.spaceId != null) owner.completedShipRooms++;
             // Bound retained cell memory as well as room count. Eviction affects
             // cache residency, never the supported physical room dimensions.
             long cells = owner.completed.stream().mapToLong(room -> room.interior.size()).sum();
@@ -809,7 +962,7 @@ public final class GreenhouseRoomScanner {
             if (result != null && !result.ready) invalidate(owner, result);
             done = true; result = Geometry.status(status, start);
             if (!status.equals("scanning")) {
-                owner.negative.put(start.asLong(), new Negative(level.getGameTime(), status));
+                owner.negative.put(start.asLong(), new Negative(level.getGameTime(), status, spaceId));
                 if (owner.negative.size() > 1024) owner.negative.removeFirst();
             }
         }

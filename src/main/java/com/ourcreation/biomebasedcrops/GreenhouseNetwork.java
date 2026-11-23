@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -29,12 +31,12 @@ public final class GreenhouseNetwork {
 
     public static void showGuide(ServerPlayer player) {
         PENDING_GUIDES.remove(player);
-        BlockPos position = player.blockPosition();
+        BlockPos position = ShipGreenhouseQueries.surveyPosition(player.level(), player.blockPosition());
         GreenhouseRoomScanner.prioritize(player.level(), position);
         var room = GreenhouseEnvironment.inspect(player.level(), position);
         if (room.status().endsWith(".scanning")) {
             PENDING_GUIDES.put(player, new PendingGuide(position.immutable(), player.level().dimension().location(),
-                    player.level().getGameTime() + 6000));
+                    player.level().getGameTime() + 6000, ShipCropEnvironment.spaceId(player.level(), position)));
         }
         send(player, false, room.roomVolume(), room.floorArea());
     }
@@ -44,7 +46,8 @@ public final class GreenhouseNetwork {
         var pending = PENDING_GUIDES.get(player);
         if (pending == null) return;
         if (player.level().getGameTime() > pending.expires()
-                || !player.level().dimension().location().equals(pending.dimension())) {
+                || !player.level().dimension().location().equals(pending.dimension())
+                || !Objects.equals(pending.shipId(), ShipCropEnvironment.spaceId(player.level(), pending.position()))) {
             PENDING_GUIDES.remove(player);
             return;
         }
@@ -62,7 +65,7 @@ public final class GreenhouseNetwork {
                 GreenhouseSettings.materialReferenceVolume(), contextVolume, contextFloorArea));
     }
 
-    private record PendingGuide(BlockPos position, ResourceLocation dimension, long expires) { }
+    private record PendingGuide(BlockPos position, ResourceLocation dimension, long expires, UUID shipId) { }
 
     public record ViewPayload(Map<ResourceLocation, GreenhouseRecipes.Recipe> recipes, boolean updateOnly,
                               int referenceVolume, int contextVolume, int contextFloorArea) implements CustomPacketPayload {

@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -31,10 +30,9 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 public final class GreenhouseEnvironment {
     public static final int INTERIOR_BLOCKS_PER_UNIT = 256;
     private static final TagKey<Block> GLASS = tag("greenhouse_glass");
-    private static final ResourceLocation TAN_THERMOREGULATOR = ResourceLocation.parse("toughasnails:thermoregulator");
     private static final Map<Level, Cache> CACHES = Collections.synchronizedMap(new WeakHashMap<>());
     private static final java.util.concurrent.atomic.AtomicLong CLIMATE_REVISION = new java.util.concurrent.atomic.AtomicLong();
-    private static final ThreadLocal<Integer> NATIVE_QUERY_DEPTH = ThreadLocal.withInitial(() -> 0);
+    private static final ThreadLocal<Boolean> NATIVE_QUERY = new ThreadLocal<>();
     private static final int MAX_RETAINED_AIR = 256;
 
     private GreenhouseEnvironment() {
@@ -47,7 +45,6 @@ public final class GreenhouseEnvironment {
 
     /** Controller pricing uses the room's common native baseline without starting a scan. */
     public static CropClimate naturalClimateForController(Level level, BlockPos pos) {
-        if (ShipCropEnvironment.isOnShip(level, pos)) return naturalClimate(level, pos);
         if (!GreenhouseSettings.enabled()) return naturalClimate(level, controllerFront(level, pos));
         var geometry = controllerGeometry(level, pos, false);
         BlockPos at = geometry == null ? controllerFront(level, pos) : geometry.anchor;
@@ -56,18 +53,20 @@ public final class GreenhouseEnvironment {
 
     /** Ambient climate at the current world position, without room or outlet conditioning. */
     static CropClimate naturalClimate(Level level, BlockPos pos) {
-        return NorthstarAtmosphere.naturalClimate(level, pos).orElseGet(() -> CropClimate.at(nativeBiome(level, pos), pos));
+        BlockPos world = ShipCropEnvironment.worldPosition(level, pos);
+        return NorthstarAtmosphere.naturalClimate(level, world).orElseGet(() -> CropClimate.at(nativeBiome(level, pos), world));
     }
 
     /** Completed geometry only, with optional bounded discovery for a newly placed controller. */
     public static RoomClimateState controllerAirState(Level level, BlockPos pos, boolean discover) {
-        if (level.isClientSide || !loaded(level, pos) || !GreenhouseSettings.enabled()
-                || ShipCropEnvironment.isOnShip(level, pos)) return null;
+        if (level.isClientSide || !loaded(level, pos) || !GreenhouseSettings.enabled()) return null;
         return withoutOverlay(() -> {
             var geometry = controllerGeometry(level, pos, discover);
             if (geometry == null) return null;
-            RoomClimateState air = airState(level, geometry, cache(level));
-            return roomCapacity(level, geometry).sufficient() ? air : null;
+            CropClimate natural = naturalClimate(level, geometry.anchor);
+            RoomCapacity capacity = roomCapacity(level, geometry, natural);
+            RoomClimateState air = airState(level, geometry, cache(level), natural, capacity);
+            return capacity.sufficient() ? air : null;
         });
     }
 
@@ -78,7 +77,7 @@ public final class GreenhouseEnvironment {
 
     private static GreenhouseRoomScanner.Geometry controllerGeometry(Level level, BlockPos pos, boolean discover) {
         BlockPos front = controllerFront(level, pos);
-        if (!loaded(level, front) || sealed(level, front)) return null;
+        if (!ShipCropEnvironment.sameSpace(level, pos, front) || !loaded(level, front) || sealed(level, front)) return null;
         var geometry = GreenhouseRoomScanner.completedAt(level, front);
         if (geometry == null && discover) geometry = GreenhouseRoomScanner.find(level, front);
         return geometry != null && geometry.live && geometry.ready && geometry.status.equals("closed")
@@ -94,9 +93,6 @@ public final class GreenhouseEnvironment {
         if (!loaded(level, pos)) return controllerInfo(result(false, null, CropClimate.NEUTRAL, 0, 0, List.of(), "unloaded"));
         BlockPos front = controllerFront(level, pos);
         if (!loaded(level, front)) return controllerInfo(result(false, null, CropClimate.NEUTRAL, 0, 0, List.of(), "unloaded"));
-        if (ShipCropEnvironment.isOnShip(level, pos))
-            return controllerInfo(result(false, null, naturalClimate(level, pos), 0, 0, List.of(),
-                    sealed(level, front) ? "blocked_outlet" : "outside"));
         if (!GreenhouseSettings.enabled()) return controllerInfo(inspect(level, front));
         if (sealed(level, front)) return controllerInfo(result(false, null, naturalClimate(level, front), 0, 0, List.of(), "blocked_outlet"));
         return withoutOverlay(() -> {
@@ -119,9 +115,12 @@ public final class GreenhouseEnvironment {
 
     public record ControllerRoomInfo(Inspection inspection, int installedUnits, int requiredUnits, int interiorCapacity) { }
 
-    private static boolean servesRoom(Level level, GreenhouseRoomScanner.Geometry geometry, BlockPos machine) {
-        return loaded(level, machine) && level.getBlockEntity(machine) instanceof AirConditionerBlockEntity unit
-                && !unit.isRemoved() && geometry.interior.contains(controllerFront(level, machine).asLong());
+    private static boolean servesRoom(GreenhouseRoomScanner.Geometry geometry, AirConditionerBlockEntity unit) {
+        if (unit.isRemoved()) return false;
+        BlockPos at = unit.getBlockPos();
+        BlockState state = unit.getBlockState();
+        BlockPos front = state.hasProperty(AirConditionerBlock.FACING) ? at.relative(state.getValue(AirConditionerBlock.FACING)) : at;
+        return geometry.interior.contains(front.asLong());
     }
 
     /** An installed inward-facing regulator marks deliberate biome registration; it need not change the climate. */
@@ -131,31 +130,45 @@ public final class GreenhouseEnvironment {
             if (!loaded(level, at)) continue;
             var entity = level.getBlockEntity(at);
             if (entity == null || entity.isRemoved()) continue;
-            if (entity instanceof AirConditionerBlockEntity) {
-                if (servesRoom(level, geometry, at)) return true;
+            if (entity instanceof AirConditionerBlockEntity unit) {
+                if (servesRoom(geometry, unit)) {
+                    geometry.bindController(at, level.getGameTime());
+                    return true;
+                }
                 continue;
             }
             BlockState state = entity.getBlockState();
-            if (!BuiltInRegistries.BLOCK.getKey(state.getBlock()).equals(TAN_THERMOREGULATOR)) continue;
-            var facing = state.getBlock().getStateDefinition().getProperty("facing");
-            if (!(facing instanceof DirectionProperty direction)) continue;
-            Direction face = state.getValue(direction);
-            BlockPos front = at.relative(face);
-            if (face.getAxis().isHorizontal() && loaded(level, front)
-                    && geometry.interior.contains(front.asLong())) return true;
+            if (!ThermoregulatorDetector.isExternalController(state)) continue;
+            BlockPos front = regulatorFront(at, state);
+            if (front != null && loaded(level, front) && geometry.interior.contains(front.asLong())) {
+                geometry.bindController(at, level.getGameTime());
+                return true;
+            }
         }
         return false;
     }
 
+    @Nullable
+    static BlockPos regulatorFront(BlockPos at, BlockState state) {
+        var facing = state.getBlock().getStateDefinition().getProperty("facing");
+        if (!(facing instanceof DirectionProperty direction)) return null;
+        Direction face = state.getValue(direction);
+        return face.getAxis().isHorizontal() ? at.relative(face) : null;
+    }
+
     private static RoomCapacity roomCapacity(Level level, GreenhouseRoomScanner.Geometry geometry) {
+        return roomCapacity(level, geometry, naturalClimate(level, geometry.anchor));
+    }
+
+    private static RoomCapacity roomCapacity(Level level, GreenhouseRoomScanner.Geometry geometry, CropClimate natural) {
         int units = 0;
         boolean changeRequested = false;
-        CropClimate natural = naturalClimate(level, geometry.anchor);
         for (long packed : geometry.machines) {
             BlockPos at = BlockPos.of(packed);
-            if (servesRoom(level, geometry, at)) {
+            if (loaded(level, at) && level.getBlockEntity(at) instanceof AirConditionerBlockEntity unit
+                    && servesRoom(geometry, unit)) {
                 units++;
-                changeRequested |= ((AirConditionerBlockEntity) level.getBlockEntity(at)).selectedClimate() != natural;
+                changeRequested |= unit.selectedClimate() != natural;
             }
         }
         int volume = geometry.habitatVolume();
@@ -180,6 +193,11 @@ public final class GreenhouseEnvironment {
 
     private static RoomClimateState airState(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache) {
         CropClimate nativeClimate = naturalClimate(level, geometry.anchor);
+        return airState(level, geometry, cache, nativeClimate, roomCapacity(level, geometry, nativeClimate));
+    }
+
+    private static RoomClimateState airState(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache,
+                                             CropClimate nativeClimate, RoomCapacity capacity) {
         boolean breathable = NorthstarAtmosphere.naturalAtmosphereBreathable(level)
                 || NorthstarAtmosphere.nativeProviderBreathable(level, geometry.anchor);
         RoomClimateState state = cache.airStates.get(geometry);
@@ -191,11 +209,11 @@ public final class GreenhouseEnvironment {
         }
         state.setLeakStart(geometry.leaking() ? geometry.leakSince() : -1, level.getGameTime());
         state.advance(level.getGameTime(), nativeClimate, breathable, geometry.live);
-        boolean sufficientCapacity = roomCapacity(level, geometry).sufficient();
+        boolean sufficientCapacity = capacity.sufficient();
         for (long packed : geometry.machines) {
             BlockPos at = BlockPos.of(packed);
-            if (loaded(level, at) && level.getBlockEntity(at) instanceof AirConditionerBlockEntity
-                    && (!sufficientCapacity || !servesRoom(level, geometry, at))) state.removeDrive(packed);
+            if (loaded(level, at) && level.getBlockEntity(at) instanceof AirConditionerBlockEntity unit
+                    && (!sufficientCapacity || !servesRoom(geometry, unit))) state.removeDrive(packed);
         }
         Long providersTick = cache.providerTicks.get(geometry);
         if (providersTick == null || providersTick != level.getGameTime()) {
@@ -242,7 +260,7 @@ public final class GreenhouseEnvironment {
             for (var entry : new java.util.ArrayList<>(cache.airStates.entrySet())) {
                 var geometry = entry.getKey();
                 if (geometry == null) continue;
-                if (geometry.live && loaded(level, geometry.anchor)) {
+                if (geometry.live && geometry.spaceMatches(level) && loaded(level, geometry.anchor)) {
                     RoomClimateState air = airState(level, geometry, cache);
                     if (air.leakDissipated(level.getGameTime())) GreenhouseRoomScanner.expireLeak(level, geometry);
                 }
@@ -257,13 +275,10 @@ public final class GreenhouseEnvironment {
 
     /** Actual climate at this exact position; controller settings are never a growth bypass. */
     public static CropClimate currentClimate(Level level, BlockPos pos) {
+        BlockPos roomPosition = nativeQueryActive() ? pos : ShipGreenhouseQueries.roomPosition(level, pos);
+        if (!roomPosition.equals(pos)) return currentClimate(level, roomPosition);
         CropClimate natural = loaded(level, pos) ? naturalClimate(level, pos) : CropClimate.NEUTRAL;
-        if (!loaded(level, pos)) return natural;
-        if (ShipCropEnvironment.isOnShip(level, pos)) {
-            if (nativeQueryActive()) return natural;
-            CropClimate wind = localControllerClimate(level, pos);
-            return wind == null ? natural : wind;
-        }
+        if (!loaded(level, pos) || nativeQueryActive()) return natural;
         if (level.isClientSide) {
             CropClimate room = GreenhouseClientBiomes.climateAt(level, pos, null);
             if (room != null) return room;
@@ -289,7 +304,8 @@ public final class GreenhouseEnvironment {
     }
 
     private static CropClimate roomClimateAt(Level level, RoomClimateState air, BlockPos pos, long tick) {
-        if (air.hasControlAt(pos, tick)) return air.climateAt(pos, tick);
+        CropClimate controlled = air.controlledClimateAt(pos, tick);
+        if (controlled != null) return controlled;
         CropClimate wind = localControllerClimate(level, pos);
         return wind == null ? air.naturalClimate() : wind;
     }
@@ -303,21 +319,25 @@ public final class GreenhouseEnvironment {
     /** Optional temperature APIs can supply their native weather/altitude/shelter baseline without another query. */
     @Nullable
     public static CropClimate controlledClimate(Level level, BlockPos pos, @Nullable CropClimate ambient) {
-        if (nativeQueryActive() || !loaded(level, pos)) return null;
+        if (nativeQueryActive()) return null;
         if (!level.isClientSide && level.getServer() != null && !level.getServer().isSameThread()) return null;
-        // A storage plot's incoming temperature is unrelated to the ship's current world biome.
-        if (ShipCropEnvironment.isOnShip(level, pos)) return localControllerClimate(level, pos);
+        pos = ShipGreenhouseQueries.knownRoomPosition(level, pos);
+        if (!loaded(level, pos)) return null;
+        // Optional APIs may pass a storage-plot baseline; sample ship ambient at its live pose.
+        if (ambient != null && ShipCropEnvironment.isOnShip(level, pos)) ambient = null;
         if (!GreenhouseSettings.enabled()) return localControllerClimate(level, pos, ambient);
         if (level.isClientSide) {
             CropClimate climate = GreenhouseClientBiomes.climateAt(level, pos, null);
             return climate != null ? climate : localControllerClimate(level, pos, ambient);
         }
         var air = physicalAirAt(level, pos);
-        return air != null && air.hasControlAt(pos, level.getGameTime())
-                ? air.climateAt(pos, level.getGameTime()) : localControllerClimate(level, pos, ambient);
+        CropClimate controlled = air == null ? null : air.controlledClimateAt(pos, level.getGameTime());
+        return controlled != null ? controlled : localControllerClimate(level, pos, ambient);
     }
 
     public static float oxygenPercent(Level level, BlockPos pos) {
+        BlockPos roomPosition = nativeQueryActive() ? pos : ShipGreenhouseQueries.knownRoomPosition(level, pos);
+        if (!roomPosition.equals(pos)) return oxygenPercent(level, roomPosition);
         float natural = NorthstarAtmosphere.naturalAtmosphereBreathable(level)
                 || NorthstarAtmosphere.nativeProviderBreathable(level, pos) ? 100F : 0F;
         if (level.isClientSide) return GreenhouseClientBiomes.oxygenAt(level, pos, natural);
@@ -331,27 +351,31 @@ public final class GreenhouseEnvironment {
     }
 
     public static boolean greenhouseProvidesOxygen(Level level, BlockPos pos) {
+        BlockPos roomPosition = nativeQueryActive() ? pos : ShipGreenhouseQueries.knownRoomPosition(level, pos);
+        if (!roomPosition.equals(pos)) return greenhouseProvidesOxygen(level, roomPosition);
         if (level.isClientSide) return GreenhouseClientBiomes.hasOxygen(level, pos);
         var air = physicalAirAt(level, pos);
         return air != null && !air.leaking() && air.breathable();
     }
 
     private static RoomClimateState physicalAirAt(Level level, BlockPos pos) {
-        if (level.isClientSide || NATIVE_QUERY_DEPTH.get() != 0 || !loaded(level, pos) || !GreenhouseSettings.enabled()) return null;
-        if (ShipCropEnvironment.isOnShip(level, pos)) return null;
+        if (level.isClientSide || nativeQueryActive() || !loaded(level, pos) || !GreenhouseSettings.enabled()) return null;
         if (level.getServer() != null && !level.getServer().isSameThread()) return null;
         return withoutOverlay(() -> {
-            var geometry = GreenhouseRoomScanner.find(level, pos);
-            return !geometry.live || !geometry.status.equals("closed") || !geometry.interior.contains(pos.asLong())
-                    ? null : airState(level, geometry, cache(level));
+            var geometry = GreenhouseRoomScanner.completedAt(level, pos);
+            return geometry == null ? null : airState(level, geometry, cache(level));
         });
     }
 
     public static boolean consumeRoomOxygen(Level level, BlockPos pos, float millibuckets) {
+        if (nativeQueryActive() || level.isClientSide
+                || level.getServer() != null && !level.getServer().isSameThread()) return false;
+        BlockPos roomPosition = ShipGreenhouseQueries.knownRoomPosition(level, pos);
+        if (!roomPosition.equals(pos)) return consumeRoomOxygen(level, roomPosition, millibuckets);
         if (level.isClientSide || !loaded(level, pos) || !GreenhouseSettings.enabled()) return false;
         return withoutOverlay(() -> {
-            var geometry = GreenhouseRoomScanner.find(level, pos);
-            if (!geometry.live || !geometry.status.equals("closed") || !geometry.interior.contains(pos.asLong())) return false;
+            var geometry = GreenhouseRoomScanner.completedAt(level, pos);
+            if (geometry == null) return false;
             RoomClimateState state = airState(level, geometry, cache(level));
             if (state.leaking() || !state.breathable() || !state.consumeOxygen(millibuckets)) return false;
             invalidateClimate();
@@ -360,11 +384,13 @@ public final class GreenhouseEnvironment {
     }
 
     public static AtmosphereRegion atmosphereRegionAt(Level level, BlockPos pos) {
-        if (level.isClientSide || NATIVE_QUERY_DEPTH.get() != 0 || !loaded(level, pos) || !GreenhouseSettings.enabled()) return null;
+        BlockPos roomPosition = nativeQueryActive() ? pos : ShipGreenhouseQueries.knownRoomPosition(level, pos);
+        if (!roomPosition.equals(pos)) return atmosphereRegionAt(level, roomPosition);
+        if (level.isClientSide || nativeQueryActive() || !loaded(level, pos) || !GreenhouseSettings.enabled()) return null;
         if (level.getServer() != null && !level.getServer().isSameThread()) return null;
         return withoutOverlay(() -> {
-            var geometry = GreenhouseRoomScanner.find(level, pos);
-            if (!geometry.live || !geometry.status.equals("closed") || !geometry.interior.contains(pos.asLong())) return null;
+            var geometry = GreenhouseRoomScanner.completedAt(level, pos);
+            if (geometry == null) return null;
             Cache cache = cache(level);
             RoomClimateState air = airState(level, geometry, cache);
             Room room = evaluatedRoom(level, geometry, cache, pos);
@@ -372,49 +398,64 @@ public final class GreenhouseEnvironment {
             ResourceLocation biome = room.inspection.valid() ? room.inspection.targetBiome() : null;
             long tick = level.getGameTime();
             java.util.function.Predicate<BlockPos> coverage = sample -> roomClimateAt(level, air, sample, tick) == actual;
-            return new AtmosphereRegion(geometry.interior, biome, actual, air.leaking() ? 0 : air.oxygenPercent(), coverage);
+            return new AtmosphereRegion(pos.immutable(), geometry.interior, biome, actual,
+                    air.leaking() ? 0 : air.oxygenPercent(), coverage);
         });
     }
 
-    public record AtmosphereRegion(Set<Long> interior, ResourceLocation biome, CropClimate climate,
+    public record AtmosphereRegion(BlockPos position, Set<Long> interior, ResourceLocation biome, CropClimate climate,
                                    float oxygenPercent, java.util.function.Predicate<BlockPos> coverage) { }
 
     public static <T> T withoutOverlay(java.util.function.Supplier<T> action) {
-        int previous = NATIVE_QUERY_DEPTH.get();
-        NATIVE_QUERY_DEPTH.set(previous + 1);
+        if (nativeQueryActive()) return action.get();
+        NATIVE_QUERY.set(Boolean.TRUE);
         try {
             return action.get();
         } finally {
-            if (previous == 0) NATIVE_QUERY_DEPTH.remove();
-            else NATIVE_QUERY_DEPTH.set(previous);
+            NATIVE_QUERY.remove();
         }
     }
 
-    public static boolean nativeQueryActive() { return NATIVE_QUERY_DEPTH.get() != 0; }
+    public static boolean nativeQueryActive() { return NATIVE_QUERY.get() == Boolean.TRUE; }
 
     /** Resolve an exact gameplay position without changing persistent chunk biome palettes. */
     public static Holder<Biome> overlayBiome(Level level, BlockPos pos, Holder<Biome> nativeBiome) {
-        if (NATIVE_QUERY_DEPTH.get() != 0) return nativeBiome;
-        if (level.isClientSide) return GreenhouseClientBiomes.biomeAt(level, pos, nativeBiome);
-        BiomeRegion region = regionAt(level, pos);
-        return region == null ? nativeBiome
-                : level.registryAccess().registryOrThrow(Registries.BIOME).getHolder(region.biome())
-                        .<Holder<Biome>>map(biome -> biome).orElse(nativeBiome);
+        if (nativeQueryActive()) return nativeBiome;
+        pos = ShipGreenhouseQueries.knownRoomPosition(level, pos);
+        Holder<Biome> registered;
+        if (level.isClientSide) {
+            registered = GreenhouseClientBiomes.registeredBiomeAt(level, pos);
+        } else {
+            BiomeRegion region = localRegionAt(level, pos);
+            registered = region == null ? null
+                    : level.registryAccess().registryOrThrow(Registries.BIOME).getHolder(region.biome()).orElse(null);
+        }
+        if (registered != null) return registered;
+        return ShipCropEnvironment.isOnShip(level, pos) ? nativeBiome(level, pos) : nativeBiome;
     }
 
     /** A valid room's exact air/plant cells, excluding its floor, walls, and roof. */
     public static BiomeRegion regionAt(Level level, BlockPos pos) {
-        if (level.isClientSide || NATIVE_QUERY_DEPTH.get() != 0 || !GreenhouseSettings.enabled() || !loaded(level, pos)) return null;
-        if (ShipCropEnvironment.isOnShip(level, pos)) return null;
-        if (level.getServer() != null && !level.getServer().isSameThread()) return null;
-        return withoutOverlay(() -> regionOf(roomAt(level, pos), pos));
+        if (level.isClientSide || nativeQueryActive()) return null;
+        return localRegionAt(level, ShipGreenhouseQueries.knownRoomPosition(level, pos));
     }
 
-    private static BiomeRegion regionOf(Room room, BlockPos pos) {
-        return room.inspection.valid() && room.interior.contains(pos.asLong()) ? room.region : null;
+    private static BiomeRegion localRegionAt(Level level, BlockPos pos) {
+        if (!GreenhouseSettings.enabled()) return null;
+        if (level.getServer() != null && !level.getServer().isSameThread()) return null;
+        var geometry = GreenhouseRoomScanner.completedAt(level, pos);
+        if (geometry == null || !loaded(level, pos)) return null;
+        return withoutOverlay(() -> {
+            if (!hasRegistrationController(level, geometry)) return null;
+            Cache cache = cache(level);
+            Room room = evaluatedHabitatRoom(level, geometry, cache, pos, cache.rooms);
+            return room.inspection.valid() ? room.region : null;
+        });
     }
 
     public static Inspection inspect(Level level, BlockPos pos) {
+        BlockPos roomPosition = nativeQueryActive() ? pos : ShipGreenhouseQueries.roomPosition(level, pos);
+        if (!roomPosition.equals(pos)) return inspect(level, roomPosition);
         if (!loaded(level, pos)) {
             return result(false, null, CropClimate.NEUTRAL, 0, 0, List.of(), "unloaded");
         }
@@ -427,6 +468,8 @@ public final class GreenhouseEnvironment {
 
     /** Planning a different biome reports its deficits without changing the room's actual biome. */
     public static Inspection inspectForBiome(Level level, BlockPos pos, ResourceLocation target) {
+        BlockPos roomPosition = nativeQueryActive() ? pos : ShipGreenhouseQueries.roomPosition(level, pos);
+        if (!roomPosition.equals(pos)) return inspectForBiome(level, roomPosition, target);
         Inspection current = inspect(level, pos);
         if (!current.enclosed() || !GreenhouseSettings.enabled() || level.isClientSide
                 || current.status().equals(key("missing_controller"))) return current;
@@ -448,7 +491,7 @@ public final class GreenhouseEnvironment {
 
     /** Plant habitat checks do not require publishing that habitat as a world biome. */
     public static boolean canSupport(Level level, BlockPos pos, CropProfile profile) {
-        if (!loaded(level, pos) || !GreenhouseSettings.enabled() || ShipCropEnvironment.isOnShip(level, pos)) return false;
+        if (!loaded(level, pos) || !GreenhouseSettings.enabled()) return false;
         Room room = roomAt(level, pos, false);
         if (!hasGrowingLight(level, pos) || !room.inspection.valid() || !room.interior.contains(pos.asLong())) return false;
         var biomes = level.registryAccess().registryOrThrow(Registries.BIOME);
@@ -463,6 +506,7 @@ public final class GreenhouseEnvironment {
     public static void clearCache() {
         CLIMATE_REVISION.incrementAndGet();
         CACHES.clear();
+        ShipGreenhouseLight.clear();
         GreenhouseRecipes.clearCache();
         GreenhouseRoomScanner.clear();
     }
@@ -486,7 +530,7 @@ public final class GreenhouseEnvironment {
         else for (Direction direction : new Direction[]{Direction.UP, Direction.NORTH, Direction.SOUTH,
                 Direction.WEST, Direction.EAST, Direction.DOWN}) {
             BlockPos next = pos.relative(direction);
-            if (loaded(level, next) && !sealed(level, next)) starts.add(next);
+            if (ShipCropEnvironment.sameSpace(level, pos, next) && loaded(level, next) && !sealed(level, next)) starts.add(next);
         }
         Room selected = null;
         for (BlockPos start : starts) {
@@ -526,23 +570,30 @@ public final class GreenhouseEnvironment {
 
     private static Room evaluatedHabitatRoom(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache,
                                              BlockPos query, Map<GreenhouseRoomScanner.Geometry, Room> rooms) {
-        RoomClimateState air = airState(level, geometry, cache);
-        RoomInputs inputs = new RoomInputs(level.getGameTime(), query.asLong(), air.climateAt(query, level.getGameTime()),
-                air.breathable(), roomCapacity(level, geometry), geometry.materialRevision,
+        BlockPos worldAnchor = ShipCropEnvironment.worldPosition(level, geometry.anchor);
+        Holder<Biome> baseline = withoutOverlay(() -> level.getBiome(worldAnchor));
+        CropClimate natural = NorthstarAtmosphere.naturalClimate(level, worldAnchor)
+                .orElseGet(() -> CropClimate.at(baseline, worldAnchor));
+        RoomCapacity capacity = roomCapacity(level, geometry, natural);
+        RoomClimateState air = airState(level, geometry, cache, natural, capacity);
+        long tick = level.getGameTime();
+        // Cells with the same effective climate share the room evaluation.
+        RoomInputs inputs = new RoomInputs(tick, baseline, air.climateAt(query, tick), natural,
+                air.breathable(), capacity, geometry.materialRevision,
                 geometry.leaking() ? geometry.leakSince() : -1);
         Room room = rooms.get(geometry);
         if (room == null || !inputs.equals(room.inputs)) {
-            room = evaluate(level, geometry, cache, level.getGameTime(), query, inputs);
+            room = evaluate(level, geometry, cache, query, inputs);
             rooms.put(geometry, room);
         }
         return room;
     }
 
-    private static Room evaluate(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache, long tick, BlockPos query, RoomInputs inputs) {
+    private static Room evaluate(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache, BlockPos query, RoomInputs inputs) {
         BlockPos anchor = geometry.anchor;
-        RoomClimateState air = airState(level, geometry, cache);
-        CropClimate baseClimate = CropClimate.at(nativeBiome(level, anchor), anchor);
-        CropClimate actual = air.climateAt(query, tick);
+        Holder<Biome> nativeBiome = inputs.biome;
+        CropClimate baseClimate = CropClimate.at(nativeBiome, anchor);
+        CropClimate actual = inputs.climate;
         MaterialMatches materials = cache.materialMatches.get(geometry);
         if (materials == null || materials.materialRevision != geometry.materialRevision) {
             materials = materialMatches(level, geometry, cache);
@@ -557,7 +608,7 @@ public final class GreenhouseEnvironment {
                 warmEnough.add(match);
             }
         }
-        ResourceLocation nativeId = nativeBiome(level, anchor).unwrapKey().map(biome -> biome.location()).orElse(null);
+        ResourceLocation nativeId = nativeBiome.unwrapKey().map(biome -> biome.location()).orElse(null);
         java.util.Comparator<Match> specificity = java.util.Comparator
                 .comparingInt(Match::requiredTotal).reversed()
                 .thenComparing(java.util.Comparator.comparingInt((Match match) -> match.definition.recipe.requirements().size()).reversed())
@@ -567,13 +618,13 @@ public final class GreenhouseEnvironment {
         warmEnough.sort(specificity);
         Match chosen = !warmEnough.isEmpty() ? warmEnough.getFirst() : !complete.isEmpty() ? complete.getFirst() : closest;
         String status;
-        boolean naturallySupported = actual == air.naturalClimate() && !warmEnough.isEmpty();
+        boolean naturallySupported = actual == inputs.naturalClimate && !warmEnough.isEmpty();
         RoomCapacity capacity = inputs.capacity;
-        if (geometry.leakExpired(tick) && actual == air.naturalClimate()) status = "open";
-        else if (!naturallySupported && capacity.units > 0 && (capacity.changeRequested || actual != air.naturalClimate())
+        if (geometry.leakExpired(inputs.tick) && actual == inputs.naturalClimate) status = "open";
+        else if (!naturallySupported && capacity.units > 0 && (capacity.changeRequested || actual != inputs.naturalClimate)
                 && !capacity.sufficient()
                 && !optionalControlMatches(level, geometry, actual)) status = "insufficient_capacity";
-        else if (!air.breathable()) status = "filling_air";
+        else if (!inputs.breathable) status = "filling_air";
         else if (warmEnough.size() > 1) status = "ambiguous";
         else if (!warmEnough.isEmpty()) status = geometry.leaking() ? "leaking" : "valid";
         else if (chosen != null && chosen.floor.found() < chosen.floor.required()) status = "missing_floor";
@@ -589,7 +640,7 @@ public final class GreenhouseEnvironment {
                 geometry.glass, chosen == null ? 0 : chosen.matched, chosen == null ? 0 : chosen.totalRequired,
                 key(status), specimens, progress, baseClimate, roomVolume, geometry.floorSamples.size(),
                 chosen == null ? FloorProgress.none() : chosen.floor, geometry.glassProgress());
-        return new Room(tick, query.asLong(), inspection, geometry.interior, inputs);
+        return new Room(inputs.tick, query.asLong(), inspection, geometry.interior, inputs);
     }
 
     private static MaterialMatches materialMatches(Level level, GreenhouseRoomScanner.Geometry geometry, Cache cache) {
@@ -675,6 +726,7 @@ public final class GreenhouseEnvironment {
     /** A transparent glass covering must have an unobstructed column all the way to the sky. */
     public static boolean hasSkyGlassAbove(Level level, BlockPos plant) {
         if (!loaded(level, plant) || !level.dimensionType().hasSkyLight()) return false;
+        if (ShipCropEnvironment.isOnShip(level, plant)) return ShipGreenhouseLight.hasSkyGlassAbove(level, plant);
         Cache cache = cache(level);
         if (cache.skyTick != level.getGameTime()) {
             cache.skyTick = level.getGameTime();
@@ -713,7 +765,8 @@ public final class GreenhouseEnvironment {
             return !state.getValue(BlockStateProperties.OPEN);
         }
         return isGlass(state) || state.getBlock() instanceof FarmBlock || state.getBlock() instanceof DirtPathBlock
-                || state.getBlock() instanceof SoulSandBlock || state.isCollisionShapeFullBlock(level, pos);
+                || state.getBlock() instanceof SoulSandBlock || state.isCollisionShapeFullBlock(level, pos)
+                || ThermoregulatorDetector.isExternalController(state);
     }
 
     static boolean isGlass(BlockState state) {
@@ -815,8 +868,8 @@ public final class GreenhouseEnvironment {
     private record MaterialMatches(long materialRevision, List<Match> complete, Match closest) {
     }
 
-    private record RoomInputs(long tick, long query, CropClimate climate, boolean breathable, RoomCapacity capacity,
-                              long materialRevision, long leakSince) { }
+    private record RoomInputs(long tick, Holder<Biome> biome, CropClimate climate, CropClimate naturalClimate,
+                              boolean breathable, RoomCapacity capacity, long materialRevision, long leakSince) { }
 
     private record Room(long tick, long query, Inspection inspection, Set<Long> interior, RoomInputs inputs, BiomeRegion region) {
         Room(long tick, long query, Inspection inspection, Set<Long> interior) {

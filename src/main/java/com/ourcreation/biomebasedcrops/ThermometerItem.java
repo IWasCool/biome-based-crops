@@ -35,7 +35,7 @@ public final class ThermometerItem extends Item {
     }
 
     public static void showReading(ServerPlayer player) {
-        showReading(player, player.blockPosition());
+        showReading(player, ShipGreenhouseQueries.knownRoomPosition(player));
     }
 
     public static void showReading(ServerPlayer player, BlockPos pos) {

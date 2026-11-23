@@ -54,12 +54,22 @@ public final class RoomClimateState {
     }
 
     public boolean hasControlAt(BlockPos query, long tick) {
-        return leakStart >= 0 ? leakingClimate(query, tick) != naturalClimate : nearest(query, tick) != null;
+        return controlledClimateAt(query, tick) != null;
     }
+
     public CropClimate climateAt(BlockPos query, long tick) {
-        if (leakStart >= 0) return leakingClimate(query, tick);
+        CropClimate climate = controlledClimateAt(query, tick);
+        return climate == null ? naturalClimate : climate;
+    }
+
+    @javax.annotation.Nullable
+    CropClimate controlledClimateAt(BlockPos query, long tick) {
+        if (leakStart >= 0) {
+            CropClimate climate = leakingClimate(query, tick);
+            return climate == naturalClimate ? null : climate;
+        }
         Drive nearest = nearest(query, tick);
-        return nearest == null ? naturalClimate : nearest.climate;
+        return nearest == null ? null : nearest.climate;
     }
 
     /** A known room remembers its climate through a brief opening, never through a new survey. */

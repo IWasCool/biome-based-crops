@@ -23,15 +23,6 @@
             9.25
           ],
           "faces": {
-            "north": {
-              "uv": [
-                7,
-                3,
-                8,
-                5
-              ],
-              "texture": "#mercury"
-            },
             "south": {
               "uv": [
                 7,

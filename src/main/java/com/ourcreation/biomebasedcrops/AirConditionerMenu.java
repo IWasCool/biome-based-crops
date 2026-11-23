@@ -29,6 +29,7 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
     private final BlockPos position;
     private final Level level;
     private final Player owner;
+    private final java.util.UUID spaceId;
     private final ContainerData data;
 
     public static void register(IEventBus bus) {
@@ -100,6 +101,7 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
         this.position = position.immutable();
         this.level = inventory.player.level();
         this.owner = inventory.player;
+        this.spaceId = ShipCropEnvironment.spaceId(level, position);
         this.data = data;
         addDataSlots(data);
         for (int row = 0; row < 3; row++) for (int column = 0; column < 9; column++) {
@@ -166,8 +168,11 @@ public final class AirConditionerMenu extends AbstractContainerMenu {
     }
 
     @Override public boolean stillValid(Player player) {
-        return player == owner && player.level() == level && player.level().getBlockEntity(position) instanceof AirConditionerBlockEntity
-                && player.distanceToSqr(position.getX() + 0.5, position.getY() + 0.5, position.getZ() + 0.5) <= 64;
+        if (player != owner || player.level() != level
+                || !java.util.Objects.equals(spaceId, ShipCropEnvironment.spaceId(level, position))
+                || !(level.getBlockEntity(position) instanceof AirConditionerBlockEntity)) return false;
+        var world = ShipCropEnvironment.worldCenter(level, position);
+        return player.distanceToSqr(world.x, world.y, world.z) <= 64;
     }
 
     @Override public boolean clickMenuButton(Player player, int button) {

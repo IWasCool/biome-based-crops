@@ -32,18 +32,6 @@ public final class NorthstarAtmosphere {
 
     private NorthstarAtmosphere() {}
 
-    /** Room or direct outlet climate; native planet sampling must never read this override. */
-    @Nullable
-    public static Float controlledTemperature(Level level, Vec3i query) {
-        CropClimate climate = GreenhouseEnvironment.controlledClimate(level, new BlockPos(query));
-        return climate == null ? null : LegacyClimate.toCelsius(climate);
-    }
-
-    @Nullable
-    public static Float controlledTemperature(Level level, Vec3 query) {
-        return controlledTemperature(level, BlockPos.containing(query));
-    }
-
     /** Classify an optional planet's native ambient at its API boundary. */
     public static Optional<CropClimate> naturalClimate(Level level, BlockPos pos) {
         OptionalDouble value = naturalTemperature(level, pos);

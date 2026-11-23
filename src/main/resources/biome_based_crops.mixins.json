@@ -7,11 +7,12 @@
     "PlantGrowthMixin",
     "GreenhouseBiomeMixin",
     "GreenhouseSpawnBiomeMixin",
+    "ChunkClimateControllersMixin",
+    "SableGreenhouseAssemblyMixin",
     "CreateTreeFertilizerMixin",
     "SliceAndDiceFertilizerMixin",
     "GreenhouseBlockChangeMixin",
     "NorthstarRoomOxygenMixin",
-    "NorthstarRoomTemperatureMixin",
     "ToughAsNailsThermoregulatorEffectMixin"
   ],
   "client": [

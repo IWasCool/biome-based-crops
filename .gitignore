@@ -59,6 +59,10 @@ __pycache__/
 ### Local validation and asset-authoring tools ###
 /src/test/
 /src/gameTest/
+/src/greenhousetest/
+/src/sabletest/
+/sable-validation.gradle
+/SABLE-GREENHOUSES.md
 /tools/
 
 # Production-source repository: keep local development material untracked.
